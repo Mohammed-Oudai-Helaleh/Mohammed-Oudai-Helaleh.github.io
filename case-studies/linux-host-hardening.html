@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Linux Host Hardening &amp; Incident Response Simulation | Mohammed Oudai Helaleh</title>
+<meta name="description" content="Emergency containment and host-hardening following a mock malware infection — UFW firewall lockdown on Port 23, AppArmor kernel sandboxing in enforce mode, and application-layer browser protection.">
+
+<link rel="stylesheet" href="../case-study.css">
+</head>
+
+<body class="theme-ops">
+
+<div class="bg-grid"></div>
+<div class="progress" id="progress"></div>
+
+<!-- ============================================================
+     NAV
+     ============================================================ -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="../index.html" class="brand">MOHAMMED <span>OUDAI</span></a>
+    <a href="../index.html#projects" class="back-link">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M19 12H5M12 19l-7-7 7-7"/>
+      </svg>
+      <span>BACK_TO_VAULT</span>
+    </a>
+  </div>
+</nav>
+
+<!-- ============================================================
+     HERO
+     ============================================================ -->
+<header class="cs-hero">
+  <div class="wrap">
+
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <a href="../index.html">PORTFOLIO</a>
+      <span class="sep">/</span>
+      <a href="../index.html#projects">VAULT</a>
+      <span class="sep">/</span>
+      <a href="../index.html#projects">IT_OPERATIONS</a>
+    </nav>
+
+    <div class="pill-row">
+      <span class="pill"><span class="dot"></span>INCIDENT_RESPONSE</span>
+      <span class="pill neutral">CASE_STUDY</span>
+      <span class="pill neutral">READ_TIME 7 MIN</span>
+    </div>
+
+    <h1>Linux Host Hardening &amp; Incident Response Simulation</h1>
+
+    <p class="standfirst">
+      Simulating an emergency containment and hardening sequence on a Linux endpoint
+      following a mock malware infection — severing the network at the hypervisor layer,
+      deploying a <strong>UFW firewall lockdown that drops Port 23</strong> with full logging,
+      and enforcing <strong>AppArmor kernel-level sandboxing</strong> to prevent vulnerable
+      processes from escalating system privileges.
+    </p>
+
+    <dl class="meta-grid">
+      <div class="meta-cell">
+        <dt>Environment</dt>
+        <dd>Kali Linux 2026.2 — VM in VMware Workstation</dd>
+      </div>
+      <div class="meta-cell">
+        <dt>Framework</dt>
+        <dd>CompTIA 7-Step Malware Remediation Process</dd>
+      </div>
+      <div class="meta-cell">
+        <dt>Firewall</dt>
+        <dd>UFW — default deny incoming, Port 23 drop with logging</dd>
+      </div>
+      <div class="meta-cell">
+        <dt>Sandboxing</dt>
+        <dd>AppArmor — profiles loaded, enforce-mode boundaries</dd>
+      </div>
+    </dl>
+
+  </div>
+</header>
+
+<!-- ============================================================
+     BODY
+     ============================================================ -->
+<main class="cs-body">
+  <div class="wrap">
+
+    <!-- ---------- OBJECTIVE ---------- -->
+    <section class="cs-section">
+      <p>
+        The moment a malware infection is detected on an endpoint, two clocks start running.
+        The first is the clock on the attacker — every second between detection and containment
+        is a second they can exfiltrate data, establish persistence, or pivot to adjacent systems.
+        The second is the clock on the organization — every second between containment and
+        recovery is a second the user cannot work, and every hour of downtime compounds the cost
+        of the incident.
+      </p>
+
+      <p>
+        This engagement simulates that sequence from start to finish, following CompTIA's
+        official <strong>7-Step Malware Remediation Process</strong>. The simulated infection
+        is a controlled scenario — no actual malware is deployed — but the containment and
+        hardening techniques applied are the same ones an incident responder would execute on
+        a real compromised host. The goal is not to demonstrate the ability to clean malware,
+        but to demonstrate the ability to <strong>contain it, harden the host, and preserve
+        evidence</strong> across the full remediation lifecycle.
+      </p>
+
+      <div class="callout note">
+        <div class="callout-label">◆ SCOPE_CONSTRAINT</div>
+        <p>
+          All work was performed on an isolated Kali Linux VM. No real malware is present — the
+          "infection" is a simulation designed to exercise the response process rather than test
+          detection capability. No production system, user data, or network segment outside the
+          lab was touched at any point in this engagement.
+        </p>
+      </div>
+    </section>
+
+    <!-- ---------- PHASE 1 ---------- -->
+    <section class="cs-section" id="phase-1">
+      <span class="phase-tag">PHASE 01</span>
+      <h2>Incident Containment — Steps 1 &amp; 2</h2>
+
+      <p>
+        The first two steps of the CompTIA remediation framework are the ones that determine
+        whether the incident stays contained or becomes an outbreak. Step 1 is
+        <strong>identifying the malware symptoms</strong> — the observable evidence that
+        something is wrong. Step 2 is the response: <strong>quarantining the machine</strong>
+        through a network-level disconnect, so the endpoint can no longer communicate with
+        anything outside itself.
+      </p>
+
+      <p>
+        In this simulation, the containment was executed at the <strong>hypervisor layer</strong>
+        by severing the virtual network adapter's link state. From inside the guest VM, this
+        appears as a physical cable unplug: the NIC is still present to the operating system,
+        its drivers are still loaded, its configuration is still intact — but no packet can
+        leave or enter the interface. Every outbound connection attempt fails immediately,
+        and every inbound packet is discarded at the virtual switch level before it ever
+        reaches the guest.
+      </p>
+
+      <p>
+        This approach has three properties that make it the correct choice for the containment
+        step:
+      </p>
+
+      <ul>
+        <li>
+          <strong>It cannot be defeated by malware running inside the guest.</strong> Because
+          the disconnect happens at the hypervisor layer, the guest has no way to reverse it —
+          the network interface is gone from the guest's perspective, not disabled by a
+          configuration the malware could modify.
+        </li>
+        <li>
+          <strong>It preserves the incident state.</strong> The VM's memory, disk, and running
+          processes are untouched. Nothing about the containment step destroys forensic evidence
+          or alters the state of the potentially compromised system.
+        </li>
+        <li>
+          <strong>It isolates without requiring reboot.</strong> The guest continues running
+          with its processes intact, so an analyst can inspect the running system without
+          rebooting it — a critical property when volatile evidence in memory matters.
+        </li>
+      </ul>
+
+      <p>
+        With the machine quarantined and outbound traffic halted, the mock infection is
+        contained inside the sandbox. The next phases work on the vulnerable host from inside
+        that quarantine.
+      </p>
+    </section>
+
+    <!-- ---------- PHASE 2 ---------- -->
+    <section class="cs-section" id="phase-2">
+      <span class="phase-tag">PHASE 02</span>
+      <h2>Network Layer Firewall Lockdown</h2>
+
+      <p>
+        With the machine isolated at the hypervisor layer, the next hardening step is to make
+        the isolation <em>persistent</em> — so that when the VM is eventually reconnected to a
+        network, the host itself will refuse the traffic classes that made the infection
+        possible. This is where UFW comes in.
+      </p>
+
+      <p>
+        The Uncomplicated Firewall is a frontend for the Linux kernel's native packet filtering
+        framework. Its role in this remediation is to install a defensive posture that survives
+        across reboots and enforces policy at the kernel level rather than depending on
+        application cooperation. Two configuration steps were applied:
+      </p>
+
+      <div class="code-block">
+        <div class="code-head">
+          <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="code-lang">bash</span>
+          <button class="copy-btn" data-copy type="button">COPY</button>
+        </div>
+        <pre><code><span class="cmt"># Establish a strict Default Deny baseline for all inbound traffic</span>
+sudo ufw default deny incoming
+
+<span class="cmt"># Explicitly drop and log all inbound traffic targeting Telnet (Port 23)</span>
+sudo ufw deny from any to any port 23 proto tcp
+
+<span class="cmt"># Activate the firewall and enable it on system startup</span>
+sudo ufw enable</code></pre>
+      </div>
+
+      <p>
+        The <code>default deny incoming</code> directive establishes the baseline posture: any
+        inbound packet that doesn't match an explicit permit rule is dropped. This is the
+        single most important UFW command in any hardening sequence, and it's the one most often
+        skipped in default deployments — Ubuntu ships with an inactive firewall, so a fresh
+        installation has no kernel-level protection at all until this directive is applied.
+      </p>
+
+      <p>
+        The Port 23 rule is where the engagement becomes specific. Port 23 is
+        <strong>Telnet</strong>, a protocol that transmits everything in plaintext — including
+        credentials — and that has been formally deprecated by every modern security framework
+        for over two decades. Its presence in a listening state is a red flag: either the
+        system has a legacy application that depends on it, or something has been installed
+        that expects to use it. In a malware investigation, an unexpected listening service on
+        Port 23 is exactly the kind of indicator that suggests a backdoor or remote access tool.
+      </p>
+
+      <p>
+        The directive <code>ufw deny from any to any port 23 proto tcp</code> explicitly
+        refuses all incoming TCP traffic to that port, regardless of source. The rule is
+        applied to both IPv4 and IPv6 automatically — UFW updates both rulesets in a single
+        command — which means there's no overlooked second attack surface on the v6 stack.
+        Dropped packets are logged at the kernel level, so if any subsequent connection attempt
+        is made against Port 23, the event appears in the system journal for later forensic
+        analysis.
+      </p>
+
+      <p>
+        The final state is verified with <code>sudo ufw status verbose</code>, which shows the
+        Default Deny baseline, the active Port 23 drop rule, and the "logged" status — the
+        three properties that together demonstrate the network-layer hardening was applied
+        and is enforcing.
+      </p>
+    </section>
+
+    <!-- ---------- PHASE 3 ---------- -->
+    <section class="cs-section" id="phase-3">
+      <span class="phase-tag">PHASE 03</span>
+      <h2>Kernel &amp; Application Layer Sandboxing</h2>
+
+      <p>
+        The firewall handles network traffic. It does nothing to constrain what processes on
+        the host are allowed to do once they're running. That's the job of
+        <strong>AppArmor</strong>, the Linux kernel security module that implements
+        mandatory access control through a per-application profile system.
+      </p>
+
+      <h3>Understanding AppArmor's role</h3>
+
+      <p>
+        AppArmor works by attaching a profile to specific executables. Each profile is a
+        declarative list of what that executable is allowed to do — which files it can read,
+        which directories it can write, which network operations it can perform. When a
+        process attempts an operation that isn't explicitly permitted by its profile, the
+        kernel blocks the attempt in real time, before any system call reaches its target.
+      </p>
+
+      <p>
+        Profiles operate in one of three modes:
+      </p>
+
+      <ul>
+        <li>
+          <strong>Enforce mode.</strong> Violations are blocked and logged. This is the
+          production posture — the profile's restrictions are actually enforced.
+        </li>
+        <li>
+          <strong>Complain mode.</strong> Violations are logged but <em>allowed</em>. This is
+          the development posture — useful for building a profile without breaking the
+          application, but not a security control.
+        </li>
+        <li>
+          <strong>Unconfined.</strong> No profile is attached, so no restrictions apply. The
+          process runs with whatever privileges the underlying user account has.
+        </li>
+      </ul>
+
+      <p>
+        The remediation goal in this engagement was to ensure the kernel security module was
+        functioning and that its profiles were correctly in <strong>enforce</strong> mode, so
+        that vulnerable processes — particularly the browser, which is a common initial-access
+        vector — could not escape their sandbox and escalate to system-level privileges even if
+        a compromise did occur.
+      </p>
+
+      <div class="code-block">
+        <div class="code-head">
+          <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="code-lang">bash</span>
+          <button class="copy-btn" data-copy type="button">COPY</button>
+        </div>
+        <pre><code><span class="cmt"># Inspect AppArmor state — module load status and profile counts</span>
+sudo apparmor_status</code></pre>
+      </div>
+
+      <p>
+        The status output confirms the kernel security module is operational: profiles are
+        loaded across multiple categories, and a subset are held in enforce mode — meaning the
+        kernel will actively block violations attempted by any process with an enforce-mode
+        profile. The Chrome and Chromium browser sandbox profiles are the most security-relevant
+        entries here; they constrain what the browser process can touch even if a malicious web
+        page manages to exploit a rendering-engine vulnerability. Without these profiles, a
+        browser compromise frequently becomes a system compromise. With them, the attacker's
+        reach is bounded by what the profile permits.
+      </p>
+
+      <h3>Application layer shielding — browser hardening</h3>
+
+      <p>
+        The final hardening step targets the application that users are most exposed to. Firefox
+        was configured with the built-in safe-browsing protections enabled and verified:
+      </p>
+
+      <ul>
+        <li>
+          <strong>Block dangerous and deceptive content.</strong> Mandatory pre-execution
+          checks against Google's Safe Browsing service, which maintains a continuously-updated
+          list of known malicious domains, phishing sites, and deceptive download URLs. When
+          enabled, the browser refuses to load or deliver content from any URL on the list.
+        </li>
+        <li>
+          <strong>Block dangerous downloads.</strong> A second filter that inspects download
+          metadata before the file reaches the user's disk — catching known malware samples by
+          hash before they can be executed.
+        </li>
+        <li>
+          <strong>Warn about unwanted and uncommon software.</strong> Detects the
+          bundleware and potentially-unwanted-program installer patterns that frequently ride
+          along with otherwise-legitimate downloads, and prompts the user before proceeding.
+        </li>
+        <li>
+          <strong>Query OCSP responder servers for certificate validity.</strong> Ensures that
+          a revoked certificate is rejected even if the local certificate cache still contains
+          it — closing the window in which a stolen-and-revoked certificate could still be
+          trusted.
+        </li>
+      </ul>
+
+      <p>
+        These settings operate at the application layer, which makes them a complementary
+        control to the kernel-level protection from AppArmor. AppArmor constrains what the
+        browser <em>can</em> do if it is exploited; Safe Browsing reduces the probability that
+        the browser will be exploited in the first place by blocking access to known malicious
+        content. Layered together, the two controls cover both the pre-exploitation and
+        post-exploitation phases of a browser-based attack.
+      </p>
+    </section>
+
+    <!-- ---------- OUTCOMES ---------- -->
+    <section class="cs-section" id="outcomes">
+      <span class="phase-tag">OUTCOMES</span>
+      <h2>Verification &amp; Framework Mapping</h2>
+
+      <p>
+        The full remediation was verified against the industry-standard
+        <strong>CompTIA 7-Step Malware Remediation Process</strong>. The figure below captures
+        the three technical verification surfaces in a single dashboard view — the AppArmor
+        process state, the UFW rule table, and the application-layer browser protection
+        settings.
+      </p>
+
+      <!-- ---------- SCREENSHOT ---------- -->
+      <figure class="cs-figure">
+        <div class="fig-bar">
+          <span class="dot" aria-hidden="true"></span>
+          <span>host_hardening_dashboard.png</span>
+        </div>
+        <img src="../assets/img/host_hardening_dashboard.png"
+             alt="Split-screen dashboard showing the Kali Linux terminal on the left with the AppArmor process summary and sudo ufw status verbose output confirming 23/tcp DENY IN Anywhere rules for both IPv4 and IPv6, alongside the Firefox Privacy and Security settings pane on the right showing Deceptive Content and Dangerous Software Protection enabled"
+             loading="lazy"
+             onerror="this.closest('figure').classList.add('img-missing')">
+        <div class="img-placeholder" aria-hidden="true">
+          [ TELEMETRY_CAPTURE_PENDING ]<br>
+          assets/img/host_hardening_dashboard.png
+        </div>
+        <figcaption>
+          <b>Figure 6.1</b> — Host hardening verification dashboard.
+          <strong>Left pane:</strong> terminal output showing the AppArmor process state
+          followed by <code>sudo ufw status verbose</code>, which confirms the firewall is
+          active with a Default Deny incoming policy and explicit
+          <code>23/tcp DENY IN Anywhere</code> rules covering both IPv4 and IPv6 stacks.
+          <strong>Right pane:</strong> Firefox Privacy &amp; Security settings, showing
+          Deceptive Content and Dangerous Software Protection enabled — including blocked
+          dangerous content, blocked dangerous downloads, warnings for unwanted software,
+          and OCSP certificate validation queries.
+        </figcaption>
+      </figure>
+
+      <h3>Full framework alignment</h3>
+
+      <p>
+        Every step of the CompTIA remediation process was either executed directly or mapped
+        to an equivalent action:
+      </p>
+
+      <ul>
+        <li>
+          <strong>Step 1 — Identify malware symptoms.</strong> The simulated infection was
+          established as a scenario; the phase focus was on the analyst's ability to recognise
+          the indicators (unexpected listening services on legacy ports, anomalous process
+          behaviour).
+        </li>
+        <li>
+          <strong>Step 2 — Quarantine the machine.</strong> Executed at the hypervisor layer
+          via virtual network adapter disconnect. This is the equivalent of physically
+          unplugging an Ethernet cable from a compromised host.
+        </li>
+        <li>
+          <strong>Step 3 — Disable system restore tracking.</strong> Handled as part of the
+          hardening posture — preventing the operating system from silently preserving
+          pre-containment states that could be re-applied after remediation.
+        </li>
+        <li>
+          <strong>Step 4 — Remediate via clean offline configurations.</strong> The hardening
+          work (firewall rules, AppArmor profiles) was applied to bring the host into a known-good
+          state before reconnection to any network.
+        </li>
+        <li>
+          <strong>Step 5 — Schedule automated scans.</strong> Configured as the ongoing
+          operational discipline that keeps the host verified as clean after remediation —
+          the work that turns a one-time fix into a maintained posture.
+        </li>
+        <li>
+          <strong>Step 6 — Enable host protection layers.</strong> The core technical phase of
+          this engagement. UFW at the network layer, AppArmor at the kernel layer, and the
+          browser safe-browsing stack at the application layer — three independent control
+          planes covering complementary attack surfaces.
+        </li>
+        <li>
+          <strong>Step 7 — Educate users.</strong> The organisational countermeasure that
+          closes the most common initial-access vector: social engineering and phishing. This
+          is the step most often underestimated in technical remediation, and the one that
+          produces the highest long-term security return.
+        </li>
+      </ul>
+
+      <div class="callout remediation">
+        <div class="callout-label">✓ INCIDENT_RESPONSE_VALIDATED</div>
+        <p>
+          <strong>Full remediation lifecycle completed.</strong> The simulated incident was
+          contained at the hypervisor layer, hardened across three technical control planes
+          (network, kernel, application), and verified through live terminal diagnostics. The
+          engagement demonstrates capability across the full CompTIA 7-Step framework — from
+          initial containment through persistent hardening to the operational discipline that
+          keeps a remediated host in a verified state over time.
+        </p>
+      </div>
+    </section>
+
+    <!-- ---------- PRIVACY ---------- -->
+    <section class="cs-section" id="privacy">
+      <span class="phase-tag">DISCLOSURE</span>
+      <h2>Security &amp; Data Privacy Note</h2>
+
+      <div class="callout note">
+        <div class="callout-label">◆ LAB_ENVIRONMENT_DISCLOSURE</div>
+        <p>
+          This engagement was conducted on an isolated Kali Linux VM within a personal
+          VMware Workstation environment. No real malware was present or introduced at any
+          point — the "infection" is a controlled simulation used to exercise the incident
+          response process. No production system, corporate network, or third-party data
+          was involved. The Firefox settings shown are user-level privacy controls visible
+          in any Firefox installation and do not expose browsing history, bookmarks, or
+          personal configuration.
+        </p>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<!-- ============================================================
+     FOOTER
+     ============================================================ -->
+<footer class="footer">
+  <div class="wrap wrap-wide footer-inner">
+    <div>
+      <p>&copy; 2026 Mohammed Oudai Helaleh. All rights cryptographically reserved.</p>
+      <p class="meta">Informatics &amp; Communications Engineering Architecture Deployment</p>
+    </div>
+  </div>
+</footer>
+
+<script src="../case-study.js" defer></script>
+</body>
+</html>

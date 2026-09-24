@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HyperEnigma — Enigma Simulator with 44-Character Alphabet | Mohammed Oudai Helaleh</title>
+<meta name="description" content="A cross-platform Enigma cipher simulator expanding the original 26-letter alphabet to 44 characters — faithful rotor mechanics, configurable 5-rotor selection, drag-and-drop plugboard, and real-time encryption in Flutter.">
+
+<link rel="stylesheet" href="../case-study.css">
+</head>
+
+<body class="theme-crypto">
+
+<div class="bg-grid"></div>
+<div class="progress" id="progress"></div>
+
+<!-- ============================================================
+     NAV
+     ============================================================ -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="../index.html" class="brand">MOHAMMED <span>OUDAI</span></a>
+    <a href="../index.html#projects" class="back-link">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M19 12H5M12 19l-7-7 7-7"/>
+      </svg>
+      <span>BACK_TO_VAULT</span>
+    </a>
+  </div>
+</nav>
+
+<!-- ============================================================
+     HERO
+     ============================================================ -->
+<header class="cs-hero">
+  <div class="wrap">
+
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <a href="../index.html">PORTFOLIO</a>
+      <span class="sep">/</span>
+      <a href="../index.html#projects">VAULT</a>
+      <span class="sep">/</span>
+      <a href="../index.html#projects">SOFTWARE_&amp;_CRYPTO</a>
+    </nav>
+
+    <div class="pill-row">
+      <span class="pill"><span class="dot"></span>ALGORITHMIC_LOGIC</span>
+      <span class="pill neutral">CASE_STUDY</span>
+      <span class="pill neutral">READ_TIME 7 MIN</span>
+    </div>
+
+    <h1>HyperEnigma — Cross-Platform Enigma Simulator with a 44-Character Alphabet</h1>
+
+    <p class="standfirst">
+      A Flutter-built Enigma machine simulator that expands the original
+      <strong>26-letter alphabet to 44 characters</strong> — multiplying the rotor cycle length
+      from 17,576 to 85,184 keypresses — while preserving the mechanical logic, the
+      self-reciprocal reflector, and the configurable plugboard that made the original machine
+      the most famous cipher device in history.
+    </p>
+
+    <div class="cs-actions">
+      <a class="cs-repo-link"
+         href="https://github.com/Mohammed-Oudai-Helaleh/HyperEnigma-"
+         target="_blank" rel="noopener noreferrer"
+         aria-label="View the HyperEnigma source code on GitHub">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M12 .5C5.73.5.5 5.73.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.56v-2c-3.2.7-3.88-1.54-3.88-1.54-.53-1.34-1.29-1.7-1.29-1.7-1.05-.72.08-.71.08-.71 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.23-1.28-5.23-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.04 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.79 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.58.23 2.75.11 3.04.74.81 1.19 1.84 1.19 3.1 0 4.42-2.69 5.39-5.25 5.68.41.35.78 1.05.78 2.12v3.14c0 .31.21.68.8.56A11.5 11.5 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5z"/>
+        </svg>
+        <span>VIEW_REPOSITORY</span>
+        <span class="arrow" aria-hidden="true">→</span>
+      </a>
+    </div>
+
+    <dl class="meta-grid">
+      <div class="meta-cell">
+        <dt>Role</dt>
+        <dd>Sole Developer — design, cryptography, UI, deployment</dd>
+      </div>
+      <div class="meta-cell">
+        <dt>Platforms</dt>
+        <dd>Windows desktop · Android mobile</dd>
+      </div>
+      <div class="meta-cell">
+        <dt>Tech Stack</dt>
+        <dd>Flutter · Dart · Custom CustomPainter rendering</dd>
+      </div>
+      <div class="meta-cell">
+        <dt>Alphabet</dt>
+        <dd>44 characters — A–Z, 0–9, space, newline, punctuation</dd>
+      </div>
+    </dl>
+
+  </div>
+</header>
+
+<!-- ============================================================
+     BODY
+     ============================================================ -->
+<main class="cs-body">
+  <div class="wrap">
+
+    <!-- ---------- OBJECTIVE ---------- -->
+    <section class="cs-section">
+      <p>
+        The German Enigma machine is the most studied cipher device in history, and also one
+        of the most broken. It fell at Bletchley Park not because its mechanics were weak —
+        the rotor stepping, the reflector, and the plugboard were all elegant — but because its
+        <strong>26-letter alphabet</strong> capped the rotor cycle at 26³ = 17,576 keypresses
+        before the machine returned to its starting configuration. Modern brute force exhausts
+        that space in seconds.
+      </p>
+
+      <p>
+        HyperEnigma asks a simple question: what would Enigma look like if it had been designed
+        for modern text? The answer is a cross-platform Flutter application that
+        <strong>expands the alphabet to 44 characters</strong> — every uppercase letter, every
+        digit, space, newline, and the common punctuation marks — raising the rotor cycle to
+        85,184 keypresses while keeping every mechanical principle of the original intact.
+        The result is both an educational tool for understanding rotor-based cryptography and
+        a genuinely harder-to-break cipher than its historical predecessor.
+      </p>
+
+      <div class="callout note">
+        <div class="callout-label">◆ SCOPE_NOTE</div>
+        <p>
+          HyperEnigma is an <em>educational and engineering</em> project — a faithful
+          re-implementation of a historical cipher with an expanded character set. It is not
+          intended as a production encryption tool, and the case study presents it as a study
+          in mechanical cryptography and cross-platform software architecture rather than as a
+          security product. Modern cryptographic primitives (AES, ChaCha20) remain the correct
+          choice for any real-world data protection requirement.
+        </p>
+      </div>
+    </section>
+
+    <!-- ---------- PHASE 1 ---------- -->
+    <section class="cs-section" id="phase-1">
+      <span class="phase-tag">PHASE 01</span>
+      <h2>Alphabet Expansion &amp; Mechanical Fidelity</h2>
+
+      <p>
+        The first design decision was the alphabet itself, and it cascaded through every
+        component of the machine. The original Enigma's 26-letter limitation wasn't a design
+        oversight — it reflected the constraints of a keyboard that had to fit inside a
+        portable mechanical enclosure. Modern software has no such constraint, so the alphabet
+        was chosen to cover everything a user might actually want to type:
+      </p>
+
+      <div class="code-block">
+        <div class="code-head">
+          <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="code-lang">dart</span>
+          <button class="copy-btn" data-copy type="button">COPY</button>
+        </div>
+        <pre><code><span class="cmt">// The 44-character alphabet — everything the machine can encrypt</span>
+const String kAlphabet =
+    'ABCDEFGHIJKLMNOPQRSTUVWXYZ'   <span class="cmt">// 26 uppercase letters</span>
+    '0123456789'                    <span class="cmt">// 10 digits</span>
+    " \n"                           <span class="cmt">// space + newline</span>
+    "'!?.,:";                       <span class="cmt">// 6 punctuation marks</span>
+                                    <span class="cmt">// = 44 characters total</span></code></pre>
+      </div>
+
+      <p>
+        That single change rippled outward. Every rotor's wiring had to become a permutation
+        over 44 symbols instead of 26. The reflector had to pair all 44 characters. The
+        plugboard had to expose all 44 plug holes. And the encryption math for rotor position
+        — which relies on modular arithmetic — had to switch from <code>mod 26</code> to
+        <code>mod 44</code> at every step of the signal path.
+      </p>
+
+      <p>
+        The payoff is measurable. The original rotor cycle length — the number of keypresses
+        before the machine returns to its starting configuration — was 26³ = 17,576. The
+        expanded alphabet brings that to <strong>44³ = 85,184</strong> — a factor of
+        approximately 4.85× improvement, and more importantly a cycle long enough that no two
+        long messages are ever encrypted with the same effective rotor configuration.
+      </p>
+
+      <h3>Preserving the mechanical logic</h3>
+
+      <p>
+        The temptation when expanding a historical design is to simplify. HyperEnigma does the
+        opposite — every core mechanism of the original machine is preserved and running in
+        software:
+      </p>
+
+      <ul>
+        <li>
+          <strong>Odometer-style rotor stepping.</strong> The rightmost rotor steps on every
+          keypress. When it completes a full 44-character turn, it nudges the middle rotor.
+          When the middle rotor completes its turn, it nudges the leftmost. This is the same
+          cascade that gave the original machine its characteristic stepping behaviour.
+        </li>
+        <li>
+          <strong>Self-reciprocal reflector.</strong> After passing through all three rotors,
+          the signal hits a reflector that pairs characters and sends it back through the
+          rotors in reverse order. The consequence is that encryption and decryption are the
+          same operation — the same machine settings that encrypt a message will also decrypt
+          it, if you start from the same rotor positions. This property made the original
+          machine practical to operate in the field, and HyperEnigma reproduces it exactly.
+        </li>
+        <li>
+          <strong>Plugboard character swapping.</strong> Before entering the rotor stack and
+          after exiting it, the signal passes through a plugboard that swaps specific pairs of
+          characters. This was the original machine's most significant strengthening
+          feature — it multiplied the effective key space by an astronomical factor — and it's
+          preserved in full in HyperEnigma, with the additional benefit of a modern drag-and-drop
+          interface.
+        </li>
+      </ul>
+
+      <p>
+        The complete signal path — unchanged from the original machine — is:
+      </p>
+
+      <div class="code-block">
+        <div class="code-head">
+          <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="code-lang">signal path</span>
+          <button class="copy-btn" data-copy type="button">COPY</button>
+        </div>
+        <pre><code>Key press
+  → Plugboard
+  → Rotor 1 (forward)
+  → Rotor 2 (forward)
+  → Rotor 3 (forward)
+  → Reflector
+  → Rotor 3 (backward)
+  → Rotor 2 (backward)
+  → Rotor 1 (backward)
+  → Plugboard
+  → Output character</code></pre>
+      </div>
+    </section>
+
+    <!-- ---------- PHASE 2 ---------- -->
+    <section class="cs-section" id="phase-2">
+      <span class="phase-tag">PHASE 02</span>
+      <h2>Configurable Rotors &amp; Interactive Plugboard</h2>
+
+      <p>
+        With the mechanics preserved, the next design question was configuration surface —
+        how much of the machine's internal state can a user actually control? The original
+        Enigma gave operators a daily key sheet listing rotor selection, rotor order, initial
+        positions, and plugboard pairings. HyperEnigma exposes all four dimensions through an
+        interactive UI.
+      </p>
+
+      <h3>Five rotors, choose three</h3>
+
+      <p>
+        Instead of hard-coding three rotors, HyperEnigma implements <strong>five distinct
+        rotors (I–V)</strong>, each with its own pseudo-random wiring permutation. The user
+        chooses any three of the five, and the choice matters — the wirings are different, so
+        swapping rotor III for rotor IV completely changes the cipher output for the same
+        plaintext.
+      </p>
+
+      <p>
+        The three chosen rotors can also be <strong>reordered</strong>. Physical order matters
+        cryptographically: rotors I-II-III is a different machine from rotors III-I-II, because
+        the signal traverses them in a different sequence on the forward path and the reverse
+        on the backward path. The UI exposes this as a reorderable list, so the user can drag
+        rotors into any arrangement without needing to understand the underlying permutation
+        math.
+      </p>
+
+      <h3>Initial positions with wiring-based labels</h3>
+
+      <p>
+        Each rotor can be set to any of the 44 starting positions via a slider. The detail that
+        makes this interesting is what the slider displays. Rather than showing the alphabet
+        position (0–43 or A–Z plus digits), the slider shows the <strong>character that rotor's
+        own wiring produces at that position</strong>. Rotor I at position 0 might display the
+        letter M; Rotor II at position 0 might display G. This is a small touch, but it makes
+        the configuration screen feel authentic to the original machine — where each rotor's
+        physical ring displayed its own wiring labels rather than a generic alphabet.
+      </p>
+
+      <h3>Drag-and-drop plugboard</h3>
+
+      <p>
+        The plugboard is the most visually distinctive feature of the app and the one that
+        involved the most custom UI work. Traditional implementations of Enigma simulators
+        often use text entry to configure plug pairs ("type AB, CD, EF"). HyperEnigma lets
+        the user drag from one character's plug hole to another, with a visible connection
+        line drawn between them the moment the drag completes.
+      </p>
+
+      <p>
+        The rendering uses a custom <code>CustomPainter</code> — a Flutter primitive for
+        drawing arbitrary graphics into a canvas — to display the connection lines dynamically
+        over the plugboard layout. Connections can be removed by dragging from one endpoint to
+        the other, and the plugboard state updates the machine's internal swap table
+        immediately. The signal path through the plugboard is unchanged from the original
+        machine; only the way it's configured is modern.
+      </p>
+    </section>
+
+    <!-- ---------- PHASE 3 ---------- -->
+    <section class="cs-section" id="phase-3">
+      <span class="phase-tag">PHASE 03</span>
+      <h2>Real-Time Encryption &amp; Modular Architecture</h2>
+
+      <p>
+        Two further design decisions shaped the final app — one about interaction, one about
+        code structure. Both reflect lessons learned from the project's own history.
+      </p>
+
+      <h3>Encryption as you type</h3>
+
+      <p>
+        Rather than requiring the user to type a message and press an "Encrypt" button, the
+        app encrypts text in <strong>real time as it is typed</strong>. Each character triggers
+        the full signal path, produces an output character, and then advances the rotors one
+        step — mirroring the tactile immediacy of the physical machine, where every keypress
+        both encrypted a letter and mechanically advanced the rotor positions. The rotor
+        position badges on screen update in the same frame, so the user can watch the rotors
+        step as they type.
+      </p>
+
+      <p>
+        This design choice affects how the app feels, but it also surfaces a subtle
+        cryptographic property: because the rotor stepping is stateful, typing the same
+        character twice in a row produces different ciphertext each time. The first
+        <code>E</code> encrypts to one symbol and steps the rotors; the second <code>E</code>
+        encrypts from the new rotor positions and produces an entirely different output. This
+        is exactly the behaviour that made Enigma resistant to simple frequency analysis — and
+        showing it happen live is one of the most instructive aspects of the app for anyone
+        learning how rotor-based ciphers work.
+      </p>
+
+      <h3>From monolith to modules</h3>
+
+      <p>
+        The project began as a single 400-line file. Every feature added afterward made the
+        file harder to read, harder to test, and harder to extend — the classic trajectory of
+        a project that grows without structure. Halfway through, a deliberate refactor split
+        the codebase into clean single-responsibility modules:
+      </p>
+
+      <div class="code-block">
+        <div class="code-head">
+          <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="code-lang">project structure</span>
+          <button class="copy-btn" data-copy type="button">COPY</button>
+        </div>
+        <pre><code>lib/
+├── main.dart                    <span class="cmt"># App entry point</span>
+├── home_page.dart               <span class="cmt"># Main UI + encryption pipeline</span>
+├── constants.dart               <span class="cmt"># Alphabet + display helpers</span>
+├── rotor_setup_page.dart        <span class="cmt"># Rotor configuration screen</span>
+├── widgets/
+│   └── plugboard_painter.dart   <span class="cmt"># Custom plugboard renderer</span>
+└── enigma/
+    ├── rotor.dart               <span class="cmt"># Rotor class (forward/backward/step)</span>
+    ├── reflector.dart           <span class="cmt"># Reflector class</span>
+    ├── enigma_machine.dart      <span class="cmt"># Ties plugboard + rotors + reflector</span>
+    └── rotors.dart              <span class="cmt"># Rotor wirings and reflector mapping</span></code></pre>
+      </div>
+
+      <p>
+        The split that mattered most was separating <code>enigma/</code> — the pure
+        cryptographic logic — from <code>home_page.dart</code> and <code>widgets/</code>, the
+        UI layer. Once that boundary was clean, the rotor reordering feature that had seemed
+        difficult became almost trivial to implement: the cryptographic model didn't need to
+        know anything about how the UI was laid out, and the UI didn't need to know anything
+        about how the cipher worked. Each side communicated through a small, well-defined
+        interface.
+      </p>
+
+      <h3>Two problems that taught the most</h3>
+
+      <p>
+        Two specific implementation challenges are worth documenting because each one
+        illustrates a broader principle about building cryptography in software.
+      </p>
+
+      <p>
+        The first was <strong>preserving rotor reciprocity</strong>. A rotor's wiring is a
+        permutation — a one-to-one mapping from each character to another. The forward path
+        uses this mapping directly; the backward path (after the reflector) requires the
+        <em>inverse</em> permutation — for any output character, what input character produced
+        it? Computing the inverse naively would mean searching the wiring array every time the
+        signal passed backward through a rotor. The fix was to precompute the inverse once
+        when each rotor is constructed and cache it, so every backward pass becomes a fast
+        array lookup rather than a linear search. That single optimization turned the runtime
+        from "acceptable" to "instant."
+      </p>
+
+      <p>
+        The second was <strong>rotor position math</strong>, which broke the cipher in ways
+        that were initially invisible. A rotor's position has to be applied as an offset to
+        the wiring index during encryption, then removed again from the output — otherwise
+        the same plaintext character always maps to the same ciphertext character regardless
+        of rotor position, which defeats the entire purpose of a rotor-based cipher. The
+        correct formula is:
+      </p>
+
+      <div class="code-block">
+        <div class="code-head">
+          <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="code-lang">dart</span>
+          <button class="copy-btn" data-copy type="button">COPY</button>
+        </div>
+        <pre><code><span class="cmt">// Forward pass through a rotor at the current position</span>
+shifted = (input + position) % 44;
+output  = wiring[shifted];
+result  = (output - position) % 44;</code></pre>
+      </div>
+
+      <p>
+        The backward pass uses the same structure with the inverse wiring. Getting a single
+        sign wrong in this formula — using <code>-position</code> where <code>+position</code>
+        belongs, or forgetting the modulo normalization — produces a cipher that still runs,
+        still produces output, and still <em>looks</em> correct on a single test. Only when you
+        try to encrypt-then-decrypt the same message do you discover the cipher is broken. The
+        fix, once diagnosed, was to add reciprocity testing to the development workflow:
+        encrypt a known plaintext, reset the machine to its starting state, decrypt the
+        ciphertext, and verify the output matches the original. That test caught every
+        subsequent math error before it made it into a build.
+      </p>
+    </section>
+
+    <!-- ---------- OUTCOMES ---------- -->
+    <section class="cs-section" id="outcomes">
+      <span class="phase-tag">OUTCOMES</span>
+      <h2>Results &amp; Verification</h2>
+
+      <p>
+        Two figures document the finished application. The first is the main screen in active
+        use — plaintext in, ciphertext out, rotors stepped, plugboard connections drawn. The
+        second is the configuration screen, showing the depth of the cryptographic model
+        underneath the interface.
+      </p>
+
+      <!-- ---------- SCREENSHOT 1 ---------- -->
+      <figure class="cs-figure">
+        <div class="fig-bar">
+          <span class="dot" aria-hidden="true"></span>
+          <span>hyperenigma_main_encryption.png</span>
+        </div>
+        <img src="../assets/img/hyperenigma_main_encryption.png"
+             alt="HyperEnigma main screen showing plaintext input alongside its encrypted output, three rotor windows displaying stepped positions, and the plugboard with visible connection lines drawn between paired characters"
+             loading="lazy"
+             onerror="this.closest('figure').classList.add('img-missing')">
+        <div class="img-placeholder" aria-hidden="true">
+          [ TELEMETRY_CAPTURE_PENDING ]<br>
+          assets/img/hyperenigma_main_encryption.png
+        </div>
+        <figcaption>
+          <b>Figure 1.1</b> — HyperEnigma main screen during active encryption. The three rotor
+          windows display their current positions, the input field holds the plaintext, and the
+          output field shows the resulting ciphertext. The plugboard renders visible connection
+          lines between paired characters — including paired punctuation and digit slots that
+          would be impossible on the original 26-letter machine. Rotor position badges show
+          letters that differ from their starting values, confirming the rotors have stepped
+          during the current session.
+        </figcaption>
+      </figure>
+
+      <!-- ---------- SCREENSHOT 2 ---------- -->
+      <figure class="cs-figure">
+        <div class="fig-bar">
+          <span class="dot" aria-hidden="true"></span>
+          <span>hyperenigma_rotor_setup.png</span>
+        </div>
+        <img src="../assets/img/hyperenigma_rotor_setup.png"
+             alt="HyperEnigma rotor setup screen showing the five selectable rotor chips I through V, the three currently chosen rotors in a reorderable list, and position sliders for each selected rotor"
+             loading="lazy"
+             onerror="this.closest('figure').classList.add('img-missing')">
+        <div class="img-placeholder" aria-hidden="true">
+          [ TELEMETRY_CAPTURE_PENDING ]<br>
+          assets/img/hyperenigma_rotor_setup.png
+        </div>
+        <figcaption>
+          <b>Figure 1.2</b> — Rotor configuration screen. All five rotors are presented as
+          selectable chips (I through V), with the three currently active rotors arranged as a
+          reorderable list. Each rotor's starting position is controlled by a slider, and each
+          slider label displays the character that rotor's own wiring produces at that
+          position — not the generic alphabet index. Every dimension of the machine's
+          cryptographic state is exposed as a UI control.
+        </figcaption>
+      </figure>
+
+      <h3>Quantified results</h3>
+
+      <ul>
+        <li>
+          <strong>Cross-platform deployment.</strong> A fully working Flutter application
+          compiled for both Windows desktop and Android mobile from a single Dart codebase.
+          The same cryptographic engine, the same UI, the same behaviour on both platforms.
+        </li>
+        <li>
+          <strong>Expanded alphabet with measured impact.</strong> A 44-character alphabet
+          yielding a rotor cycle length of <strong>85,184 keypresses</strong> — nearly five
+          times the original machine's 17,576-keypress cycle, with no loss of mechanical
+          fidelity.
+        </li>
+        <li>
+          <strong>Full configuration surface.</strong> Five selectable rotors, reorderable
+          arrangement, adjustable starting positions, and a drag-and-drop plugboard — every
+          operator-facing control that the original machine had, plus the ability to save and
+          restore configurations.
+        </li>
+        <li>
+          <strong>Reciprocity verified end-to-end.</strong> Encrypt-then-decrypt testing
+          confirms the same machine settings that encrypt a message will also decrypt it back
+          to the original plaintext — the property that made the original Enigma practical to
+          operate in the field, and the property that caught every cryptographic math error
+          during development.
+        </li>
+        <li>
+          <strong>Modular, testable codebase.</strong> A clean separation between the
+          cryptographic engine (<code>enigma/</code>) and the UI layer
+          (<code>home_page.dart</code>, <code>widgets/</code>) that made every subsequent
+          feature — rotor reordering, wiring-based slider labels, the custom plugboard painter
+          — easier to build than the features that came before them.
+        </li>
+      </ul>
+
+      <div class="callout remediation">
+        <div class="callout-label">✓ CRYPTO_ENGINE_VALIDATED</div>
+        <p>
+          <strong>Mechanical fidelity preserved, alphabet expanded, cross-platform delivery
+          confirmed.</strong> HyperEnigma demonstrates that a historical cipher can be
+          re-implemented in software without losing the properties that made it interesting —
+          and that expanding its alphabet produces a measurable improvement in cycle length
+          while keeping the same three-part mechanical architecture. The app is simultaneously
+          an educational tool for understanding rotor-based cryptography and a working,
+          deployable demonstration of modular Flutter architecture.
+        </p>
+      </div>
+    </section>
+
+    <!-- ---------- REFLECTION ---------- -->
+    <section class="cs-section" id="reflection">
+      <span class="phase-tag">REFLECTION</span>
+      <h2>What the Project Taught</h2>
+
+      <p>
+        Four lessons from this engagement are worth recording explicitly, because each one
+        applies beyond this project:
+      </p>
+
+      <ul>
+        <li>
+          <strong>Modular architecture pays off in proportion to future work.</strong> The
+          project began as one 400-line file. Splitting it into logical modules took a few
+          hours but made every subsequent feature faster to add and easier to verify. The
+          refactor wasn't a nice-to-have; it was the enabling step for everything that came
+          after.
+        </li>
+        <li>
+          <strong>Small details matter disproportionately in cryptography.</strong> A single
+          sign error in the rotor position math silently produced a broken cipher — one that
+          ran without errors, produced plausible-looking output, and only revealed its
+          brokenness when tested for reciprocity. The lesson is that in cryptographic code,
+          "it runs" is not the same as "it works."
+        </li>
+        <li>
+          <strong>UI and domain logic should be decoupled early.</strong> The rotor reordering
+          feature became straightforward the moment the cryptographic model was cleanly
+          separated from the widgets. Keeping that boundary clean throughout the project's
+          later development was what allowed the plugboard, the sliders, and the rotor badges
+          to be built without touching the cipher code.
+        </li>
+        <li>
+          <strong>Portfolio projects benefit from a "twist."</strong> HyperEnigma is not
+          merely "an Enigma clone" — the expanded alphabet gives it a clear identity, a
+          measurable improvement over the original, and a reason to exist beyond imitation.
+          The 44-character design decision was what turned a technical exercise into a
+          distinctive project.
+        </li>
+      </ul>
+    </section>
+
+    <!-- ---------- PRIVACY ---------- -->
+    <section class="cs-section" id="privacy">
+      <span class="phase-tag">DISCLOSURE</span>
+      <h2>Security &amp; Data Privacy Note</h2>
+
+      <div class="callout note">
+        <div class="callout-label">◆ PROJECT_DISCLOSURE</div>
+        <p>
+          HyperEnigma is an educational project that reimplements a historical cipher machine.
+          The rotor wirings used are pseudo-random permutations chosen for the project — they
+          do not mirror the original German military rotor wirings, which are well-documented
+          historical records. The app is <strong>not</strong> suitable for protecting real-world
+          data: the expanded alphabet raises the rotor cycle length meaningfully, but the
+          underlying cryptanalysis that broke the original Enigma would adapt to the larger
+          alphabet with modest additional effort. Any production use case should use modern
+          cryptographic primitives — AES-GCM, ChaCha20-Poly1305, or libsodium's authenticated
+          encryption primitives. The project's value is pedagogical and architectural, not
+          security-functional.
+        </p>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<!-- ============================================================
+     FOOTER
+     ============================================================ -->
+<footer class="footer">
+  <div class="wrap wrap-wide footer-inner">
+    <div>
+      <p>&copy; 2026 Mohammed Oudai Helaleh. All rights cryptographically reserved.</p>
+      <p class="meta">Informatics &amp; Communications Engineering Architecture Deployment</p>
+    </div>
+  </div>
+</footer>
+
+<script src="../case-study.js" defer></script>
+</body>
+</html>

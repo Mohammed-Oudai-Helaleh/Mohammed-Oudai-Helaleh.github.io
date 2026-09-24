@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nmap Enterprise Host Profiling | Mohammed Oudai Helaleh</title>
+<meta name="description" content="Multi-phased tactical network reconnaissance with Nmap — stealth SYN footprinting, OpenSSH service fingerprinting, OS kernel identification and automated NSE vulnerability assessment.">
+
+<link rel="stylesheet" href="../case-study.css">
+</head>
+
+<body class="theme-offense">
+
+<div class="bg-grid"></div>
+<div class="progress" id="progress"></div>
+
+<!-- ============================================================
+     NAV
+     ============================================================ -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="../index.html" class="brand">MOHAMMED <span>OUDAI</span></a>
+    <a href="../index.html#projects" class="back-link">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M19 12H5M12 19l-7-7 7-7"/>
+      </svg>
+      <span>BACK_TO_VAULT</span>
+    </a>
+  </div>
+</nav>
+
+<!-- ============================================================
+     HERO
+     ============================================================ -->
+<header class="cs-hero">
+  <div class="wrap">
+
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <a href="../index.html">PORTFOLIO</a>
+      <span class="sep">/</span>
+      <a href="../index.html#projects">VAULT</a>
+      <span class="sep">/</span>
+      <a href="../index.html#projects">OFFENSIVE_FORENSICS</a>
+    </nav>
+
+    <div class="pill-row">
+      <span class="pill"><span class="dot"></span>ACTIVE_RECONNAISSANCE</span>
+      <span class="pill neutral">CASE_STUDY</span>
+      <span class="pill neutral">READ_TIME 7 MIN</span>
+    </div>
+
+    <h1>Enterprise Host Profiling, Network Reconnaissance &amp; Vulnerability Assessment</h1>
+
+    <p class="standfirst">
+      A multi-phased tactical footprinting engagement using <strong>Nmap</strong> against a hardened
+      Ubuntu Server endpoint — stealth SYN discovery across all 65,535 ports,
+      <strong>OpenSSH service fingerprinting</strong>, OS kernel identification, and an automated
+      NSE vulnerability sweep that returned a clean bill of health.
+    </p>
+
+    <dl class="meta-grid">
+      <div class="meta-cell">
+        <dt>Environment</dt>
+        <dd>Kali Linux 2026.x → Ubuntu Server 24.04 LTS</dd>
+      </div>
+      <div class="meta-cell">
+        <dt>Network Loop</dt>
+        <dd>192.168.40.0/24 — isolated VMware vLAN</dd>
+      </div>
+      <div class="meta-cell">
+        <dt>Toolchain</dt>
+        <dd>Nmap + Nmap Scripting Engine (NSE)</dd>
+      </div>
+      <div class="meta-cell">
+        <dt>Scan Classes</dt>
+        <dd>-sS · -sV · -O · --script vuln</dd>
+      </div>
+    </dl>
+
+  </div>
+</header>
+
+<!-- ============================================================
+     BODY
+     ============================================================ -->
+<main class="cs-body">
+  <div class="wrap">
+
+    <!-- ---------- OBJECTIVE ---------- -->
+    <section class="cs-section">
+      <p>
+        Before any offensive or defensive security assessment, an analyst must map the target's
+        exposed attack surface. Running aggressive connections triggers security alerts — so precise
+        network mapping is a discipline of <strong>patience and stealth</strong>, not brute force.
+        This engagement demonstrates stealth port scanning, application-layer version fingerprinting,
+        operating system kernel identification, and automated vulnerability detection via the
+        Nmap Scripting Engine.
+      </p>
+
+      <div class="callout note">
+        <div class="callout-label">◆ SCOPE_CONSTRAINT</div>
+        <p>
+          Every scan in this engagement is <strong>non-destructive</strong>. SYN half-open probes
+          never complete the TCP three-way handshake, and the NSE vulnerability sweep uses
+          detection-only scripts that do not attempt exploitation or state modification on the target.
+        </p>
+      </div>
+    </section>
+
+    <!-- ---------- PHASE 1 ---------- -->
+    <section class="cs-section" id="phase-1">
+      <span class="phase-tag">PHASE 01</span>
+      <h2>Stealth Footprinting &amp; Perimeter Auditing</h2>
+
+      <p>
+        The first pass mapped every possible door on the target without announcing itself. A high-velocity
+        <strong>TCP SYN half-open scan</strong> covered all 65,535 network ports, using a raised minimum
+        packet rate to keep the sweep under a reasonable time budget while still sending nothing that
+        would complete a full connection:
+      </p>
+
+      <div class="code-block">
+        <div class="code-head">
+          <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="code-lang">bash</span>
+          <button class="copy-btn" data-copy type="button">COPY</button>
+        </div>
+        <pre><code>sudo nmap -sS -p- --min-rate 5000 192.168.40.131</code></pre>
+      </div>
+
+      <p>
+        The port scan successfully intercepted the target's active defense measures.
+        <strong>65,532 of 65,535 ports returned a filtered (no-response) state</strong> — definitive,
+        mathematical proof that the host-based stateful firewall (UFW) is actively discarding
+        unauthorized probes rather than merely closing them. A closed port sends an RST; a filtered
+        port sends nothing at all, and that silence is the signature of an enforced drop policy.
+      </p>
+    </section>
+
+    <!-- ---------- PHASE 2 ---------- -->
+    <section class="cs-section" id="phase-2">
+      <span class="phase-tag">PHASE 02</span>
+      <h2>Service Interrogation &amp; OS Fingerprinting</h2>
+
+      <p>
+        With the active communication vector isolated to a single port, deep interrogation protocols
+        were launched to capture the exact software profile running inside the server memory:
+      </p>
+
+      <div class="code-block">
+        <div class="code-head">
+          <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="code-lang">bash</span>
+          <button class="copy-btn" data-copy type="button">COPY</button>
+        </div>
+        <pre><code>sudo nmap -sV -O 192.168.40.131</code></pre>
+      </div>
+
+      <ul>
+        <li>
+          <strong>Application auditing.</strong> The scan bypassed transport barriers and forced the
+          target port to expose its exact software stack identity:
+          <code>22/tcp open ssh OpenSSH 10.2p1 Ubuntu 2ubuntu3.6</code>. The full Ubuntu package
+          revision string matters — it tells an analyst exactly which patch level is deployed, not
+          merely which upstream release.
+        </li>
+        <li>
+          <strong>OS fingerprinting.</strong> By analysing raw TCP window sizing constraints and
+          packet response timings, the scanning engine deduced the underlying environment layout:
+          <code>OS: Linux; CPE: cpe:/o:linux:linux_kernel</code>.
+        </li>
+      </ul>
+    </section>
+
+    <!-- ---------- PHASE 3 ---------- -->
+    <section class="cs-section" id="phase-3">
+      <span class="phase-tag">PHASE 03</span>
+      <h2>Automated NSE Vulnerability Assessment</h2>
+
+      <p>
+        To evaluate whether the exposed service was vulnerable to any active unpatched exploits, the
+        Nmap Scripting Engine was deployed. A comprehensive sweep across the entire
+        <code>vuln</code> script category ran the full Lua-based detection suite against the target:
+      </p>
+
+      <div class="code-block">
+        <div class="code-head">
+          <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="code-lang">bash</span>
+          <button class="copy-btn" data-copy type="button">COPY</button>
+        </div>
+        <pre><code>sudo nmap --script vuln 192.168.40.131</code></pre>
+      </div>
+
+      <p>
+        The engine cross-referenced the open service port against global CVE databases and vendor
+        advisories. Every detection script completed without raising a positive match.
+      </p>
+
+      <div class="callout remediation">
+        <div class="callout-label">✓ VALIDATION_PASSED</div>
+        <p>
+          The vulnerability sweep returned a <strong>clean bill of health</strong>. The target's
+          public-facing interface is hardened, patched, and free of known architectural deployment
+          hazards across the entire NSE <code>vuln</code> category. This is a positive finding — the
+          absence of a result is itself the evidence.
+        </p>
+      </div>
+    </section>
+
+    <!-- ---------- OUTCOMES ---------- -->
+    <section class="cs-section" id="outcomes">
+      <span class="phase-tag">OUTCOMES</span>
+      <h2>Forensic Performance Metrics</h2>
+
+      <p>
+        Two measurable results define the outcome of this engagement:
+      </p>
+
+      <ul>
+        <li>
+          <strong>Reconnaissance accuracy — 100% target visibility.</strong> The toolchain identified
+          the exact OpenSSH service version and kernel signature, with no ambiguity in the fingerprint
+          output. Every open port, service, and OS-level attribute matched known-good signatures.
+        </li>
+        <li>
+          <strong>Security validation — host firewall efficacy confirmed.</strong> Precise data loops
+          showed that unauthorized ports (<code>80/tcp</code> and <code>443/tcp</code>) are closed,
+          and unassigned channels are locked behind drop filters. The perimeter behaves exactly as a
+          hardened UFW deployment should.
+        </li>
+      </ul>
+
+      <!-- ---------- SCREENSHOT 1 ---------- -->
+      <figure class="cs-figure">
+        <div class="fig-bar">
+          <span class="dot" aria-hidden="true"></span>
+          <span>nmap_service_fingerprint.png</span>
+        </div>
+        <img src="../assets/img/nmap_service_fingerprint.png"
+             alt="Kali Linux terminal log highlighting successful OpenSSH version tracking and OS kernel fingerprint discovery"
+             loading="lazy"
+             onerror="this.closest('figure').classList.add('img-missing')">
+        <div class="img-placeholder" aria-hidden="true">
+          [ TELEMETRY_CAPTURE_PENDING ]<br>
+          assets/img/nmap_service_fingerprint.png
+        </div>
+        <figcaption>
+          <b>Figure 9.1</b> — Kali Linux terminal log highlighting successful OpenSSH version tracking
+          and OS kernel fingerprint discovery.
+        </figcaption>
+      </figure>
+
+      <!-- ---------- SCREENSHOT 2 ---------- -->
+      <figure class="cs-figure">
+        <div class="fig-bar">
+          <span class="dot" aria-hidden="true"></span>
+          <span>nmap_nse_vuln_report.png</span>
+        </div>
+        <img src="../assets/img/nmap_nse_vuln_report.png"
+             alt="Automated NSE vulnerability report running a comprehensive security check against active service interfaces"
+             loading="lazy"
+             onerror="this.closest('figure').classList.add('img-missing')">
+        <div class="img-placeholder" aria-hidden="true">
+          [ TELEMETRY_CAPTURE_PENDING ]<br>
+          assets/img/nmap_nse_vuln_report.png
+        </div>
+        <figcaption>
+          <b>Figure 9.2</b> — Automated NSE vulnerability report running a comprehensive security check
+          against active service interfaces.
+        </figcaption>
+      </figure>
+    </section>
+
+    <!-- ---------- PRIVACY ---------- -->
+    <section class="cs-section" id="privacy">
+      <span class="phase-tag">DISCLOSURE</span>
+      <h2>Security &amp; Data Privacy Note</h2>
+
+      <div class="callout note">
+        <div class="callout-label">◆ DATA_MASKING_PROTOCOL</div>
+        <p>
+          Hardware MAC layer strings, session process identifiers, and localized administrative user
+          tags have been purposefully filtered within the telemetry presentation logs to maintain
+          strict network anonymity.
+        </p>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<!-- ============================================================
+     FOOTER
+     ============================================================ -->
+<footer class="footer">
+  <div class="wrap wrap-wide footer-inner">
+    <div>
+      <p>&copy; 2026 Mohammed Oudai Helaleh. All rights cryptographically reserved.</p>
+      <p class="meta">Informatics &amp; Communications Engineering Architecture Deployment</p>
+    </div>
+  </div>
+</footer>
+
+<script src="../case-study.js" defer></script>
+</body>
+</html>

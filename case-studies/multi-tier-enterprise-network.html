@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Multi-Tier Enterprise Network &amp; Segmented Services | Mohammed Oudai Helaleh</title>
+<meta name="description" content="Two-site enterprise infrastructure in Packet Tracer — Server DMZ and Employee LAN segmentation, cross-subnet DHCP relay, centralized service farm, and IoT telemetry fabric.">
+
+<link rel="stylesheet" href="../case-study.css">
+</head>
+
+<body class="theme-network">
+
+<div class="bg-grid"></div>
+<div class="progress" id="progress"></div>
+
+<!-- ============================================================
+     NAV
+     ============================================================ -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="../index.html" class="brand">MOHAMMED <span>OUDAI</span></a>
+    <a href="../index.html#projects" class="back-link">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M19 12H5M12 19l-7-7 7-7"/>
+      </svg>
+      <span>BACK_TO_VAULT</span>
+    </a>
+  </div>
+</nav>
+
+<!-- ============================================================
+     HERO
+     ============================================================ -->
+<header class="cs-hero">
+  <div class="wrap">
+
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <a href="../index.html">PORTFOLIO</a>
+      <span class="sep">/</span>
+      <a href="../index.html#projects">VAULT</a>
+      <span class="sep">/</span>
+      <a href="../index.html#projects">NETWORK_ENGINEERING</a>
+    </nav>
+
+    <div class="pill-row">
+      <span class="pill"><span class="dot"></span>ENTERPRISE_ARCHITECTURE</span>
+      <span class="pill neutral">CASE_STUDY</span>
+      <span class="pill neutral">READ_TIME 8 MIN</span>
+    </div>
+
+    <h1>Multi-Tier Enterprise Infrastructure &amp; Segmented Network Services</h1>
+
+    <p class="standfirst">
+      A production-grade enterprise architecture spanning two physical locations and two
+      isolated logical subnets — <strong>Server DMZ</strong> and <strong>Employee Client LAN</strong>
+      separated at Layer 3, connected by a <strong>cross-subnet DHCP relay</strong>, and
+      delivered through a centralized service farm supporting <strong>DNS, HTTP/IoT and
+      FTP/Email</strong> traffic alongside a working wireless IoT telemetry fabric.
+    </p>
+
+    <div class="cs-actions">
+      <a class="cs-repo-link"
+         href="https://github.com/Mohammed-Oudai-Helaleh/Multi-Tier-Enterprise-Infrastructure-Segmented-Network-Services-Lab"
+         target="_blank" rel="noopener noreferrer"
+         aria-label="View the Packet Tracer topology, setup guides, and configuration scripts on GitHub">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M12 .5C5.73.5.5 5.73.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.56v-2c-3.2.7-3.88-1.54-3.88-1.54-.53-1.34-1.29-1.7-1.29-1.7-1.05-.72.08-.71.08-.71 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.23-1.28-5.23-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.04 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.79 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.58.23 2.75.11 3.04.74.81 1.19 1.84 1.19 3.1 0 4.42-2.69 5.39-5.25 5.68.41.35.78 1.05.78 2.12v3.14c0 .31.21.68.8.56A11.5 11.5 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5z"/>
+        </svg>
+        <span>VIEW_REPOSITORY</span>
+        <span class="arrow" aria-hidden="true">→</span>
+      </a>
+    </div>
+
+    <dl class="meta-grid">
+      <div class="meta-cell">
+        <dt>Environment</dt>
+        <dd>Cisco Packet Tracer — two-site logical topology</dd>
+      </div>
+      <div class="meta-cell">
+        <dt>Subnets</dt>
+        <dd>Server DMZ 192.168.10.0/24 · Client LAN 192.168.20.0/24</dd>
+      </div>
+      <div class="meta-cell">
+        <dt>Services</dt>
+        <dd>DHCP · DNS · HTTP/IoT · FTP/Email</dd>
+      </div>
+      <div class="meta-cell">
+        <dt>Physical Layout</dt>
+        <dd>Main Wiring Closet (servers) · Employee Break Room (clients)</dd>
+      </div>
+    </dl>
+
+  </div>
+</header>
+
+<!-- ============================================================
+     BODY
+     ============================================================ -->
+<main class="cs-body">
+  <div class="wrap">
+
+    <!-- ---------- OBJECTIVE ---------- -->
+    <section class="cs-section">
+      <p>
+        Real enterprise networks are not a single subnet with a few clients on it. They are
+        structured tiers — a protected service layer behind a firewall boundary, a user layer
+        that consumes those services, and a routing gateway that governs the flow of traffic
+        between them. The separation exists for a reason: a compromised employee workstation
+        should not be able to reach the DNS server directly, and an exploited public-facing
+        service should not be able to pivot into user data.
+      </p>
+
+      <p>
+        This engagement designs and simulates that multi-tier architecture from scratch in Cisco
+        Packet Tracer. The topology spans two physical locations and two isolated logical subnets,
+        provisioned with a full service farm — DHCP, DNS, HTTP/IoT, FTP/Email — plus a wireless
+        IoT fabric serving break-room devices across the subnet boundary. The goal is a
+        production-grade layout that demonstrates how routing, DHCP relay, and centralized
+        services cooperate to deliver usable infrastructure without collapsing the security
+        boundary between tiers.
+      </p>
+
+      <div class="callout note">
+        <div class="callout-label">◆ SCOPE_CONSTRAINT</div>
+        <p>
+          All work was performed in Cisco Packet Tracer. The architecture follows patterns that
+          transfer directly to physical enterprise deployments — tier separation, IP
+          Helper-Address relay, and centralized service hosting — but no physical hardware was
+          provisioned. The sandbox <code>.pkt</code> file, setup guides, and configuration
+          scripts are published in the linked repository.
+        </p>
+      </div>
+    </section>
+
+    <!-- ---------- PHASE 1 ---------- -->
+    <section class="cs-section" id="phase-1">
+      <span class="phase-tag">PHASE 01</span>
+      <h2>Layer-3 Subnet Architecture &amp; Routing Gateway</h2>
+
+      <p>
+        The design begins by splitting the infrastructure into two logical tiers, each on its own
+        subnet. This is the foundational decision that everything else follows from — the subnets
+        are the security boundary, and the router that connects them is the policy enforcement
+        point.
+      </p>
+
+      <ul>
+        <li>
+          <strong>Server DMZ — 192.168.10.0/24.</strong> The service tier. Hosts the DHCP, DNS,
+          HTTP/IoT and FTP/Email servers. Isolated from user clients at Layer 3, so an
+          exploited workstation cannot reach the servers directly — traffic must traverse the
+          router, where policy can be applied.
+        </li>
+        <li>
+          <strong>Employee Client LAN — 192.168.20.0/24.</strong> The user tier. Hosts wired
+          workstations plus the Access Point that serves laptops, smartphones, and IoT devices
+          (fan, air conditioner, appliance) across the wireless fabric.
+        </li>
+        <li>
+          <strong>Cisco 1941 routing gateway.</strong> Sits at the head of both subnets, with
+          <code>192.168.10.1</code> on the DMZ interface and <code>192.168.20.1</code> on the
+          client interface. Every packet crossing between the tiers passes through this device —
+          the natural location for future ACL enforcement, IDS inspection, and traffic
+          accounting.
+        </li>
+      </ul>
+
+      <p>
+        Both subnet interfaces were provisioned with their correct masks and brought into active
+        state. The router now has a complete Layer-3 picture: two directly-connected networks,
+        two gateway addresses, and full routing knowledge of how to move traffic between them.
+        Every downstream service and client configuration in this engagement depends on this
+        foundation being correct.
+      </p>
+
+      <!-- ---------- SCREENSHOT 1 ---------- -->
+      <figure class="cs-figure">
+        <div class="fig-bar">
+          <span class="dot" aria-hidden="true"></span>
+          <span>enterprise_network_topology.png</span>
+        </div>
+        <img src="../assets/img/enterprise_network_topology.png"
+             alt="Cisco Packet Tracer logical topology diagram showing Router0 with two interfaces (192.168.10.1 and 192.168.20.1) feeding a Server DMZ switch hosting four servers and a Client LAN switch feeding workstations, an Access Point with wireless IoT devices, and a fan"
+             loading="lazy"
+             onerror="this.closest('figure').classList.add('img-missing')">
+        <div class="img-placeholder" aria-hidden="true">
+          [ TELEMETRY_CAPTURE_PENDING ]<br>
+          assets/img/enterprise_network_topology.png
+        </div>
+        <figcaption>
+          <b>Figure 16.1</b> — Complete multi-subnet logical topology. Router0 anchors both
+          tiers with <code>192.168.10.1</code> on the Server DMZ interface and
+          <code>192.168.20.1</code> on the Client LAN interface. The DMZ hosts four dedicated
+          service nodes (DHCP, DNS, HTTP/IoT, FTP/Email), while the client side feeds wired
+          workstations and a wireless Access Point serving laptops, smartphones, and IoT
+          devices across the break-room fabric.
+        </figcaption>
+      </figure>
+    </section>
+
+    <!-- ---------- PHASE 2 ---------- -->
+    <section class="cs-section" id="phase-2">
+      <span class="phase-tag">PHASE 02</span>
+      <h2>Cross-Subnet DHCP Relay &amp; Core Service Farm</h2>
+
+      <p>
+        With the subnets defined, the next design problem is service delivery. Clients on the
+        Employee LAN need IP addresses, and the authoritative DHCP server lives on the DMZ —
+        separated from them by the router. This is one of the classic problems in enterprise
+        networking, and its standard solution is a mechanism many administrators configure
+        without fully understanding.
+      </p>
+
+      <h3>Why DHCP alone can't cross a subnet boundary</h3>
+
+      <p>
+        DHCP is a <strong>broadcast-based protocol</strong>. When a client first joins a network
+        with no address configured, it sends a <code>DHCPDISCOVER</code> packet to the broadcast
+        address <code>255.255.255.255</code> — a message with no specific destination, hoping
+        some device on the local segment will respond. That works fine when the DHCP server is on
+        the same subnet, because broadcast stays local. But broadcast packets do not cross router
+        boundaries by design — that's precisely what makes them safe on a segmented network. So
+        a client on <code>192.168.20.0/24</code> broadcasting for DHCP cannot reach a server on
+        <code>192.168.10.0/24</code> through the router, because the router (correctly) drops the
+        broadcast at the boundary.
+      </p>
+
+      <h3>The IP Helper-Address solution</h3>
+
+      <p>
+        The standard remediation is a directive on the router's client-facing interface called
+        <strong>IP Helper-Address</strong>. It tells the router: "when you receive a DHCP
+        broadcast on this interface, stop treating it as broadcast — convert it to a unicast
+        packet addressed specifically to this IP, and forward it on." That single directive
+        bridges the two subnets for DHCP traffic only, without opening the door to any other
+        broadcast traffic.
+      </p>
+
+      <div class="code-block">
+        <div class="code-head">
+          <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="code-lang">cisco ios</span>
+          <button class="copy-btn" data-copy type="button">COPY</button>
+        </div>
+        <pre><code><span class="cmt">! Client LAN interface — relay DHCP broadcasts to the DMZ server</span>
+Router&gt;enable
+Router#configure terminal
+
+Router(config)#interface GigabitEthernet0/1
+Router(config-if)#ip helper-address 192.168.10.2
+Router(config-if)#exit</code></pre>
+      </div>
+
+      <p>
+        The address <code>192.168.10.2</code> is the DHCP server on the DMZ subnet. With this
+        directive in place, the router accepts DHCP broadcasts from clients on the LAN side and
+        unicasts them to the DHCP server across the subnet boundary. The server processes the
+        request, sends a response back to the router, and the router delivers the assigned
+        address to the requesting client. From the client's perspective, DHCP works — but it works
+        because the router is performing the relay.
+      </p>
+
+      <h3>The centralized service farm</h3>
+
+      <p>
+        The DMZ hosts four dedicated service nodes, each providing one function to the enterprise:
+      </p>
+
+      <ul>
+        <li>
+          <strong>DHCP Server</strong> — provides dynamic address allocation to clients on the
+          Employee LAN, delivering the client's IP, subnet mask, default gateway, and DNS server
+          address through the relay mechanism described above.
+        </li>
+        <li>
+          <strong>DNS Server</strong> — resolves human-readable names (like
+          <code>www.testhttp.com</code>) to destination IPs. Because clients can only reach
+          the DNS server through the router, DNS queries cross the subnet boundary on every
+          resolution — a natural point of visibility for later monitoring.
+        </li>
+        <li>
+          <strong>HTTP/IoT Server</strong> — hosts the web application that serves the IoT
+          management interface. The smartphone and laptop on the client side access this
+          server's web UI to view telemetry and control the break-room devices.
+        </li>
+        <li>
+          <strong>FTP/Email Server</strong> — provides file transfer and mail services,
+          rounding out the standard enterprise service farm.
+        </li>
+      </ul>
+
+      <p>
+        Centralizing the services in the DMZ rather than distributing them across each subnet is
+        the correct enterprise pattern for three reasons: single source of truth for each service,
+        consistent policy enforcement at the router, and a clean architecture for later
+        scaling — new subnets added to the environment can consume the same services through
+        additional IP Helper-Address directives, without reconfiguring anything on the server
+        side.
+      </p>
+    </section>
+
+    <!-- ---------- PHASE 3 ---------- -->
+    <section class="cs-section" id="phase-3">
+      <span class="phase-tag">PHASE 03</span>
+      <h2>Physical Security Zones &amp; IoT Telemetry Fabric</h2>
+
+      <p>
+        The final design dimension is physical. Enterprise architecture is not just about logical
+        topology — it's about where the equipment physically lives, and what physical security
+        boundary separates high-value infrastructure from end-user spaces. Packet Tracer models
+        this through its Physical Workspace view, which separates devices into distinct geographic
+        zones.
+      </p>
+
+      <p>
+        The topology was laid out across two zones that mirror the real-world physical layout of
+        a corporate office:
+      </p>
+
+      <ul>
+        <li>
+          <strong>Main Wiring Closet.</strong> Houses the Cisco 1941 router, the Server DMZ
+          switch, and all four service servers. This is the secured location — in a physical
+          deployment it would be a locked room with restricted access, environmental controls,
+          and a separate power feed. Devices here are the ones an attacker would most want to
+          reach, and the ones a well-designed physical security policy most tightly protects.
+        </li>
+        <li>
+          <strong>Employee Break Room.</strong> Houses the Access Point, wired workstations,
+          and the wireless devices (laptop, smartphone, IoT fan, IoT air conditioner, IoT
+          appliance). This is the user-populated space — physically accessible to anyone who
+          walks into the office, which is exactly why the network boundary between this zone
+          and the wiring closet matters. Physical access does not imply logical access.
+        </li>
+      </ul>
+
+      <p>
+        Within the break room, the wireless Access Point broadcasts an SSID that serves all
+        three client device types — laptops, smartphones, and IoT endpoints. The IoT devices
+        represent a distinct class of network consumer: they are always-on, often have minimal
+        security capabilities, and generate a low-volume but continuous stream of telemetry
+        data. Segmenting them properly — either on their own VLAN or behind an IoT-aware access
+        policy — is a standard hardening technique for modern enterprise deployments, and this
+        lab lays the groundwork for that segmentation by giving IoT devices their own address
+        assignment path through the same DHCP relay mechanism.
+      </p>
+
+      <p>
+        The IoT management application runs on the HTTP/IoT server in the DMZ. When a user on
+        the client side opens their browser and navigates to the server's web interface, the
+        request crosses the router boundary, the server processes it, and the response returns
+        across the same path — the same route the IoT devices themselves use when reporting
+        telemetry. Every device in the break room reaches its management interface through the
+        same tier-crossing architecture that delivers DHCP, DNS, and every other service.
+      </p>
+
+      <!-- ---------- SCREENSHOT 2 ---------- -->
+      <figure class="cs-figure">
+        <div class="fig-bar">
+          <span class="dot" aria-hidden="true"></span>
+          <span>physical_security_zones.png</span>
+        </div>
+        <img src="../assets/img/physical_security_zones.png"
+             alt="Cisco Packet Tracer Physical Workspace view showing two distinct zones — Employee Break Room and Main Wiring Closet — with the location tree confirming Server DMZ, Client LAN, and all devices assigned to their correct physical zones"
+             loading="lazy"
+             onerror="this.closest('figure').classList.add('img-missing')">
+        <div class="img-placeholder" aria-hidden="true">
+          [ TELEMETRY_CAPTURE_PENDING ]<br>
+          assets/img/physical_security_zones.png
+        </div>
+        <figcaption>
+          <b>Figure 16.2</b> — Physical Workspace layout demonstrating the two-zone isolation
+          model. Servers, the DMZ switch, the router, and the Access Point all live inside the
+          <strong>Main Wiring Closet</strong>, while users, wireless clients, and IoT devices
+          occupy the <strong>Employee Break Room</strong>. The location tree on the right
+          confirms every device's physical placement — establishing that logical segregation is
+          mirrored by physical segregation.
+        </figcaption>
+      </figure>
+    </section>
+
+    <!-- ---------- OUTCOMES ---------- -->
+    <section class="cs-section" id="outcomes">
+      <span class="phase-tag">OUTCOMES</span>
+      <h2>Performance Verification</h2>
+
+      <p>
+        Two live diagnostic passes confirm the architecture behaves as designed — first an
+        endpoint-level audit of DHCP allocation and DNS resolution, then a full IoT telemetry
+        test from the break room's wireless fabric.
+      </p>
+
+      <h3>Cross-subnet DHCP allocation and DNS resolution</h3>
+
+      <p>
+        The first verification pass runs from a client on the Employee LAN. The
+        <code>ipconfig /all</code> output confirms the client received a fully-formed address
+        assignment through the DHCP relay across the subnet boundary — including an address
+        inside the client subnet (<code>192.168.20.9</code>), the correct mask, the gateway on
+        the client-facing router interface (<code>192.168.20.1</code>), and the DMZ-hosted
+        DHCP and DNS server addresses (<code>192.168.10.2</code> and <code>192.168.10.3</code>).
+        The subsequent <code>nslookup</code> resolves the internal hostname
+        <code>www.testhttp.com</code> to <code>192.168.10.4</code> — the HTTP/IoT server on the
+        DMZ — through the DNS server on the opposite subnet:
+      </p>
+
+      <!-- ---------- SCREENSHOT 3 ---------- -->
+      <figure class="cs-figure">
+        <div class="fig-bar">
+          <span class="dot" aria-hidden="true"></span>
+          <span>cross_subnet_dhcp_verification.png</span>
+        </div>
+        <img src="../assets/img/cross_subnet_dhcp_verification.png"
+             alt="Cisco Packet Tracer command prompt showing ipconfig /all output with IPv4 address 192.168.20.9, subnet mask 255.255.255.0, default gateway 192.168.20.1, and DMZ-hosted DHCP and DNS server addresses 192.168.10.2 and 192.168.10.3, followed by a successful nslookup resolving www.testhttp.com to 192.168.10.4"
+             loading="lazy"
+             onerror="this.closest('figure').classList.add('img-missing')">
+        <div class="img-placeholder" aria-hidden="true">
+          [ TELEMETRY_CAPTURE_PENDING ]<br>
+          assets/img/cross_subnet_dhcp_verification.png
+        </div>
+        <figcaption>
+          <b>Figure 16.3</b> — Endpoint-level verification. The <code>ipconfig /all</code> output
+          shows the client received a full DHCP lease across the subnet boundary — address
+          <code>192.168.20.9</code>, gateway <code>192.168.20.1</code>, and DMZ-hosted DHCP and
+          DNS servers at <code>192.168.10.2</code> and <code>192.168.10.3</code>. The subsequent
+          <code>nslookup</code> resolves <code>www.testhttp.com</code> to
+          <code>192.168.10.4</code> (the HTTP/IoT server) with <strong>zero packet loss</strong>.
+        </figcaption>
+      </figure>
+
+      <h3>Wireless IoT telemetry across the subnet boundary</h3>
+
+      <p>
+        The second verification pass runs from the smartphone on the break-room wireless fabric.
+        Its browser connects to the HTTP/IoT server's management interface, and the IoT Monitor
+        dashboard renders three connected devices — an appliance, an air conditioner, and a
+        ceiling fan — all reporting healthy status through the wireless link, the Access Point,
+        the client LAN switch, the router, and finally the DMZ server hosting the management
+        application:
+      </p>
+
+      <!-- ---------- SCREENSHOT 4 ---------- -->
+      <figure class="cs-figure">
+        <div class="fig-bar">
+          <span class="dot" aria-hidden="true"></span>
+          <span>iot_telemetry_dashboard.png</span>
+        </div>
+        <img src="../assets/img/iot_telemetry_dashboard.png"
+             alt="Cisco Packet Tracer IoT Monitor dashboard on a smartphone showing three connected IoT devices — IoT2 appliance, IoT1 air conditioner, and IoT0 ceiling fan — all displayed with green status indicators confirming active telemetry"
+             loading="lazy"
+             onerror="this.closest('figure').classList.add('img-missing')">
+        <div class="img-placeholder" aria-hidden="true">
+          [ TELEMETRY_CAPTURE_PENDING ]<br>
+          assets/img/iot_telemetry_dashboard.png
+        </div>
+        <figcaption>
+          <b>Figure 16.4</b> — IoT telemetry verification. The smartphone on the break-room
+          wireless fabric has connected to the DMZ-hosted HTTP/IoT server and rendered the IoT
+          Monitor dashboard showing three connected devices — an appliance, an air conditioner,
+          and a ceiling fan — all with green status indicators. Every telemetry update crosses
+          the router between the client subnet and the DMZ, confirming the full service path is
+          operational.
+        </figcaption>
+      </figure>
+
+      <ul>
+        <li>
+          <strong>Dynamic IP allocation succeeded across subnet borders.</strong> The client on
+          the Employee LAN received a complete DHCP lease — address, mask, gateway, and DNS
+          server — from a DHCP server located on a different subnet. This confirms the IP
+          Helper-Address relay is functioning correctly and the subnet boundary is not blocking
+          legitimate service delivery.
+        </li>
+        <li>
+          <strong>DNS name resolution mapped local names with 0% packet loss.</strong> The
+          <code>nslookup</code> of <code>www.testhttp.com</code> resolved to
+          <code>192.168.10.4</code> through the DMZ-hosted DNS server. Name resolution crossing
+          the router boundary with zero loss proves the routing path is clean in both
+          directions — queries outbound, responses inbound — which is the foundational
+          requirement for every subsequent application-layer service.
+        </li>
+        <li>
+          <strong>IoT telemetry fabric operational across the tier boundary.</strong> All three
+          break-room IoT devices reported healthy status to the DMZ-hosted management
+          dashboard. Every update traversed the wireless link, the Access Point, the client LAN
+          switch, the router, and the DMZ switch — five distinct hardware hops in each
+          direction — without any device dropping offline.
+        </li>
+        <li>
+          <strong>Physical and logical security boundaries aligned.</strong> The zone layout
+          confirms that high-value infrastructure (servers, router) is physically housed in the
+          wiring closet, while user-facing and IoT devices are in the break room. Logical tier
+          separation is mirrored by physical separation — the pattern that enterprise security
+          frameworks require for defense in depth.
+        </li>
+      </ul>
+
+      <div class="callout remediation">
+        <div class="callout-label">✓ ARCHITECTURE_VALIDATED</div>
+        <p>
+          <strong>Multi-tier enterprise architecture confirmed operational.</strong> Two
+          isolated subnets, a functioning Layer-3 gateway, a cross-subnet DHCP relay, a
+          centralized service farm, and a wireless IoT fabric all cooperate to deliver complete
+          enterprise services with zero packet loss. The architecture is now ready for the
+          natural next steps — VLAN segmentation within each subnet, ACL enforcement at the
+          router, IDS inspection of inter-tier traffic, and expansion to additional physical
+          sites — without requiring any redesign of the foundation.
+        </p>
+      </div>
+    </section>
+
+    <!-- ---------- PRIVACY ---------- -->
+    <section class="cs-section" id="privacy">
+      <span class="phase-tag">DISCLOSURE</span>
+      <h2>Security &amp; Data Privacy Note</h2>
+
+      <div class="callout note">
+        <div class="callout-label">◆ LAB_CONFIGURATION_DISCLOSURE</div>
+        <p>
+          The configuration presented here reflects an isolated lab simulation. Production
+          deployments of this architecture typically layer additional controls on top of the
+          design — per-subnet VLANs to segment the client tier, ACLs at the router restricting
+          which DMZ services are reachable from which client subnets, IoT-aware access policies
+          separating always-on devices from user workstations, DHCP snooping to prevent rogue
+          servers, and administrative access restrictions on router management interfaces.
+          Those controls are documented as recommended next steps but are outside the scope of
+          this lab exercise.
+        </p>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<!-- ============================================================
+     FOOTER
+     ============================================================ -->
+<footer class="footer">
+  <div class="wrap wrap-wide footer-inner">
+    <div>
+      <p>&copy; 2026 Mohammed Oudai Helaleh. All rights cryptographically reserved.</p>
+      <p class="meta">Informatics &amp; Communications Engineering Architecture Deployment</p>
+    </div>
+  </div>
+</footer>
+
+<script src="../case-study.js" defer></script>
+</body>
+</html>

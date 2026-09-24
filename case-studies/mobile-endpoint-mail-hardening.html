@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mobile Endpoint Hardening &amp; Secure Mail Infrastructure | Mohammed Oudai Helaleh</title>
+<meta name="description" content="Manual enterprise mail synchronization across local and mobile endpoints — MFA enforcement, IMAP over SSL/TLS, SMTP over STARTTLS, and full client recovery from a corrupted profile state.">
+
+<link rel="stylesheet" href="../case-study.css">
+</head>
+
+<body class="theme-ops">
+
+<div class="bg-grid"></div>
+<div class="progress" id="progress"></div>
+
+<!-- ============================================================
+     NAV
+     ============================================================ -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="../index.html" class="brand">MOHAMMED <span>OUDAI</span></a>
+    <a href="../index.html#projects" class="back-link">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M19 12H5M12 19l-7-7 7-7"/>
+      </svg>
+      <span>BACK_TO_VAULT</span>
+    </a>
+  </div>
+</nav>
+
+<!-- ============================================================
+     HERO
+     ============================================================ -->
+<header class="cs-hero">
+  <div class="wrap">
+
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <a href="../index.html">PORTFOLIO</a>
+      <span class="sep">/</span>
+      <a href="../index.html#projects">VAULT</a>
+      <span class="sep">/</span>
+      <a href="../index.html#projects">IT_OPERATIONS</a>
+    </nav>
+
+    <div class="pill-row">
+      <span class="pill"><span class="dot"></span>ENDPOINT_SECURITY</span>
+      <span class="pill neutral">CASE_STUDY</span>
+      <span class="pill neutral">READ_TIME 6 MIN</span>
+    </div>
+
+    <h1>Securing Mobile Endpoints &amp; Manual Enterprise Mail Infrastructure Sync</h1>
+
+    <p class="standfirst">
+      A manual server-side configuration blueprint for enterprise mail synchronization across
+      local and mobile endpoints — <strong>MFA/2FA enforcement</strong>, <strong>IMAP over
+      SSL/TLS on 993</strong>, <strong>SMTP over STARTTLS on 587/465</strong>, and a full
+      recovery from a catastrophic client profile crash.
+    </p>
+
+    <dl class="meta-grid">
+      <div class="meta-cell">
+        <dt>Environment</dt>
+        <dd>Corporate mail infrastructure — desktop and mobile endpoints</dd>
+      </div>
+      <div class="meta-cell">
+        <dt>Identity Layer</dt>
+        <dd>Multi-Factor Authentication via mobile authenticator tokens</dd>
+      </div>
+      <div class="meta-cell">
+        <dt>Inbound Mail</dt>
+        <dd>IMAP over SSL/TLS — Port 993</dd>
+      </div>
+      <div class="meta-cell">
+        <dt>Outbound Mail</dt>
+        <dd>SMTP over STARTTLS — Ports 587 / 465</dd>
+      </div>
+    </dl>
+
+  </div>
+</header>
+
+<!-- ============================================================
+     BODY
+     ============================================================ -->
+<main class="cs-body">
+  <div class="wrap">
+
+    <!-- ---------- OBJECTIVE ---------- -->
+    <section class="cs-section">
+      <p>
+        Email is where corporate data lives in motion. Every business process — client
+        correspondence, contract negotiation, credential resets, invoice delivery — passes
+        through a mail server at some point. When that infrastructure is poorly configured, the
+        damage isn't limited to a single compromised account; it's a direct pipeline into the
+        organization's most sensitive communications, accessible to anyone with a passive
+        position on the network.
+      </p>
+
+      <p>
+        This engagement manually provisions secure mail synchronization across local and mobile
+        endpoints without relying on automated client setup wizards. The work spans three
+        distinct security layers — identity verification at the front door, encrypted transport
+        for both inbound and outbound traffic, and defensive recovery when a client fails — and
+        demonstrates the kind of hands-on hardening that BYOD policy depends on in practice.
+      </p>
+
+      <div class="callout note">
+        <div class="callout-label">◆ SCOPE_CONSTRAINT</div>
+        <p>
+          Configuration was performed on live corporate mail infrastructure under standard
+          administrative procedures. Production credentials, server identifiers, and account
+          details are not disclosed. The methodology presented here reflects the hardening
+          decisions and troubleshooting process; the specific deployment environment remains
+          anonymous.
+        </p>
+      </div>
+    </section>
+
+    <!-- ---------- PHASE 1 ---------- -->
+    <section class="cs-section" id="phase-1">
+      <span class="phase-tag">PHASE 01</span>
+      <h2>Endpoint Identity Protection — MFA Enforcement</h2>
+
+      <p>
+        The first layer of defence is verifying that the person authenticating is actually the
+        account owner. Passwords alone stopped being sufficient years ago — credential reuse,
+        phishing, and breach databases make any static secret effectively public knowledge
+        within a few years of the account being created. <strong>Multi-Factor
+        Authentication</strong> closes that gap by requiring something the attacker doesn't
+        have in addition to something they might.
+      </p>
+
+      <p>
+        MFA was implemented via dedicated mobile authenticator application tokens, configured
+        for both the local desktop endpoint and the mobile endpoint. The design choices that
+        matter here are less about the specific authenticator product and more about the
+        authentication architecture:
+      </p>
+
+      <ul>
+        <li>
+          <strong>Time-based one-time passwords (TOTP).</strong> The authenticator generates
+          a rolling 6-digit code that changes every 30 seconds, derived from a shared secret
+          established at enrollment plus the current wall-clock time. An attacker who captures
+          a code from a compromised session can only use it within a narrow window before it
+          expires — a meaningful barrier against replay attacks.
+        </li>
+        <li>
+          <strong>Device-bound tokens.</strong> The shared secret lives on the phone, not on
+          the mail server. Even a full compromise of the mail server's authentication database
+          does not directly yield the second factor — the attacker would still need the physical
+          device to generate valid codes.
+        </li>
+        <li>
+          <strong>Enrollment reset discipline.</strong> Lost devices need to be re-enrolled
+          through an out-of-band verification process. This is the operationally inconvenient
+          part of MFA and the part that most often gets shortcut — a shortcut that quietly
+          converts a hardened account back into a password-only account.
+        </li>
+      </ul>
+
+      <p>
+        The value of this layer is disproportionate to its complexity. MFA deployment is the
+        single highest-return security control available to any organization, and it's the
+        first item on every modern compliance framework's control list. For BYOD specifically,
+        it's the mechanism that lets an organization trust a device it doesn't own.
+      </p>
+    </section>
+
+    <!-- ---------- PHASE 2 ---------- -->
+    <section class="cs-section" id="phase-2">
+      <span class="phase-tag">PHASE 02</span>
+      <h2>Manual Protocol Provisions — Encrypted Mail Transport</h2>
+
+      <p>
+        The second layer is protecting the data itself while it's in transit. Legacy email
+        protocols were designed in an era when the assumption was that the network was trusted
+        — plaintext IMAP on port 143 and plaintext SMTP on port 25 transmit message contents,
+        credentials, and headers without any cryptographic protection. Anyone on the path — a
+        hostile Wi-Fi operator, a malicious router, an ISP with insufficient internal controls,
+        an attacker with a foothold on any intermediate network — can read everything as it
+        flows by.
+      </p>
+
+      <p>
+        Automated client setup wizards often select plaintext or opportunistic encryption
+        because it makes configuration "just work." The hardening goal is to bypass those
+        wizards and enforce explicit cryptographic transport on both directions of mail flow.
+      </p>
+
+      <h3>Inbound mail — IMAP over SSL/TLS on port 993</h3>
+
+      <p>
+        Inbound mail retrieval was configured to use <strong>IMAP over SSL/TLS on port 993</strong>
+        — the standard implicit-TLS port for the protocol. The connection begins with a TLS
+        handshake <em>before</em> any IMAP command is transmitted, so the entire session —
+        authentication credentials, folder listings, message contents, message headers — is
+        encrypted from the first byte. There is no plaintext phase and no possibility of
+        accidental downgrade.
+      </p>
+
+      <p>
+        The alternative, IMAP on port 143 with a STARTTLS upgrade, is technically secure but
+        architecturally weaker: the client opens a plaintext connection first, then requests a
+        TLS upgrade. A sophisticated attacker positioned on the network can strip the STARTTLS
+        command out of the server's capability list, causing the client to fall back to
+        plaintext without any warning. Port 993's implicit-TLS model eliminates that downgrade
+        path entirely.
+      </p>
+
+      <h3>Outbound mail — SMTP over STARTTLS on ports 587/465</h3>
+
+      <p>
+        Outbound delivery was configured to use <strong>SMTP over STARTTLS</strong> on the
+        modern submission ports. The two ports are distinct:
+      </p>
+
+      <ul>
+        <li>
+          <strong>Port 587 (submission with STARTTLS).</strong> The standard modern port for
+          authenticated mail submission from a client to its outbound server. The connection
+          begins in plaintext and requests a TLS upgrade via the STARTTLS command. The server
+          is configured to require the upgrade — refusing any connection that does not complete
+          the TLS handshake before accepting credentials. This closes the downgrade window
+          that plain STARTTLS leaves open.
+        </li>
+        <li>
+          <strong>Port 465 (implicit TLS submission).</strong> The older SMTPS port, originally
+          deprecated and then re-standardized in RFC 8314 as a first-class implicit-TLS
+          submission channel. Structurally identical in security posture to port 993's model —
+          TLS handshake before any SMTP dialogue, no plaintext phase, no downgrade path.
+        </li>
+      </ul>
+
+      <p>
+        The critical hardening detail is that both ports enforce <strong>mandatory cryptographic
+        handshakes and mandatory account credential verification</strong> before any message
+        data is transmitted. An unauthenticated client cannot relay mail through the server,
+        and an authenticated-but-plaintext client cannot submit mail without first completing
+        TLS — both policies are enforced server-side, not left to client-side configuration.
+        That distinction matters: a security control that the client chooses to respect is a
+        suggestion, not a control.
+      </p>
+    </section>
+
+    <!-- ---------- PHASE 3 ---------- -->
+    <section class="cs-section" id="phase-3">
+      <span class="phase-tag">PHASE 03</span>
+      <h2>Client Recovery from a Catastrophic Profile Failure</h2>
+
+      <p>
+        Midway through the deployment, the desktop mail client suffered a
+        <strong>catastrophic profile crash</strong> — the application would launch but
+        immediately terminate when attempting to access its local data store, and the user
+        could no longer retrieve or send mail from that endpoint. This is a real-world failure
+        mode that occurs periodically with long-lived mail clients, and the recovery is not
+        obvious from the outside.
+      </p>
+
+      <h3>Diagnosis</h3>
+
+      <p>
+        Mail clients store a substantial amount of state locally: account configurations, cached
+        message headers, local folder indexes, the send/receive state of every message, and the
+        account credential token. When that state becomes corrupted — often through an
+        abrupt application termination, an unclean system shutdown, or a storage-layer fault —
+        the client can fail in ways that look like a server problem but are actually entirely
+        local.
+      </p>
+
+      <p>
+        The distinguishing symptom is instructive: the account configuration exists in the
+        client's settings, the server is reachable from the endpoint, and webmail access works
+        fine — but the desktop client cannot operate. This pattern isolates the fault to the
+        client-side profile rather than the mail infrastructure.
+      </p>
+
+      <h3>Recovery sequence</h3>
+
+      <p>
+        The recovery followed a deliberate sequence rather than a blind reinstall:
+      </p>
+
+      <ul>
+        <li>
+          <strong>Debug the broken profile linkage.</strong> The existing client profile was
+          audited to confirm the diagnosis — identifying which configuration file or data
+          store had become unreadable, and confirming that the corruption was localized rather
+          than systemic. This step is important because it distinguishes "the profile is
+          corrupted" from "the profile is fine and something else is wrong," and those two
+          diagnoses have very different recovery paths.
+        </li>
+        <li>
+          <strong>Purge corrupted application cache states.</strong> The client's local cache
+          directory — the cached message data, temporary files, and index structures — was
+          cleared. This is done at the file-system level, not through the application's own
+          interface, because a client that can't launch can't be trusted to clean its own
+          state correctly.
+        </li>
+        <li>
+          <strong>Remap secure communication paths from scratch.</strong> Rather than attempting
+          to import the corrupted profile and repair it in place, the mail account was
+          re-provisioned manually — server addresses, ports, encryption settings, and MFA
+          enrollment all rebuilt through the same manual configuration process used earlier in
+          the engagement. This eliminated any residual corruption that a partial repair might
+          have left behind.
+        </li>
+      </ul>
+
+      <p>
+        Full data availability was restored once the profile was rebuilt. Message history was
+        re-downloaded from the server — because IMAP keeps the authoritative copy on the server
+        side, not on the client — and the user's mail workflow returned to normal without
+        requiring the account itself to be reset.
+      </p>
+
+      <div class="callout remediation">
+        <div class="callout-label">✓ RECOVERY_PRINCIPLE</div>
+        <p>
+          The instinct on a client failure is to uninstall and reinstall the application, which
+          frequently fails to resolve the underlying problem because the corrupted profile
+          survives the uninstall. The more reliable approach is to
+          <strong>locate the client's local data store directly</strong>, confirm whether the
+          corruption is confined there, and clear it at the file-system level before
+          re-provisioning. This is a diagnostic discipline that transfers to any client
+          application with a persistent local profile — mail clients, browsers, VPN clients,
+          and password managers all share the same failure modes and the same recovery
+          pattern.
+        </p>
+      </div>
+    </section>
+
+    <!-- ---------- OUTCOMES ---------- -->
+    <section class="cs-section" id="outcomes">
+      <span class="phase-tag">OUTCOMES</span>
+      <h2>Verification Results &amp; Theoretical Mappings</h2>
+
+      <p>
+        Three outcomes emerge from the engagement, each tied to a specific CompTIA A+ Core 1
+        objective and demonstrated through hands-on execution rather than theoretical study.
+      </p>
+
+      <ul>
+        <li>
+          <strong>Mobile and remote endpoint management (BYOD policy in practice).</strong>
+          Corporate Bring Your Own Device policies depend on the organization's ability to
+          control data access on devices it does not own. This engagement demonstrated the
+          practical mechanics of that control: managing endpoint-side authentication, enforcing
+          transport security, and configuring a device that lives outside the corporate
+          perimeter to behave as though it were inside it. BYOD is not a checkbox — it's a
+          managed trust relationship between an unmanaged endpoint and managed infrastructure,
+          and this engagement built that relationship end-to-end.
+        </li>
+        <li>
+          <strong>Cryptographic protocol standards audited and applied.</strong> The specific
+          network ports and transport-layer protection mechanisms required to prevent
+          credential theft over wireless networks were identified, configured, and verified.
+          Port 993 for IMAP-SSL, port 587 for submission with mandatory STARTTLS, port 465 for
+          implicit-TLS submission — each was selected for a documented security property, and
+          each was configured with the security posture that makes the property meaningful
+          (server-enforced TLS requirements, not client-side preferences).
+        </li>
+        <li>
+          <strong>Full client recovery from catastrophic failure.</strong> A corrupted mail
+          client profile was diagnosed, its local data store cleared at the file-system level,
+          and the account re-provisioned from scratch — restoring full data availability
+          without losing message history. This is the operational counterpart to the
+          configuration work: security hardening is only valuable if the hardened system
+          remains available, and recovery skill is what keeps that promise during an incident.
+        </li>
+      </ul>
+
+      <div class="callout remediation">
+        <div class="callout-label">✓ ENDPOINT_HARDENING_VALIDATED</div>
+        <p>
+          <strong>Multi-layer endpoint security posture confirmed.</strong> The deployment
+          combined identity verification (MFA), transport encryption (IMAP-SSL and SMTP with
+          mandatory TLS), and operational recovery capability (profile rebuild after
+          catastrophic corruption) into a coherent defence across the mail stack. Each layer
+          addresses a distinct threat — credential theft, network interception, and
+          availability disruption respectively — and the three together produce a mail
+          environment that is protected against the attack classes most commonly observed in
+          BYOD deployments.
+        </p>
+      </div>
+    </section>
+
+    <!-- ---------- PRIVACY ---------- -->
+    <section class="cs-section" id="privacy">
+      <span class="phase-tag">DISCLOSURE</span>
+      <h2>Security &amp; Data Privacy Note</h2>
+
+      <div class="callout note">
+        <div class="callout-label">◆ TELEMETRY_OMITTED</div>
+        <p>
+          Visual telemetry is intentionally omitted from this case study. Active screenshots of
+          production endpoints, email directories, and server account configuration wrappers
+          have been excluded from this public log to maintain compliance with information
+          security guidelines, identity privacy requirements, and personnel data exposure
+          constraints. The technical methodology and hardening decisions are documented in
+          full; the specific infrastructure and account details that would compromise
+          production security if published are not. This is the correct trade-off for a case
+          study dealing with live corporate mail infrastructure — a portfolio document should
+          demonstrate competence, not expose the organization that provided the
+          opportunity.
+        </p>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<!-- ============================================================
+     FOOTER
+     ============================================================ -->
+<footer class="footer">
+  <div class="wrap wrap-wide footer-inner">
+    <div>
+      <p>&copy; 2026 Mohammed Oudai Helaleh. All rights cryptographically reserved.</p>
+      <p class="meta">Informatics &amp; Communications Engineering Architecture Deployment</p>
+    </div>
+  </div>
+</footer>
+
+<script src="../case-study.js" defer></script>
+</body>
+</html>

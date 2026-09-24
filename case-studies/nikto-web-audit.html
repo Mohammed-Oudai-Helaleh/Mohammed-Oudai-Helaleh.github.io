@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nikto Web Application Audit | Mohammed Oudai Helaleh</title>
+<meta name="description" content="Application-layer security assessment with Nikto against an Apache2 instance — isolating CVE-2003-1418 ETag information leakage and a systemic absence of modern HTTP security headers.">
+
+<link rel="stylesheet" href="../case-study.css">
+</head>
+
+<body class="theme-offense">
+
+<div class="bg-grid"></div>
+<div class="progress" id="progress"></div>
+
+<!-- ============================================================
+     NAV
+     ============================================================ -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="../index.html" class="brand">MOHAMMED <span>OUDAI</span></a>
+    <a href="../index.html#projects" class="back-link">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M19 12H5M12 19l-7-7 7-7"/>
+      </svg>
+      <span>BACK_TO_VAULT</span>
+    </a>
+  </div>
+</nav>
+
+<!-- ============================================================
+     HERO
+     ============================================================ -->
+<header class="cs-hero">
+  <div class="wrap">
+
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <a href="../index.html">PORTFOLIO</a>
+      <span class="sep">/</span>
+      <a href="../index.html#projects">VAULT</a>
+      <span class="sep">/</span>
+      <a href="../index.html#projects">OFFENSIVE_FORENSICS</a>
+    </nav>
+
+    <div class="pill-row">
+      <span class="pill"><span class="dot"></span>WEB_SECURITY</span>
+      <span class="pill neutral">CASE_STUDY</span>
+      <span class="pill neutral">READ_TIME 7 MIN</span>
+    </div>
+
+    <h1>Web Application Vulnerability Assessment &amp; Server Hardening Audits</h1>
+
+    <p class="standfirst">
+      A comprehensive application-layer assessment with <strong>Nikto</strong> against a live Apache2
+      instance on Ubuntu Server 24.04 LTS — exposing an <strong>ETag inode information-leak vector
+      (CVE-2003-1418)</strong> and a systemic absence of modern HTTP security headers, then closing
+      both with hardened configuration directives.
+    </p>
+
+    <dl class="meta-grid">
+      <div class="meta-cell">
+        <dt>Environment</dt>
+        <dd>Kali Linux 2026.x → Ubuntu Server 24.04 LTS</dd>
+      </div>
+      <div class="meta-cell">
+        <dt>Network Loop</dt>
+        <dd>192.168.40.0/24 — isolated virtual LAN</dd>
+      </div>
+      <div class="meta-cell">
+        <dt>Target Service</dt>
+        <dd>Apache2 HTTP daemon · port 80/tcp</dd>
+      </div>
+      <div class="meta-cell">
+        <dt>Scanner</dt>
+        <dd>Nikto Web Scanner · 8,113 request queries</dd>
+      </div>
+    </dl>
+
+  </div>
+</header>
+
+<!-- ============================================================
+     BODY
+     ============================================================ -->
+<main class="cs-body">
+  <div class="wrap">
+
+    <!-- ---------- OBJECTIVE ---------- -->
+    <section class="cs-section">
+      <p>
+        To perform a realistic application-layer vulnerability assessment, an active corporate web
+        portal hosting environment had to be simulated across the virtual network. This engagement
+        demonstrates server-side deployment configuration, hot-patching host firewalls to permit
+        authorised test traffic, capturing application header vulnerabilities, and mapping the
+        resulting compliance gaps against standard security baseline metrics.
+      </p>
+
+      <div class="callout note">
+        <div class="callout-label">◆ SCOPE_CONSTRAINT</div>
+        <p>
+          The web server was provisioned specifically for this audit inside an isolated
+          <code>192.168.40.0/24</code> lab loop. Port 80 was opened to the firewall only for the
+          duration of testing and closed again afterwards. No production data was ever in scope.
+        </p>
+      </div>
+    </section>
+
+    <!-- ---------- PHASE 1 ---------- -->
+    <section class="cs-section" id="phase-1">
+      <span class="phase-tag">PHASE 01</span>
+      <h2>Web Server Provisioning &amp; Core Boundary Adjustments</h2>
+
+      <p>
+        The target environment was brought online with an enterprise-grade HTTP daemon installed
+        directly from the Ubuntu repositories. Apache2 was selected because its default configuration
+        mirrors the out-of-the-box deployment posture found in countless real-world organisations —
+        which makes it a useful control sample for baseline auditing:
+      </p>
+
+      <div class="code-block">
+        <div class="code-head">
+          <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="code-lang">bash</span>
+          <button class="copy-btn" data-copy type="button">COPY</button>
+        </div>
+        <pre><code>sudo apt install apache2 -y</code></pre>
+      </div>
+
+      <p>
+        With the service running but unreachable behind the default-deny firewall policy, a targeted
+        hot-patch was applied to the UFW ruleset — creating a single authorised communication slot for
+        unencrypted inbound web traffic on the standard HTTP port:
+      </p>
+
+      <div class="code-block">
+        <div class="code-head">
+          <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="code-lang">bash</span>
+          <button class="copy-btn" data-copy type="button">COPY</button>
+        </div>
+        <pre><code>sudo ufw allow 80/tcp</code></pre>
+      </div>
+
+      <p>
+        That single rule is the entire attack surface under test. Everything from here forward runs
+        through that one authorised slot — the perimeter is clean, the auditor's visibility is
+        limited, and any finding must come from the application itself.
+      </p>
+    </section>
+
+    <!-- ---------- PHASE 2 ---------- -->
+    <section class="cs-section" id="phase-2">
+      <span class="phase-tag">PHASE 02</span>
+      <h2>Active Web Crawling &amp; Vulnerability Interrogation</h2>
+
+      <p>
+        With the target listening on port 80, the Nikto Web Scanner was deployed from the attacking
+        Kali platform to run deep directory crawls against the exposed service:
+      </p>
+
+      <div class="code-block">
+        <div class="code-head">
+          <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="code-lang">bash</span>
+          <button class="copy-btn" data-copy type="button">COPY</button>
+        </div>
+        <pre><code>nikto -h 192.168.40.131</code></pre>
+      </div>
+
+      <p>
+        The scanner performed a systematic verification pass running over
+        <strong>8,113 discrete request queries</strong> — parsing exposed server traits, probing for
+        dangerous default configuration scripts, and inspecting every application response header for
+        compliance with modern security baselines.
+      </p>
+    </section>
+
+    <!-- ---------- FINDINGS ---------- -->
+    <section class="cs-section" id="findings">
+      <span class="phase-tag">FINDINGS</span>
+      <h2>Forensic Assessment Results</h2>
+
+      <p>
+        The scanning matrix bypassed system boundaries successfully and exposed a clear list of
+        configuration vulnerabilities directly within the server response profiles. Two categories of
+        issue emerged from the telemetry.
+      </p>
+
+      <h3>Finding 01 — Information leakage via ETags</h3>
+
+      <p>
+        The server is emitting ETag response headers that encode file system inode numbers alongside
+        the standard modification timestamp. This is a well-documented behaviour of the default Apache
+        ETag configuration and it carries a public CVE designation:
+      </p>
+
+      <div class="finding-card">
+        <div class="fc-head">
+          <span class="sev">INFORMATION_LEAK</span>
+          <span class="fc-id">CVE-2003-1418</span>
+        </div>
+        <h3>Server may leak inodes via ETags</h3>
+        <p>
+          External actors can observe the inode component of ETag headers and use it to
+          reverse-engineer characteristics of the server's file system — including directory
+          structure, file age distribution, and potentially the deployment layout. While each leak is
+          small in isolation, aggregated across a live crawl it becomes actionable reconnaissance for
+          a follow-up exploitation attempt.
+        </p>
+      </div>
+
+      <h3>Finding 02 — Missing defensive security headers</h3>
+
+      <p>
+        More significantly, the audit identified a <strong>systemic absence of modern HTTP security
+        wrappers</strong> — the response headers that instruct client browsers how to defend
+        themselves against advanced web exploits. Four headers were found missing from every response:
+      </p>
+
+      <ul>
+        <li>
+          <strong>X-Content-Type-Options — missing.</strong> Without this directive, client browsers
+          are exposed to MIME-sniffing attacks, where a malicious response can be reinterpreted as an
+          executable content type and trigger cross-site scripting (XSS) drive-by payload executions.
+        </li>
+        <li>
+          <strong>Content-Security-Policy — missing.</strong> Absent a CSP policy, application data
+          channels remain vulnerable to malicious script injections. The browser has no instruction
+          set defining which origins may serve executable content.
+        </li>
+        <li>
+          <strong>Referrer-Policy — missing.</strong> Session-bearing URLs can leak to third-party
+          destinations during cross-domain navigation, exposing internal paths and potentially
+          sensitive query parameters in outbound HTTP referrer headers.
+        </li>
+        <li>
+          <strong>Strict-Transport-Security — missing.</strong> Fails to enforce strict encrypted
+          communication requirements. Browsers have no persistent instruction to refuse plaintext
+          requests to this origin, leaving the door open to downgrade and man-in-the-middle vectors
+          once a TLS endpoint is added.
+        </li>
+      </ul>
+    </section>
+
+    <!-- ---------- REMEDIATION ---------- -->
+    <section class="cs-section" id="remediation">
+      <span class="phase-tag">REMEDIATION</span>
+      <h2>Closing the Findings</h2>
+
+      <p>
+        To secure this environment, the central Apache configuration file
+        (<code>/etc/apache2/conf-available/security.conf</code>) must be modified to inject explicit
+        <code>Header set</code> parameters that enforce all four missing secure HTTP responses — and
+        to strip the inode component from ETag generation. Both fixes are applied in the same file
+        before production deployment:
+      </p>
+
+      <div class="code-block">
+        <div class="code-head">
+          <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="code-lang">/etc/apache2/conf-available/security.conf</span>
+          <button class="copy-btn" data-copy type="button">COPY</button>
+        </div>
+        <pre><code><span class="cmt"># Disable inode leakage in ETag headers (CVE-2003-1418)</span>
+FileETag MTime Size
+
+<span class="cmt"># Enforce modern client-side security wrappers</span>
+Header set X-Content-Type-Options "nosniff"
+Header set Content-Security-Policy "default-src 'self'"
+Header set Referrer-Policy "strict-origin-when-cross-origin"
+Header set Strict-Transport-Security "max-age=31536000; includeSubDomains"</code></pre>
+      </div>
+
+      <div class="callout remediation">
+        <div class="callout-label">✓ HARDENING_STEPS</div>
+        <p>
+          Enable the module that makes these directives active with <code>a2enmod headers</code>,
+          then reload the daemon with <code>systemctl reload apache2</code>. The final validation
+          step is to re-run <code>nikto -h 192.168.40.131</code> and confirm that neither the ETag
+          finding nor the missing-header warnings appear in the new crawl — a finding is only closed
+          when the scanner confirms it.
+        </p>
+      </div>
+    </section>
+
+    <!-- ---------- OUTCOMES ---------- -->
+    <section class="cs-section" id="outcomes">
+      <span class="phase-tag">OUTCOMES</span>
+      <h2>Engagement Summary</h2>
+
+      <ul>
+        <li>
+          <strong>Attack surface mapped with full application-layer visibility.</strong> 8,113
+          discrete queries produced a complete header and configuration profile of the target,
+          isolating exactly two classes of issue from an otherwise default-clean deployment.
+        </li>
+        <li>
+          <strong>Compliance gaps quantified against baseline metrics.</strong> The missing security
+          header suite represents a measurable deviation from current OWASP and PCI-DSS guidance —
+          not a theoretical concern, but an audit-failing condition in regulated environments.
+        </li>
+        <li>
+          <strong>Remediation path defined and verifiable.</strong> Both findings resolve to
+          concrete configuration changes in a single Apache file, with a re-scan step that
+          deterministically proves closure.
+        </li>
+      </ul>
+
+      <!-- ---------- SCREENSHOT ---------- -->
+      <figure class="cs-figure">
+        <div class="fig-bar">
+          <span class="dot" aria-hidden="true"></span>
+          <span>nikto_web_assessment.png</span>
+        </div>
+        <img src="../assets/img/nikto_web_assessment.png"
+             alt="Kali Linux Nikto audit logs exposing missing security headers, version footprints, and infrastructure configuration flaws on the Apache2 target instance"
+             loading="lazy"
+             onerror="this.closest('figure').classList.add('img-missing')">
+        <div class="img-placeholder" aria-hidden="true">
+          [ TELEMETRY_CAPTURE_PENDING ]<br>
+          assets/img/nikto_web_assessment.png
+        </div>
+        <figcaption>
+          <b>Figure 10.1</b> — Kali Linux Nikto audit logs exposing a series of missing security
+          headers, version footprints, and infrastructure configuration flaws on the Apache2 target
+          instance.
+        </figcaption>
+      </figure>
+    </section>
+
+    <!-- ---------- PRIVACY ---------- -->
+    <section class="cs-section" id="privacy">
+      <span class="phase-tag">DISCLOSURE</span>
+      <h2>Security &amp; Data Privacy Note</h2>
+
+      <div class="callout note">
+        <div class="callout-label">◆ DATA_MASKING_PROTOCOL</div>
+        <p>
+          Visual telemetry was monitored via local snapshot archive. To preserve corporate system
+          anonymity, active process identifiers, domain names, and hardware MAC tracking entries are
+          excluded from the public presentation logs shown here.
+        </p>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<!-- ============================================================
+     FOOTER
+     ============================================================ -->
+<footer class="footer">
+  <div class="wrap wrap-wide footer-inner">
+    <div>
+      <p>&copy; 2026 Mohammed Oudai Helaleh. All rights cryptographically reserved.</p>
+      <p class="meta">Informatics &amp; Communications Engineering Architecture Deployment</p>
+    </div>
+  </div>
+</footer>
+
+<script src="../case-study.js" defer></script>
+</body>
+</html>

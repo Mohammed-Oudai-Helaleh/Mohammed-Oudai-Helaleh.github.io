@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Layer 3 Static Route Optimization | Mohammed Oudai Helaleh</title>
+<meta name="description" content="Directional static routing across a multi-router corporate simulation — dedicated /30 WAN transport block, IP overlap remediation, and cross-building ICMP verification with 0% packet loss.">
+
+<link rel="stylesheet" href="../case-study.css">
+</head>
+
+<body class="theme-network">
+
+<div class="bg-grid"></div>
+<div class="progress" id="progress"></div>
+
+<!-- ============================================================
+     NAV
+     ============================================================ -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="../index.html" class="brand">MOHAMMED <span>OUDAI</span></a>
+    <a href="../index.html#projects" class="back-link">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M19 12H5M12 19l-7-7 7-7"/>
+      </svg>
+      <span>BACK_TO_VAULT</span>
+    </a>
+  </div>
+</nav>
+
+<!-- ============================================================
+     HERO
+     ============================================================ -->
+<header class="cs-hero">
+  <div class="wrap">
+
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <a href="../index.html">PORTFOLIO</a>
+      <span class="sep">/</span>
+      <a href="../index.html#projects">VAULT</a>
+      <span class="sep">/</span>
+      <a href="../index.html#projects">NETWORK_ENGINEERING</a>
+    </nav>
+
+    <div class="pill-row">
+      <span class="pill"><span class="dot"></span>STATIC_ROUTING</span>
+      <span class="pill neutral">CASE_STUDY</span>
+      <span class="pill neutral">READ_TIME 7 MIN</span>
+    </div>
+
+    <h1>Layer 3 Static Route Optimization &amp; Inter-Subnet Transport Design</h1>
+
+    <p class="standfirst">
+      Building on a custom VLSM topology, this engagement deploys explicit
+      <strong>static routing maps</strong> across paired Cisco 1941 edge routers —
+      carving a dedicated <strong>/30 WAN transport block</strong> to resolve an internal IP
+      overlap that had black-holed cross-building traffic, then validating full-duplex
+      reachability with <strong>0% packet loss</strong>.
+    </p>
+
+    <div class="cs-actions">
+      <a class="cs-repo-link"
+         href="https://github.com/Mohammed-Oudai-Helaleh/Layer-3-Static-Route-Optimization-Inter-Subnet-Transport-Design-.git"
+         target="_blank" rel="noopener noreferrer"
+         aria-label="View the routing configuration files on GitHub">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M12 .5C5.73.5.5 5.73.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.56v-2c-3.2.7-3.88-1.54-3.88-1.54-.53-1.34-1.29-1.7-1.29-1.7-1.05-.72.08-.71.08-.71 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.23-1.28-5.23-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.04 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.79 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.58.23 2.75.11 3.04.74.81 1.19 1.84 1.19 3.1 0 4.42-2.69 5.39-5.25 5.68.41.35.78 1.05.78 2.12v3.14c0 .31.21.68.8.56A11.5 11.5 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5z"/>
+        </svg>
+        <span>VIEW_REPOSITORY</span>
+        <span class="arrow" aria-hidden="true">→</span>
+      </a>
+    </div>
+
+    <dl class="meta-grid">
+      <div class="meta-cell">
+        <dt>Environment</dt>
+        <dd>Cisco Packet Tracer — multi-router topology</dd>
+      </div>
+      <div class="meta-cell">
+        <dt>Hardware</dt>
+        <dd>2× Cisco 1941 routers · cascaded 2960 switch fabric</dd>
+      </div>
+      <div class="meta-cell">
+        <dt>Routing</dt>
+        <dd>Static next-hop (<code>ip route</code>) — no dynamic protocol</dd>
+      </div>
+      <div class="meta-cell">
+        <dt>WAN Link</dt>
+        <dd>192.168.10.224/30 — dedicated transport block</dd>
+      </div>
+    </dl>
+
+  </div>
+</header>
+
+<!-- ============================================================
+     BODY
+     ============================================================ -->
+<main class="cs-body">
+  <div class="wrap">
+
+    <!-- ---------- OBJECTIVE ---------- -->
+    <section class="cs-section">
+      <p>
+        Static routing is the unglamorous half of network engineering. Dynamic protocols get the
+        attention because they scale, but a two-site corporate topology doesn't need OSPF — it needs
+        <strong>deterministic, auditable paths</strong> that an analyst can read in a route table
+        without guessing what a protocol decided. Every static route is an explicit statement of
+        intent, and that is exactly what a security-conscious deployment should contain.
+      </p>
+
+      <p>
+        This engagement builds on the VLSM address plan from the previous case study and adds the
+        Layer-3 glue that makes it work: directional static routes between paired edge routers, a
+        dedicated point-to-point WAN transport block carved out of the Class C range, and a
+        troubleshooting narrative where an IP overlap initially black-holed cross-building traffic
+        — and was diagnosed and resolved using standard Cisco IOS diagnostics.
+      </p>
+
+      <div class="callout note">
+        <div class="callout-label">◆ SCOPE_CONSTRAINT</div>
+        <p>
+          All work was performed in Cisco Packet Tracer on the topology established in the VLSM
+          engagement. The static routing patterns demonstrated here transfer directly to physical
+          Cisco hardware and are still the correct choice for small-to-medium branch topologies,
+          stub networks, and any deployment where the route table must remain human-readable.
+        </p>
+      </div>
+    </section>
+
+    <!-- ---------- PHASE 1 ---------- -->
+    <section class="cs-section" id="phase-1">
+      <span class="phase-tag">PHASE 01</span>
+      <h2>Static Route Injection</h2>
+
+      <p>
+        With the VLSM plan already deployed, each router knows only about the subnets directly
+        connected to its own interfaces. Traffic destined for a remote department's subnet has
+        nowhere to go — the router has no entry in its table for that network, so it discards the
+        packet. The fix is a <strong>static route</strong>: an explicit instruction that says "to
+        reach network X, send the packet to next-hop Y."
+      </p>
+
+      <p>
+        On the HQ router, one static route is needed — a single entry that tells it how to reach
+        the branch-side department. The next-hop address points at the far end of the WAN link, not
+        at the destination subnet itself:
+      </p>
+
+      <div class="code-block">
+        <div class="code-head">
+          <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="code-lang">cisco ios</span>
+          <button class="copy-btn" data-copy type="button">COPY</button>
+        </div>
+        <pre><code><span class="cmt">! HQ router — reach the branch /26 department</span>
+Router&gt;enable
+Router#configure terminal
+
+Router(config)#ip route 192.168.10.128 255.255.255.192 192.168.10.226
+Router(config)#exit</code></pre>
+      </div>
+
+      <p>
+        Three values are doing three distinct jobs in that one line. <code>192.168.10.128</code>
+        is the destination network. <code>255.255.255.192</code> is the subnet mask telling the
+        router the size of that destination — a /26 in this case. And
+        <code>192.168.10.226</code> is the <strong>next-hop address</strong> — the IP of the
+        remote router's WAN interface, not the IP of any host on the destination subnet. The router
+        doesn't need to know the destination host's address; it only needs to know which neighbour
+        to hand the packet to.
+      </p>
+
+      <p>
+        The mirrored route is configured on the branch router, pointing back toward the HQ
+        side. Routing is inherently bidirectional — for any packet to reach its destination, both
+        routers must know the path to each other's networks. A route that exists on only one side
+        produces a diagnostic that's confusing at first glance: the ping request arrives
+        successfully, but the reply never makes it home.
+      </p>
+    </section>
+
+    <!-- ---------- PHASE 2 ---------- -->
+    <section class="cs-section" id="phase-2">
+      <span class="phase-tag">PHASE 02</span>
+      <h2>WAN Interface Hardening</h2>
+
+      <p>
+        The point-to-point link between the two routers is its own network — logically separate
+        from any client subnet, because only two IPs are ever needed on it. Allocating a full /24,
+        /25, or even /26 to a two-endpoint wire wastes addresses that could serve users. The correct
+        allocation is the smallest possible block that still provides two usable host addresses:
+        a <strong>/30</strong>.
+      </p>
+
+      <p>
+        A /30 mask leaves exactly 2 usable addresses after subtracting the network and broadcast
+        boundaries — perfect for a point-to-point link where each end is one of the two. The block
+        was carved from the unused tail of the Class C range, landing at
+        <code>192.168.10.224/30</code>:
+      </p>
+
+      <div class="code-block">
+        <div class="code-head">
+          <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="code-lang">cisco ios</span>
+          <button class="copy-btn" data-copy type="button">COPY</button>
+        </div>
+        <pre><code><span class="cmt">! HQ router — WAN interface facing the branch router</span>
+Router(config)#interface GigabitEthernet0/1
+Router(config-if)#ip address 192.168.10.225 255.255.255.252
+Router(config-if)#no shutdown
+Router(config-if)#exit</code></pre>
+      </div>
+
+      <p>
+        The <code>255.255.255.252</code> mask is the dotted-decimal form of /30. That single mask
+        tells the router that this interface's network spans <code>192.168.10.224</code> through
+        <code>192.168.10.227</code> — the network address at .224, two usable host addresses at
+        .225 and .226, and the broadcast address at .227. Nothing else lives on this link, and
+        nothing else needs to.
+      </p>
+
+      <div class="callout note">
+        <div class="callout-label">◆ WHY_NOT_A_/31</div>
+        <p>
+          RFC 3021 defines <code>/31</code> as an alternative point-to-point allocation — zero
+          wasted addresses by using both available IPs as endpoints. In practice, most enterprise
+          deployments still standardise on <code>/30</code> because it's universally supported
+          across Cisco IOS versions and interoperability with non-Cisco equipment is guaranteed.
+          The two wasted addresses per link are an acceptable trade for universal compatibility,
+          especially when the block is carved from an existing private range anyway.
+        </p>
+      </div>
+    </section>
+
+    <!-- ---------- PHASE 3 ---------- -->
+    <section class="cs-section" id="phase-3">
+      <span class="phase-tag">PHASE 03</span>
+      <h2>Overlap Remediation</h2>
+
+      <p>
+        Before the /30 block was carved out, the initial configuration attempt placed the WAN
+        link inside one of the client subnet ranges. From the router's perspective, this created an
+        impossible situation: two interfaces claiming overlapping networks. When a packet arrived
+        addressed to the overlapping range, the router had no way to determine which interface
+        should carry it out — so the packet was silently discarded.
+      </p>
+
+      <p>
+        The symptom was classic and unmistakable. Pings from one building to the other returned
+        <strong>Request Timed Out</strong> for every attempt, while local-subnet pings worked
+        normally. This pattern — internal connectivity fine, external dead — is almost always a
+        routing problem, and the first diagnostic to run is a route table inspection.
+      </p>
+
+      <div class="code-block">
+        <div class="code-head">
+          <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="code-lang">cisco ios</span>
+          <button class="copy-btn" data-copy type="button">COPY</button>
+        </div>
+        <pre><code>Router#show ip route</code></pre>
+      </div>
+
+      <p>
+        The route table confirmed the diagnosis. The interface carrying the WAN link was reporting
+        its network as directly connected on a range that overlapped the client subnet. The
+        router's forwarding decision for that range was ambiguous — some entries pointed to the
+        LAN interface and some to the WAN interface — and the ambiguity manifested as dropped
+        packets.
+      </p>
+
+      <p>
+        The remediation was structural rather than corrective: the WAN link was
+        <strong>relocated entirely outside the client subnet space</strong>, into the unused tail
+        of the Class C range at <code>192.168.10.224/30</code>. This removed the overlap at the
+        root, rather than trying to work around it with more specific routes. Once the /30 was in
+        place, cross-building traffic began flowing immediately — the same packets that had timed
+        out seconds earlier now returned replies without any further configuration change.
+      </p>
+
+      <div class="callout remediation">
+        <div class="callout-label">✓ DIAGNOSTIC_PRINCIPLE</div>
+        <p>
+          The instinct on a routing failure is to add more routes. The better move is to
+          <strong>inspect the existing table first</strong> — because a routing problem is usually
+          a routing <em>overlap</em> problem, and adding more routes to a broken table just moves
+          the ambiguity around. Reading <code>show ip route</code> carefully, noting every
+          interface's claimed network, and looking for ranges that intersect is the diagnostic
+          discipline that resolved this engagement.
+        </p>
+      </div>
+    </section>
+
+    <!-- ---------- OUTCOMES ---------- -->
+    <section class="cs-section" id="outcomes">
+      <span class="phase-tag">OUTCOMES</span>
+      <h2>Performance Outcomes &amp; Verification</h2>
+
+      <p>
+        Two verification passes confirm the design behaves as intended — first a static analysis
+        of the route table, then a live ICMP trace from one building to the other.
+      </p>
+
+      <h3>Route table inspection</h3>
+
+      <p>
+        The <code>show ip route</code> output confirms the address plan was deployed exactly as
+        designed. The table shows the VLSM segmentation in effect (<code>5 subnets, 4 masks</code>),
+        the local subnets marked as directly connected, and the static route to the remote /26
+        pointing at its next-hop address. The presence of the dedicated <code>/30</code> on the
+        WAN interface proves the transport layer is isolated from every client network:
+      </p>
+
+      <!-- ---------- SCREENSHOT 1 ---------- -->
+      <figure class="cs-figure">
+        <div class="fig-bar">
+          <span class="dot" aria-hidden="true"></span>
+          <span>static_route_table.png</span>
+        </div>
+        <img src="../assets/img/static_route_table.png"
+             alt="Cisco IOS show ip route output confirming the variably subnetted 192.168.10.0/24 block, the directly connected /25 and /30 WAN interfaces, and the static route to 192.168.10.128/26 via 192.168.10.226"
+             loading="lazy"
+             onerror="this.closest('figure').classList.add('img-missing')">
+        <div class="img-placeholder" aria-hidden="true">
+          [ TELEMETRY_CAPTURE_PENDING ]<br>
+          assets/img/static_route_table.png
+        </div>
+        <figcaption>
+          <b>Figure 14.1</b> — Cisco IOS <code>show ip route</code> diagnostics confirming the
+          VLSM plan is active (<code>5 subnets, 4 masks</code>). The static route
+          <code>S 192.168.10.128/26 [1/0] via 192.168.10.226</code> points to the branch /26
+          department, and the dedicated <code>C 192.168.10.224/30</code> on
+          <code>GigabitEthernet0/1</code> proves the WAN link is isolated from all client subnets.
+        </figcaption>
+      </figure>
+
+      <h3>Cross-building ICMP verification</h3>
+
+      <p>
+        The second pass traces a live packet from one building to a host on the remote subnet.
+        Four ICMP echoes are sent to <code>192.168.10.140</code> — an address inside the
+        <code>192.168.10.128/26</code> branch subnet — and all four receive replies, with sub-15ms
+        round-trip times and zero packet loss:
+      </p>
+
+      <!-- ---------- SCREENSHOT 2 ---------- -->
+      <figure class="cs-figure">
+        <div class="fig-bar">
+          <span class="dot" aria-hidden="true"></span>
+          <span>cross_building_ping_verification.png</span>
+        </div>
+        <img src="../assets/img/cross_building_ping_verification.png"
+             alt="Cisco Packet Tracer terminal output showing a successful four-reply ICMP ping to 192.168.10.140 with TTL=126, confirming cross-building static route delivery with 0% packet loss"
+             loading="lazy"
+             onerror="this.closest('figure').classList.add('img-missing')">
+        <div class="img-placeholder" aria-hidden="true">
+          [ TELEMETRY_CAPTURE_PENDING ]<br>
+          assets/img/cross_building_ping_verification.png
+        </div>
+        <figcaption>
+          <b>Figure 14.2</b> — Cross-building ICMP verification. A ping from the HQ side to
+          <code>192.168.10.140</code> on the branch subnet returns 4/4 replies with
+          <strong>0% packet loss</strong>, confirming the static route is delivering traffic
+          across the /30 WAN link in both directions. The <code>TTL=126</code> values prove the
+          packets traversed the expected number of router hops end-to-end.
+        </figcaption>
+      </figure>
+
+      <ul>
+        <li>
+          <strong>Physical Layer-3 isolation constraints resolved.</strong> Multi-switch cascaded
+          network blocks now pass traffic across buildings that were previously unreachable. The
+          HQ and branch sides communicate bidirectionally, without any of the routing ambiguity
+          that existed before the /30 relocation.
+        </li>
+        <li>
+          <strong>Cross-building ICMP verification — 100% full-duplex.</strong> Every echo
+          request received a matching reply, confirming that both the forward path (HQ → branch)
+          and the reverse path (branch → HQ) are configured correctly. Asymmetric routing failures
+          produce a distinctive pattern — requests arrive, replies time out — and this trace
+          confirms that pattern is absent.
+        </li>
+        <li>
+          <strong>0% data packet loss.</strong> All four ICMP packets successfully traversed the
+          WAN link in both directions and returned to the origin host. The sub-15ms round-trip
+          times confirm there is no routing loop, no misconfigured mask on either side, and no
+          silent packet discard at any hop.
+        </li>
+        <li>
+          <strong>Deterministic, auditable route path.</strong> The route table reads as a
+          complete statement of the network's forwarding behaviour. There are no dynamic protocol
+          decisions to reverse-engineer, no route redistribution, and no hidden paths — a
+          security posture that materially reduces the attack surface compared to a routing
+          protocol deployment.
+        </li>
+      </ul>
+
+      <div class="callout remediation">
+        <div class="callout-label">✓ TRANSPORT_VALIDATED</div>
+        <p>
+          <strong>Inter-subnet transport confirmed operational.</strong> The static routing
+          architecture delivers full-duplex connectivity between physically separate buildings,
+          with every route explicitly declared and every path verifiable from a single command.
+          This design pattern scales cleanly to additional branches — each new site adds one
+          static route to each existing router, and the WAN transport block allocation repeats
+          the same /30 discipline.
+        </p>
+      </div>
+    </section>
+
+    <!-- ---------- PRIVACY ---------- -->
+    <section class="cs-section" id="privacy">
+      <span class="phase-tag">DISCLOSURE</span>
+      <h2>Security &amp; Data Privacy Note</h2>
+
+      <div class="callout note">
+        <div class="callout-label">◆ LAB_CONFIGURATION_DISCLOSURE</div>
+        <p>
+          The configuration presented here reflects lab simulation only. Production deployments
+          of static routing architectures typically layer additional controls on top of this
+          design — default route failover via a floating static entry, IP SLA tracking to detect
+          WAN link degradation, and administrative ACLs restricting which subnets may reach router
+          management interfaces over the transport link. Those controls are documented as
+          recommended next steps but are outside the scope of this lab exercise.
+        </p>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<!-- ============================================================
+     FOOTER
+     ============================================================ -->
+<footer class="footer">
+  <div class="wrap wrap-wide footer-inner">
+    <div>
+      <p>&copy; 2026 Mohammed Oudai Helaleh. All rights cryptographically reserved.</p>
+      <p class="meta">Informatics &amp; Communications Engineering Architecture Deployment</p>
+    </div>
+  </div>
+</footer>
+
+<script src="../case-study.js" defer></script>
+</body>
+</html>

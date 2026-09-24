@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ITIL Change Management &amp; System Migration Proposal | Mohammed Oudai Helaleh</title>
+<meta name="description" content="Formal ITIL change request and Statement of Work for a mission-critical print server overhaul — out-of-hours scheduling, HIGH-risk impact analysis, 60-minute rollback commitment, and post-implementation verification.">
+
+<link rel="stylesheet" href="../case-study.css">
+</head>
+
+<body class="theme-ops">
+
+<div class="bg-grid"></div>
+<div class="progress" id="progress"></div>
+
+<!-- ============================================================
+     NAV
+     ============================================================ -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="../index.html" class="brand">MOHAMMED <span>OUDAI</span></a>
+    <a href="../index.html#projects" class="back-link">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M19 12H5M12 19l-7-7 7-7"/>
+      </svg>
+      <span>BACK_TO_VAULT</span>
+    </a>
+  </div>
+</nav>
+
+<!-- ============================================================
+     HERO
+     ============================================================ -->
+<header class="cs-hero">
+  <div class="wrap">
+
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <a href="../index.html">PORTFOLIO</a>
+      <span class="sep">/</span>
+      <a href="../index.html#projects">VAULT</a>
+      <span class="sep">/</span>
+      <a href="../index.html#projects">IT_OPERATIONS</a>
+    </nav>
+
+    <div class="pill-row">
+      <span class="pill"><span class="dot"></span>CHANGE_MANAGEMENT</span>
+      <span class="pill neutral">CASE_STUDY</span>
+      <span class="pill neutral">READ_TIME 7 MIN</span>
+    </div>
+
+    <h1>Enterprise ITIL Change Management &amp; System Migration Proposal</h1>
+
+    <p class="standfirst">
+      A formal ITIL change request and Statement of Work for a
+      <strong>mission-critical print server overhaul</strong> — scheduling the work inside a
+      zero-traffic weekend window, modelling the risk to revenue-generating infrastructure,
+      committing to a <strong>60-minute rollback</strong> with full disk imaging, and defining
+      the three-stage verification that decides when the change is actually complete.
+    </p>
+
+    <dl class="meta-grid">
+      <div class="meta-cell">
+        <dt>Deliverable</dt>
+        <dd>ITIL Change Request + Statement of Work</dd>
+      </div>
+      <div class="meta-cell">
+        <dt>Asset</dt>
+        <dd>Workstation-01 — primary network print server</dd>
+      </div>
+      <div class="meta-cell">
+        <dt>Change Window</dt>
+        <dd>Saturday 18:00 → Sunday 15:00 — out-of-hours only</dd>
+      </div>
+      <div class="meta-cell">
+        <dt>Risk Rating</dt>
+        <dd>HIGH — 100% print infrastructure impact during window</dd>
+      </div>
+    </dl>
+
+  </div>
+</header>
+
+<!-- ============================================================
+     BODY
+     ============================================================ -->
+<main class="cs-body">
+  <div class="wrap">
+
+    <!-- ---------- OBJECTIVE ---------- -->
+    <section class="cs-section">
+      <p>
+        This case study is the planning counterpart to the mission-critical workstation
+        recovery already documented in the vault. Both engagements concern the same asset —
+        the network print server driving 35–50% of a retail operation's revenue — but where the
+        recovery case study documents the <em>execution</em> of the bare-metal restoration, this
+        one documents the <strong>formal governance framework</strong> that any responsible IT
+        organization would put around that execution before a single screw is loosened.
+      </p>
+
+      <p>
+        The distinction matters because it reflects how enterprise IT actually operates. A
+        skilled technician who can rebuild a broken machine is valuable. A technician who can
+        rebuild it while producing a documented plan that a change advisory board can review,
+        approve, and audit — that's the professional standard that regulated environments
+        require. The document produced in this engagement is what an organization hands to a
+        stakeholder to say: <em>here is what we intend to do, here is what could go wrong, here
+        is how we will recover if it does, and here is how we will know when we're finished.</em>
+      </p>
+
+      <div class="callout note">
+        <div class="callout-label">◆ DOCUMENT_ARTIFACT</div>
+        <p>
+          This case study covers a documentation deliverable rather than a technical execution.
+          The output is a formal Change Request and Statement of Work, not a configuration
+          change on a running system. Figures are intentionally absent — there is no terminal
+          output to capture — and the value of the engagement lies in the quality of the
+          planning artefacts and the rigor of the risk analysis they contain.
+        </p>
+      </div>
+    </section>
+
+    <!-- ---------- PHASE 1 ---------- -->
+    <section class="cs-section" id="phase-1">
+      <span class="phase-tag">PHASE 01</span>
+      <h2>Statement of Work — Scope Definition</h2>
+
+      <p>
+        The first section of the document is the Statement of Work, which exists to answer a
+        single question with no ambiguity: <strong>what exactly is being changed?</strong> The
+        scope must be specific enough that the executing technician, the approving change
+        manager, and the affected business stakeholders all read the same four lines and
+        understand the same commitment. Vague scope is the primary cause of ITIL change failures
+        — not because the work was hard, but because two parties had different assumptions about
+        what "done" meant.
+      </p>
+
+      <p>
+        The scope for this engagement covers four distinct work packages on Workstation-01:
+      </p>
+
+      <div class="code-block">
+        <div class="code-head">
+          <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="code-lang">statement of work — scope</span>
+          <button class="copy-btn" data-copy type="button">COPY</button>
+        </div>
+        <pre><code>[SOW-1] Hardware Remediation
+    - Extract and replace the degraded legacy Power Supply Unit
+      with a verified stable replacement model.
+    - Perform full physical chassis deep-clean.
+    - Reapply premium Thermal Interface Material to the CPU core.
+
+[SOW-2] Operating System Deployment
+    - Execute a destructive storage partition format.
+    - Deploy a clean, bare-metal installation of Windows 10
+      Professional.
+
+[SOW-3] Network Print Topology Restoration
+    - Re-map the local network print topology across the active
+      Ethernet hub fabric.
+    - Assign Standard TCP/IP ports for all connected independent
+      commercial endpoints.
+
+[SOW-4] Acceptance Criteria
+    - All four packages must pass the post-implementation
+      verification plan before the change is marked complete.</code></pre>
+      </div>
+
+      <p>
+        The four packages are ordered by dependency — SOW-1 must complete before SOW-2 can
+        begin, SOW-2 before SOW-3, and SOW-4 closes the sequence. This ordering is not
+        decorative; it defines the critical path the executing technician will follow, and any
+        deviation from it during execution is itself a signal that the change plan has drifted
+        and needs to be reassessed.
+      </p>
+    </section>
+
+    <!-- ---------- PHASE 2 ---------- -->
+    <section class="cs-section" id="phase-2">
+      <span class="phase-tag">PHASE 02</span>
+      <h2>Period of Performance — Scheduling the Risk</h2>
+
+      <p>
+        The second section defines <em>when</em> the work happens, and this is where the
+        change planner's real judgment enters the picture. On a mission-critical asset, the
+        timing of a change is itself a risk control — the same work executed during business
+        hours carries a fundamentally different business impact than the same work executed
+        overnight. The schedule in this document was therefore built around a single non-negotiable
+        constraint: <strong>zero impact on standard corporate business revenue.</strong>
+      </p>
+
+      <p>
+        The change window was deliberately spread across a weekend to absorb the physical
+        reality that hardware teardown, thermal maintenance, and bare-metal OS deployment
+        cannot be compressed into a single overnight session. Splitting it into two working
+        periods gave the executing technician a hard stopping point for each phase, with a
+        natural overnight pause between the physical work and the software work.
+      </p>
+
+      <div class="code-block">
+        <div class="code-head">
+          <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="code-lang">schedule — maintenance window</span>
+          <button class="copy-btn" data-copy type="button">COPY</button>
+        </div>
+        <pre><code>Saturday 18:00              System Isolation &amp; Data Backup Phase
+Saturday 19:00 - 22:00      Physical Hardware Teardown,
+                            PSU Swap, Thermal Paste Maintenance
+<em>── overnight pause ──</em>
+Sunday   09:00 - 13:00      Bare-Metal OS Installation,
+                            Driver Provisioning, Network Port Mapping
+Sunday   13:00 - 15:00      System Testing, Validation &amp; Sign-off</code></pre>
+      </div>
+
+      <p>
+        Three design decisions in that schedule are worth calling out. The
+        <strong>System Isolation &amp; Data Backup phase begins an hour before the physical work</strong>,
+        which means the backup has time to complete and be verified before any irreversible
+        action is taken. The <strong>overnight pause between the hardware and software phases</strong>
+        gives the technician a natural recovery point if the physical teardown runs long or
+        encounters an unexpected issue — the schedule does not force software work to begin
+        before the hardware is confirmed stable. And the <strong>final validation block is
+        deliberately two hours long</strong> even though the tests themselves take minutes,
+        because that's the window where unexpected issues surface and where the technician
+        needs room to diagnose without pressure.
+      </p>
+    </section>
+
+    <!-- ---------- PHASE 3 ---------- -->
+    <section class="cs-section" id="phase-3">
+      <span class="phase-tag">PHASE 03</span>
+      <h2>Risk Analysis &amp; Rollback Planning</h2>
+
+      <p>
+        The third section is the part of the document that a change advisory board actually
+        reads most closely. It exists to answer two questions: <strong>how bad could this
+        get if it goes wrong, and what is the recovery path if it does?</strong> Both must be
+        answered explicitly and honestly — a change document that claims low risk on a
+        revenue-critical asset is either dishonest or written by someone who doesn't understand
+        the asset.
+      </p>
+
+      <h3>Impact analysis</h3>
+
+      <p>
+        The risk rating for this change is <strong>HIGH</strong>, and the impact statement
+        makes the reasoning explicit: Workstation-01 acts as the core print spooler for the
+        entire facility network. While the machine is offline for the maintenance window, local
+        printing services will be 100% unavailable, resulting in a temporary halt to
+        print-based revenue generation.
+      </p>
+
+      <p>
+        The mitigation for this risk is entirely structural — it lives in the scheduling
+        decision made in Phase 2. By confining the work to a weekend window when print
+        operations are dormant, the actual business impact of the change is reduced to zero
+        despite the HIGH technical risk rating. This is the pattern that distinguishes mature
+        change management: the risk score reflects the underlying severity of what could go
+        wrong, and the mitigating controls address that severity directly rather than through
+        wishful thinking.
+      </p>
+
+      <h3>Backout and rollback plan</h3>
+
+      <p>
+        The rollback plan is the section that converts a change document from a proposal into
+        a professional commitment. It specifies exactly what will happen if the change fails,
+        in what order, and how long it will take. Two independent rollback paths were defined:
+      </p>
+
+      <ul>
+        <li>
+          <strong>Hardware rollback.</strong> If the replacement PSU or any other new hardware
+          component fails to integrate, the original legacy component is re-seated to restore
+          the physical baseline configuration. This is the fastest rollback path — a re-seat
+          is minutes of work — and it applies whenever the failure is hardware-layer rather
+          than software-layer.
+        </li>
+        <li>
+          <strong>Data rollback.</strong> Prior to formatting the drive, a full bit-stream
+          clone of the workstation's hard drive is written to an external, encrypted staging
+          drive using imaging software. If the clean OS installation crashes at any point,
+          this image is re-flashed onto the disk, restoring the exact pre-change configuration
+          within 45 minutes.
+        </li>
+      </ul>
+
+      <div class="callout finding">
+        <div class="callout-label">▲ ROLLBACK_COMMITMENT</div>
+        <p>
+          The document commits to a full rollback within <strong>60 minutes</strong> of a
+          decision to abort. The commitment is not aspirational — it's the sum of the two
+          rollback paths (hardware re-seat, or 45-minute image restore) plus a 15-minute
+          decision buffer. A rollback commitment that cannot be arithmetic-verified against
+          the actual recovery steps is not a commitment; it's a hope. This one can be.
+        </p>
+      </div>
+
+      <p>
+        The image-based approach is the correct choice for this asset for a specific reason:
+        the machine's value is not in its local data (which lives on network peripherals) but
+        in its <em>configuration</em>. Rebuilding the workstation from scratch after a failed
+        change would take hours — reinstalling Windows, all updates, all drivers, all network
+        ports, all print queues — and every one of those steps carries the risk of introducing
+        a mistake. Restoring a bit-stream image reverses all of it in a single operation. The
+        decision to invest in imaging before touching the drive is what makes the 60-minute
+        rollback commitment possible at all.
+      </p>
+    </section>
+
+    <!-- ---------- PHASE 4 ---------- -->
+    <section class="cs-section" id="phase-4">
+      <span class="phase-tag">PHASE 04</span>
+      <h2>Post-Implementation Verification — Defining "Done"</h2>
+
+      <p>
+        The final section of the document defines the acceptance criteria that gate the change
+        from "executed" to "complete." This is the discipline that prevents a technician from
+        declaring success based on the fact that the machine powers on — a distinction that
+        matters enormously on a mission-critical asset, because a workstation that boots but
+        cannot service print queues is functionally just as broken as one that doesn't boot at
+        all.
+      </p>
+
+      <p>
+        Three verification tests were defined, each covering a distinct layer of the system
+        stack:
+      </p>
+
+      <div class="code-block">
+        <div class="code-head">
+          <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="code-lang">acceptance criteria</span>
+          <button class="copy-btn" data-copy type="button">COPY</button>
+        </div>
+        <pre><code>[TEST-1] Hardware Layer — POST &amp; Boot
+    The system clears the Power-On Self-Test and boots into
+    the desktop environment in under 30 seconds.
+
+[TEST-2] Thermal Layer — Idle Temperature Stability
+    CPU idle core temperatures maintain stability below 45°C
+    under continuous operational stress.
+
+[TEST-3] Functional Layer — Parallel Print Operations
+    Parallel test print data packets are sent successfully
+    across the local Ethernet hub network, verifying that all
+    commercial endpoints can print simultaneously without
+    collisions or queue bottlenecks.</code></pre>
+      </div>
+
+      <p>
+        Each test maps to a specific failure mode that the change was designed to prevent.
+        TEST-1 confirms the hardware overhaul succeeded — POST clearing proves the new PSU is
+        providing stable power, and the 30-second boot commitment confirms the clean OS install
+        produced a responsive system rather than one that merely launches. TEST-2 confirms the
+        thermal remediation produced the intended result; the 45°C threshold is a documented
+        engineering target, not an arbitrary number, and it will only be met if the heatsink
+        was reattached with correct mounting pressure and proper thermal compound application.
+        TEST-3 confirms the network re-architecture restored the actual business function —
+        parallel print operations across the entire peripheral array, which is what the machine
+        exists to do.
+      </p>
+
+      <p>
+        The <em>parallel</em> qualifier in TEST-3 deserves emphasis. A sequential print test
+        — sending one job, waiting for it to complete, sending the next — proves almost
+        nothing about production readiness, because production never works that way. A busy
+        retail counter sends multiple print jobs to multiple printers simultaneously, and the
+        system either handles that concurrency correctly or it doesn't. The verification plan
+        was written to match the actual production load, not a sanitized test scenario.
+      </p>
+    </section>
+
+    <!-- ---------- OUTCOMES ---------- -->
+    <section class="cs-section" id="outcomes">
+      <span class="phase-tag">OUTCOMES</span>
+      <h2>Quantifiable Business Outcomes</h2>
+
+      <p>
+        The document closes with two measurable outcomes that justify the change from a
+        business perspective — the section that a stakeholder who doesn't care about PSU
+        specifications will actually read.
+      </p>
+
+      <ul>
+        <li>
+          <strong>Risk containment — zero operational revenue loss.</strong> The scheduling
+          decision at the heart of this document converted a HIGH-risk change on a
+          revenue-generating asset into a zero-impact event by confining all work to
+          zero-traffic business hours. The business impact of the change on customer-facing
+          operations was provably nil, and the technical work proceeded without the pressure
+          that comes from racing against an active production timeline.
+        </li>
+        <li>
+          <strong>Asset lifecycle extended by years.</strong> The documented upgrade path
+          protects the physical hardware investment rather than treating the machine as a
+          consumable. PSU replacement and thermal remediation extend the useful service life
+          of the workstation, delaying capital expenditure on replacement hardware and
+          stabilizing core business uptime for the operational period that follows.
+        </li>
+      </ul>
+
+      <div class="callout remediation">
+        <div class="callout-label">✓ CHANGE_MANAGEMENT_VALIDATED</div>
+        <p>
+          <strong>Full ITIL change governance framework documented.</strong> The engagement
+          produced a formal change request with explicit scope definition, risk-modelled
+          scheduling, an arithmetically verifiable rollback commitment, and layer-by-layer
+          acceptance criteria — the four artefact classes that a change advisory board requires
+          to approve a HIGH-risk change on a revenue-critical asset. The document is both the
+          planning prerequisite for the recovery work already documented in this portfolio and
+          a transferable template for any future mission-critical infrastructure change.
+        </p>
+      </div>
+    </section>
+
+    <!-- ---------- PRIVACY ---------- -->
+    <section class="cs-section" id="privacy">
+      <span class="phase-tag">DISCLOSURE</span>
+      <h2>Security &amp; Data Privacy Note</h2>
+
+      <div class="callout note">
+        <div class="callout-label">◆ CLIENT_ANONYMITY</div>
+        <p>
+          The change request and Statement of Work presented here were produced under a
+          professional infrastructure support contract containing a standard client-anonymity
+          clause. Store branding, physical location, asset serial numbers, personnel
+          identifiers, and internal network identifiers are not disclosed. The document
+          structure, risk analysis methodology, rollback planning, and acceptance criteria are
+          reproduced in full because they reflect the technical and process discipline the
+          engagement required. The client remains unidentifiable from this document.
+        </p>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<!-- ============================================================
+     FOOTER
+     ============================================================ -->
+<footer class="footer">
+  <div class="wrap wrap-wide footer-inner">
+    <div>
+      <p>&copy; 2026 Mohammed Oudai Helaleh. All rights cryptographically reserved.</p>
+      <p class="meta">Informatics &amp; Communications Engineering Architecture Deployment</p>
+    </div>
+  </div>
+</footer>
+
+<script src="../case-study.js" defer></script>
+</body>
+</html>

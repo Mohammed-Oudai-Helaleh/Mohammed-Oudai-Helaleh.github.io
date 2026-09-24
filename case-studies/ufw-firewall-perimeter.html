@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stateful Host Firewall Perimeter | Mohammed Oudai Helaleh</title>
+<meta name="description" content="Engineering a stateful host-based security perimeter with UFW — Default Deny topology, SSH connection rate-limiting, and targeted IP blacklisting for incident response containment.">
+
+<link rel="stylesheet" href="../case-study.css">
+</head>
+
+<body class="theme-defense">
+
+<div class="bg-grid"></div>
+<div class="progress" id="progress"></div>
+
+<!-- ============================================================
+     NAV
+     ============================================================ -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="../index.html" class="brand">MOHAMMED <span>OUDAI</span></a>
+    <a href="../index.html#projects" class="back-link">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M19 12H5M12 19l-7-7 7-7"/>
+      </svg>
+      <span>BACK_TO_VAULT</span>
+    </a>
+  </div>
+</nav>
+
+<!-- ============================================================
+     HERO
+     ============================================================ -->
+<header class="cs-hero">
+  <div class="wrap">
+
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <a href="../index.html">PORTFOLIO</a>
+      <span class="sep">/</span>
+      <a href="../index.html#projects">VAULT</a>
+      <span class="sep">/</span>
+      <a href="../index.html#projects">DEFENSIVE_INFRASTRUCTURE</a>
+    </nav>
+
+    <div class="pill-row">
+      <span class="pill"><span class="dot"></span>PERIMETER_SECURITY</span>
+      <span class="pill neutral">CASE_STUDY</span>
+      <span class="pill neutral">READ_TIME 6 MIN</span>
+    </div>
+
+    <h1>Host-Based Network Hardening &amp; Stateful Firewall Engineering</h1>
+
+    <p class="standfirst">
+      Designing a stateful host-based security perimeter with the Linux <strong>Uncomplicated
+      Firewall</strong> — a Default Deny topology, <strong>SSH connection rate-limiting</strong>
+      that silently neutralises brute-force loops, and targeted IP blacklisting for live incident
+      response containment.
+    </p>
+
+    <dl class="meta-grid">
+      <div class="meta-cell">
+        <dt>Environment</dt>
+        <dd>Headless Ubuntu Server 24.04 LTS (CLI-only)</dd>
+      </div>
+      <div class="meta-cell">
+        <dt>Hypervisor</dt>
+        <dd>Type-2 VMware virtual machine</dd>
+      </div>
+      <div class="meta-cell">
+        <dt>Engine</dt>
+        <dd>UFW — iptables/nftables frontend</dd>
+      </div>
+      <div class="meta-cell">
+        <dt>Rule Classes</dt>
+        <dd>LIMIT IN · ALLOW IN · DENY IN</dd>
+      </div>
+    </dl>
+
+  </div>
+</header>
+
+<!-- ============================================================
+     BODY
+     ============================================================ -->
+<main class="cs-body">
+  <div class="wrap">
+
+    <!-- ---------- OBJECTIVE ---------- -->
+    <section class="cs-section">
+      <p>
+        Every service listening on a network interface is an invitation. Leaving a cloud endpoint
+        or a development environment exposed without a localised packet filter is the single most
+        common cause of compromise in infrastructure deployments — not because the applications
+        are flawed, but because <strong>nothing stands between the network and the process</strong>.
+      </p>
+
+      <p>
+        This engagement establishes a hardened host boundary using UFW, the standard
+        iptables/nftables frontend shipped with Ubuntu. The goal is not merely to close ports but to
+        engineer a <em>stateful</em> perimeter — a policy engine that understands connection context,
+        enforces least privilege by default, and can isolate a specific hostile node in real time
+        without touching the rest of the ruleset.
+      </p>
+
+      <div class="callout note">
+        <div class="callout-label">◆ SCOPE_CONSTRAINT</div>
+        <p>
+          All rule engineering was performed inside a lab VM. The blacklisted threat node
+          (<code>192.168.10.200</code>) is a simulated adversary — a second lab machine used to
+          verify that the DENY rule actually severs traffic as expected.
+        </p>
+      </div>
+    </section>
+
+    <!-- ---------- PHASE 1 ---------- -->
+    <section class="cs-section" id="phase-1">
+      <span class="phase-tag">PHASE 01</span>
+      <h2>Default Deny Perimeter Construction</h2>
+
+      <p>
+        A firewall's default policy is the single most important decision in the entire
+        configuration — it's the stance the engine takes for every packet that doesn't match an
+        explicit rule. The wrong choice here undermines every rule that follows. UFW ships with
+        <code>deny incoming</code> already set, but the baseline is only meaningful once it's
+        declared explicitly and paired with a matching outbound policy:
+      </p>
+
+      <div class="code-block">
+        <div class="code-head">
+          <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="code-lang">bash</span>
+          <button class="copy-btn" data-copy type="button">COPY</button>
+        </div>
+        <pre><code>sudo ufw default deny incoming
+sudo ufw default allow outgoing</code></pre>
+      </div>
+
+      <p>
+        The asymmetry is deliberate and central to the entire design. <strong>Inbound traffic is
+        denied by default</strong> — no unrequested packet may cross the kernel boundary, and no
+        service is reachable unless a rule explicitly permits it. <strong>Outbound traffic is
+        allowed freely</strong> — the host must still be able to reach package repositories, DNS
+        resolvers, and upstream APIs for normal operation. This is the network-layer expression of
+        the principle of least privilege: deny by default, permit by exception.
+      </p>
+
+      <div class="callout remediation">
+        <div class="callout-label">✓ BASELINE_HARDENED</div>
+        <p>
+          The engine now enforces a strict Default Deny topology for inbound connections while
+          permitting free outbound paths. Every subsequent rule in this engagement is an
+          <em>explicit exception</em> carved out of an otherwise closed perimeter — which means the
+          attack surface is now bounded by what has been opened, not by what has been forgotten to
+          close.
+        </p>
+      </div>
+    </section>
+
+    <!-- ---------- PHASE 2 ---------- -->
+    <section class="cs-section" id="phase-2">
+      <span class="phase-tag">PHASE 02</span>
+      <h2>Technical Rule Engineering &amp; Threat Blacklisting</h2>
+
+      <p>
+        With the perimeter closed, specific communication corridors were opened to accommodate
+        production data flows and to protect administrative interfaces from automated threat
+        vectors. Three distinct rule classes were deployed:
+      </p>
+
+      <div class="code-block">
+        <div class="code-head">
+          <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="code-lang">bash</span>
+          <button class="copy-btn" data-copy type="button">COPY</button>
+        </div>
+        <pre><code><span class="cmt"># Rate-limit SSH: 6 handshakes per 30s per source, excess dropped</span>
+sudo ufw limit 22/tcp
+
+<span class="cmt"># Provision production web corridors (HTTP / HTTPS)</span>
+sudo ufw allow 80/tcp
+sudo ufw allow 443/tcp
+
+<span class="cmt"># Incident response: blacklist a flagged hostile node</span>
+sudo ufw deny from 192.168.10.200</code></pre>
+      </div>
+
+      <h3>SSH connection rate-limiting</h3>
+
+      <p>
+        Port 22 was not opened with a standard <code>allow</code> — it was opened with
+        <code>limit</code>. The distinction matters. UFW's <code>limit</code> directive installs a
+        stateful rule that watches the connection rate <em>per source address</em>: if a single
+        external node initiates more than six handshakes within a thirty-second window, the kernel
+        silently drops all further traffic from that source. Not closed, not rejected — <strong>
+        silently dropped</strong>, meaning an automated brute-force tool receives no response at
+        all and cannot even distinguish "port closed" from "host unreachable."
+      </p>
+
+      <p>
+        That difference is what makes rate-limiting more effective than a simple connection cap. A
+        rejected connection tells the attacker "slow down." A silently dropped connection tells them
+        nothing — and a script that can't observe its own impact can't adapt to it.
+      </p>
+
+      <h3>Production service allocation</h3>
+
+      <p>
+        Ports 80 and 443 were provisioned as explicitly cleared corridors for standard unencrypted
+        and encrypted web application payloads. These are the only two inbound paths in the entire
+        ruleset that accept arbitrary external traffic — every other port remains behind the Default
+        Deny stance established in Phase 1.
+      </p>
+
+      <h3>Targeted IP blacklisting</h3>
+
+      <p>
+        A real-world incident response containment task was simulated by injecting a top-priority
+        drop rule that explicitly targets a flagged threat node
+        (<code>192.168.10.200</code>). This rule sits above the Default Deny policy as a named
+        exception — the blacklisted host is severed from every service on the machine, unable to
+        run host enumeration passes or touch any system port.
+      </p>
+
+      <div class="callout note">
+        <div class="callout-label">◆ CONTAINMENT_NOTE</div>
+        <p>
+          In a live incident response scenario, the value of a targeted DENY rule is not that it
+          blocks a hostile host — the Default Deny policy already does that for any port not
+          explicitly opened. The value is <strong>documentation and decisiveness</strong>: the
+          blacklist entry records the specific hostile actor, establishes an audit trail, and
+          ensures the host stays blocked even if a later rule opens an inbound corridor for
+          legitimate use.
+        </p>
+      </div>
+    </section>
+
+    <!-- ---------- VERIFICATION ---------- -->
+    <section class="cs-section" id="verification">
+      <span class="phase-tag">VERIFICATION</span>
+      <h2>Policy Enforcement Validation</h2>
+
+      <p>
+        The stateful packet filter was armed via the master enable command, then audited via a
+        verbose status pass that surfaces every rule, the default policies, and the active logging
+        state in a single view:
+      </p>
+
+      <div class="code-block">
+        <div class="code-head">
+          <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="code-lang">bash</span>
+          <button class="copy-btn" data-copy type="button">COPY</button>
+        </div>
+        <pre><code>sudo ufw enable
+sudo ufw status verbose</code></pre>
+      </div>
+
+      <p>
+        The diagnostic returned full operational readiness across every dimension:
+      </p>
+
+      <ul>
+        <li>
+          <strong>Status: active.</strong> The firewall engine is loaded and enforcing policy at the
+          kernel packet-filtering layer, not merely configured on disk.
+        </li>
+        <li>
+          <strong>Default policies confirmed.</strong> The <code>deny (incoming)</code> and
+          <code>allow (outgoing)</code> baseline is holding firm — nothing has silently overwritten
+          the Default Deny stance.
+        </li>
+        <li>
+          <strong>Rule matrix rendered.</strong> The status table shows the three rule classes in
+          effect: <code>LIMIT IN</code> for port 22, <code>ALLOW IN</code> for ports 80 and 443,
+          and <code>DENY IN</code> for the blacklisted threat node.
+        </li>
+        <li>
+          <strong>Dual-stack automation.</strong> The engine successfully initialised identical
+          security parameters for both IPv4 and IPv6 infrastructure layers simultaneously. This
+          matters because a firewall configured only for IPv4 leaves a silent second attack surface
+          on v6 — the ruleset must protect both stacks or the deployment is only half-hardened.
+        </li>
+      </ul>
+
+      <div class="callout remediation">
+        <div class="callout-label">✓ ENFORCEMENT_VALIDATED</div>
+        <p>
+          <strong>Host-level boundary defense confirmed.</strong> The server is insulated from
+          network scanning noise, protected against dictionary attacks at the connection layer, and
+          equipped to discard targeted adversary packets with zero administrative latency. The
+          perimeter now behaves as a control, not a configuration file.
+        </p>
+      </div>
+
+      <!-- ---------- SCREENSHOT ---------- -->
+      <figure class="cs-figure">
+        <div class="fig-bar">
+          <span class="dot" aria-hidden="true"></span>
+          <span>firewall_hardening_rules.png</span>
+        </div>
+        <img src="../assets/img/firewall_hardening_rules.png"
+             alt="Active terminal diagnostics displaying an operational active UFW state, showing the default incoming deny framework alongside explicit port restrictions, rate limits, and node block parameters"
+             loading="lazy"
+             onerror="this.closest('figure').classList.add('img-missing')">
+        <div class="img-placeholder" aria-hidden="true">
+          [ TELEMETRY_CAPTURE_PENDING ]<br>
+          assets/img/firewall_hardening_rules.png
+        </div>
+        <figcaption>
+          <b>Figure 7.1</b> — Active terminal diagnostics displaying an operational
+          <code>active</code> UFW state, showing the default incoming deny framework alongside
+          explicit port restrictions, rate limits, and node block parameters.
+        </figcaption>
+      </figure>
+    </section>
+
+    <!-- ---------- PRIVACY ---------- -->
+    <section class="cs-section" id="privacy">
+      <span class="phase-tag">DISCLOSURE</span>
+      <h2>Security &amp; Data Privacy Note</h2>
+
+      <div class="callout note">
+        <div class="callout-label">◆ DATA_MASKING_PROTOCOL</div>
+        <p>
+          Visual telemetry was monitored via local snapshot archive. To maintain compliance with
+          enterprise information security guidelines, infrastructure gateway masks and private
+          internal user account identities have been masked within the telemetry logs shown here.
+        </p>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<!-- ============================================================
+     FOOTER
+     ============================================================ -->
+<footer class="footer">
+  <div class="wrap wrap-wide footer-inner">
+    <div>
+      <p>&copy; 2026 Mohammed Oudai Helaleh. All rights cryptographically reserved.</p>
+      <p class="meta">Informatics &amp; Communications Engineering Architecture Deployment</p>
+    </div>
+  </div>
+</footer>
+
+<script src="../case-study.js" defer></script>
+</body>
+</html>

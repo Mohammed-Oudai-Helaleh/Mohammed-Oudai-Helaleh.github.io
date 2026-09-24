@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Private PKI &amp; Root Certificate Authority | Mohammed Oudai Helaleh</title>
+<meta name="description" content="Building an enterprise-grade private Public Key Infrastructure from scratch with OpenSSL — 4096-bit AES-256 armored Root CA, X.509 chain of trust, and CSR lifecycle management for internal endpoints.">
+
+<link rel="stylesheet" href="../case-study.css">
+</head>
+
+<body class="theme-defense">
+
+<div class="bg-grid"></div>
+<div class="progress" id="progress"></div>
+
+<!-- ============================================================
+     NAV
+     ============================================================ -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="../index.html" class="brand">MOHAMMED <span>OUDAI</span></a>
+    <a href="../index.html#projects" class="back-link">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M19 12H5M12 19l-7-7 7-7"/>
+      </svg>
+      <span>BACK_TO_VAULT</span>
+    </a>
+  </div>
+</nav>
+
+<!-- ============================================================
+     HERO
+     ============================================================ -->
+<header class="cs-hero">
+  <div class="wrap">
+
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <a href="../index.html">PORTFOLIO</a>
+      <span class="sep">/</span>
+      <a href="../index.html#projects">VAULT</a>
+      <span class="sep">/</span>
+      <a href="../index.html#projects">DEFENSIVE_INFRASTRUCTURE</a>
+    </nav>
+
+    <div class="pill-row">
+      <span class="pill"><span class="dot"></span>CRYPTOGRAPHIC_TRUST</span>
+      <span class="pill neutral">CASE_STUDY</span>
+      <span class="pill neutral">READ_TIME 7 MIN</span>
+    </div>
+
+    <h1>Public Key Infrastructure &amp; Private Certificate Authority Deployment</h1>
+
+    <p class="standfirst">
+      Establishing an enterprise-grade private PKI from scratch with <strong>OpenSSL</strong> —
+      a hardened directory boundary, a <strong>4096-bit AES-256 armored Root CA</strong>,
+      X.509 chain-of-trust construction, and a fully issued end-entity certificate for an
+      internal secure portal, validated against the root anchor.
+    </p>
+
+    <dl class="meta-grid">
+      <div class="meta-cell">
+        <dt>Environment</dt>
+        <dd>Headless Ubuntu Server 24.04 LTS (CLI-only)</dd>
+      </div>
+      <div class="meta-cell">
+        <dt>Hypervisor</dt>
+        <dd>Type-2 VMware virtual machine</dd>
+      </div>
+      <div class="meta-cell">
+        <dt>Toolchain</dt>
+        <dd>OpenSSL · X.509 · RSA · SHA-256</dd>
+      </div>
+      <div class="meta-cell">
+        <dt>Trust Anchor</dt>
+        <dd>4096-bit Root CA · 10-year lifecycle</dd>
+      </div>
+    </dl>
+
+  </div>
+</header>
+
+<!-- ============================================================
+     BODY
+     ============================================================ -->
+<main class="cs-body">
+  <div class="wrap">
+
+    <!-- ---------- OBJECTIVE ---------- -->
+    <section class="cs-section">
+      <p>
+        Public certificate authorities exist to solve a specific problem: how do two parties with no
+        prior relationship establish cryptographic trust? Inside a private corporate subnet that
+        problem doesn't exist — everyone answers to the same internal authority. Relying on a public
+        CA for internal services means paying for certificates you can't cryptographically
+        distinguish from an attacker's, on a validation chain you don't control, with an external
+        dependency your own infrastructure team can't audit.
+      </p>
+
+      <p>
+        This engagement establishes a <strong>self-contained Chain of Trust</strong> using OpenSSL —
+        a private Root Certificate Authority that becomes the ultimate cryptographic anchor for every
+        internal endpoint on the network. Asymmetric key generation, certificate lifecycle management,
+        and X.509 structuring are all built by hand so the trust relationships are fully visible
+        rather than hidden behind a vendor's wizard.
+      </p>
+
+      <div class="callout note">
+        <div class="callout-label">◆ SCOPE_CONSTRAINT</div>
+        <p>
+          All cryptographic material is generated inside an isolated lab VM. The private key
+          parameters and serial sequence integers shown in the raw tool output are redacted from the
+          public telemetry — a private CA whose root key leaks is worse than no CA at all.
+        </p>
+      </div>
+    </section>
+
+    <!-- ---------- PHASE 1 ---------- -->
+    <section class="cs-section" id="phase-1">
+      <span class="phase-tag">PHASE 01</span>
+      <h2>Root Certificate Authority Anchoring</h2>
+
+      <p>
+        The architecture begins with the anchor itself. The Root CA is the cryptographic authority the
+        entire trust chain will ultimately terminate at — if the private key is compromised, every
+        certificate ever issued under it becomes instantly forgeable. The workspace is therefore
+        isolated before a single key is generated, locked to administrative root profiles with a
+        <code>chmod 700</code> boundary that prevents adjacent host users from reading the private
+        key material even if they gain a foothold on the machine:
+      </p>
+
+      <div class="code-block">
+        <div class="code-head">
+          <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="code-lang">bash</span>
+          <button class="copy-btn" data-copy type="button">COPY</button>
+        </div>
+        <pre><code><span class="cmt"># Provision the hardened workspace and lock the CA directory</span>
+mkdir -p ~/enterprise_pki/{ca,server}
+chmod 700 ~/enterprise_pki/ca
+
+<span class="cmt"># Forge the 4096-bit Root CA private key, armored with AES-256</span>
+openssl genrsa -aes256 -out ~/enterprise_pki/ca/cakey.pem 4096
+
+<span class="cmt"># Generate the self-signed X.509 Root CA certificate (SHA-256, 10-year validity)</span>
+openssl req -x509 -new -nodes \
+  -key ~/enterprise_pki/ca/cakey.pem \
+  -sha256 -days 3650 \
+  -out ~/enterprise_pki/ca/cacert.pem \
+  -subj "/C=JO/ST=Amman/O=Enterprise Root CA/CN=Enterprise Root CA"</code></pre>
+      </div>
+
+      <p>
+        Three properties of that root key matter. First, <strong>4096-bit RSA</strong> rather than
+        2048 — the root has to outlive every certificate it issues, and key strength at the anchor
+        is not a place to economise. Second, <strong>AES-256 encryption on the private key
+        itself</strong> — the key file is useless to an attacker without the passphrase, which means
+        a filesystem-level compromise doesn't automatically become a CA compromise. Third,
+        <strong>10-year validity on the root</strong> — the anchor must remain valid for the entire
+        lifetime of every leaf certificate it signs, otherwise the chain of trust breaks mid-flight.
+      </p>
+
+      <div class="callout remediation">
+        <div class="callout-label">✓ ROOT_ANCHOR_ESTABLISHED</div>
+        <p>
+          The <code>cacert.pem</code> file is now the cryptographic root of the entire enterprise
+          trust network. Any endpoint that trusts this certificate will automatically trust every
+          certificate subsequently signed by it — the entire point of a chain of trust.
+        </p>
+      </div>
+    </section>
+
+    <!-- ---------- PHASE 2 ---------- -->
+    <section class="cs-section" id="phase-2">
+      <span class="phase-tag">PHASE 02</span>
+      <h2>End-Entity Request &amp; Cryptographic Issuance</h2>
+
+      <p>
+        With the anchor in place, a scenario was simulated where an internal corporate application
+        gateway — <code>internal-secure-portal.local</code> — needed strict transport-layer encryption
+        to handle firewalled corporate network queries. The leaf certificate lifecycle begins with a
+        private key generated <em>on the endpoint itself</em>, never transmitted, never leaving the
+        host it belongs to:
+      </p>
+
+      <div class="code-block">
+        <div class="code-head">
+          <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="code-lang">bash</span>
+          <button class="copy-btn" data-copy type="button">COPY</button>
+        </div>
+        <pre><code><span class="cmt"># Generate the 2048-bit webserver private key (bound to the endpoint)</span>
+openssl genrsa -out ~/enterprise_pki/server/webserver.key 2048
+
+<span class="cmt"># Build the Certificate Signing Request bound to the internal FQDN</span>
+openssl req -new \
+  -key ~/enterprise_pki/server/webserver.key \
+  -out ~/enterprise_pki/server/webserver.csr \
+  -subj "/C=JO/ST=Amman/O=Internal Services/CN=internal-secure-portal.local"
+
+<span class="cmt"># Sign the CSR with the Root CA (365-day operational certificate)</span>
+sudo openssl x509 -req \
+  -in ~/enterprise_pki/server/webserver.csr \
+  -CA ~/enterprise_pki/ca/cacert.pem \
+  -CAkey ~/enterprise_pki/ca/cakey.pem \
+  -CAcreateserial \
+  -out ~/enterprise_pki/server/webserver.crt \
+  -days 365 -sha256</code></pre>
+      </div>
+
+      <p>
+        The <strong>Certificate Signing Request</strong> is the pivotal artifact here. It's the
+        structured metadata packet that carries the endpoint's public key and identity claims —
+        subject organisation, common name matching the FQDN — up to the CA for evaluation. Note what
+        crosses the boundary: only the public key, never the private. The endpoint keeps its own
+        secret; the CA merely vouches for it.
+      </p>
+
+      <p>
+        The <code>-CAcreateserial</code> flag on the signing step is a small detail with a real
+        consequence. It generates a monotonic serial-number file
+        (<code>cacert.srl</code>) that ensures every certificate issued by this CA carries a unique,
+        traceable identifier. Without it, serial collision becomes possible — and a CA that reuses
+        serial numbers is a CA that can't reliably be audited or revoked.
+      </p>
+    </section>
+
+    <!-- ---------- VERIFICATION ---------- -->
+    <section class="cs-section" id="verification">
+      <span class="phase-tag">VERIFICATION</span>
+      <h2>Trust Chain Validation</h2>
+
+      <p>
+        To confirm the mathematical validity and structural pathing of the newly forged trust asset,
+        a cryptographic verification sweep was executed. OpenSSL walked the certificate's signature
+        chain, re-hashed the signed payload against the root's public key, and validated every
+        extension constraint along the way:
+      </p>
+
+      <div class="code-block">
+        <div class="code-head">
+          <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="code-lang">bash</span>
+          <button class="copy-btn" data-copy type="button">COPY</button>
+        </div>
+        <pre><code>openssl verify \
+  -CAfile ~/enterprise_pki/ca/cacert.pem \
+  ~/enterprise_pki/server/webserver.crt</code></pre>
+      </div>
+
+      <p>
+        The engine checked the dynamic signature values against the root's public key, analysed the
+        hash identifiers, and emitted the definitive success log string:
+      </p>
+
+      <div class="code-block">
+        <div class="code-head">
+          <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="code-lang">output</span>
+          <button class="copy-btn" data-copy type="button">COPY</button>
+        </div>
+        <pre><code>~/enterprise_pki/server/webserver.crt: OK</code></pre>
+      </div>
+
+      <p>
+        That one-line <code>OK</code> is not a formality. It means the leaf certificate's signature
+        was mathematically reconstructed from the root's public key and matched — meaning the root
+        is genuinely the issuer, the leaf has not been tampered with, and the chain is structurally
+        intact. Any break anywhere in that sequence produces a distinct error code rather than a
+        clean pass.
+      </p>
+
+      <h3>Metadata structural analysis</h3>
+
+      <p>
+        Subsequent structural metadata dumps confirmed perfect cryptographic alignment between the
+        certificate's two principal identity fields:
+      </p>
+
+      <ul>
+        <li>
+          <strong>Subject properties</strong> map cleanly to the internal endpoint domain —
+          <code>CN=internal-secure-portal.local</code> — establishing the certificate's owner
+          identity for TLS hostname verification.
+        </li>
+        <li>
+          <strong>Issuer identity</strong> anchors explicitly to the Enterprise Root CA —
+          <code>CN=Enterprise Root CA</code> — proving the signing relationship was recorded
+          correctly in the X.509 structure itself, not merely in the file paths on disk.
+        </li>
+      </ul>
+
+      <div class="callout remediation">
+        <div class="callout-label">✓ TRUST_CHAIN_VALIDATED</div>
+        <p>
+          Any endpoint that trusts the master Root CA will now seamlessly establish encrypted HTTPS
+          channels with the internal web application. The trust relationship propagates automatically
+          down the chain — no per-endpoint configuration, no manual key exchange, no external
+          dependency. The enterprise now owns its own cryptographic identity.
+        </p>
+      </div>
+
+      <!-- ---------- SCREENSHOT ---------- -->
+      <figure class="cs-figure">
+        <div class="fig-bar">
+          <span class="dot" aria-hidden="true"></span>
+          <span>pki_certificate_metadata.png</span>
+        </div>
+        <img src="../assets/img/pki_certificate_metadata.png"
+             alt="Active terminal diagnostics displaying an operational OK trust chain status verification, followed by the X.509 metadata profile tracking the internal domain issuer bounds"
+             loading="lazy"
+             onerror="this.closest('figure').classList.add('img-missing')">
+        <div class="img-placeholder" aria-hidden="true">
+          [ TELEMETRY_CAPTURE_PENDING ]<br>
+          assets/img/pki_certificate_metadata.png
+        </div>
+        <figcaption>
+          <b>Figure 6.1</b> — Active terminal diagnostics displaying an operational <code>OK</code>
+          trust chain status verification, followed by the X.509 metadata profile tracking the
+          internal domain issuer bounds.
+        </figcaption>
+      </figure>
+    </section>
+
+    <!-- ---------- PRIVACY ---------- -->
+    <section class="cs-section" id="privacy">
+      <span class="phase-tag">DISCLOSURE</span>
+      <h2>Security &amp; Data Privacy Note</h2>
+
+      <div class="callout note">
+        <div class="callout-label">◆ CRYPTOGRAPHIC_REDACTION_PROTOCOL</div>
+        <p>
+          Active private key parameters, modular exponents, and raw serial sequence integers visible
+          within the raw OpenSSL text dumps have been clipped or omitted from public logs to preserve
+          infrastructure integrity. The trust architecture is fully documented; the material that
+          would allow it to be forged is not.
+        </p>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<!-- ============================================================
+     FOOTER
+     ============================================================ -->
+<footer class="footer">
+  <div class="wrap wrap-wide footer-inner">
+    <div>
+      <p>&copy; 2026 Mohammed Oudai Helaleh. All rights cryptographically reserved.</p>
+      <p class="meta">Informatics &amp; Communications Engineering Architecture Deployment</p>
+    </div>
+  </div>
+</footer>
+
+<script src="../case-study.js" defer></script>
+</body>
+</html>

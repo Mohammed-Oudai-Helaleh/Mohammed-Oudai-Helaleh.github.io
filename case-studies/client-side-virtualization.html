@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Client-Side Virtualization for Multi-Platform Staging | Mohammed Oudai Helaleh</title>
+<meta name="description" content="Auditing a Type-2 hypervisor deployment — physical resource mapping, NAT versus Bridged virtual networking, and the CompTIA Cloud concepts demonstrated by client-side virtualization.">
+
+<link rel="stylesheet" href="../case-study.css">
+</head>
+
+<body class="theme-ops">
+
+<div class="bg-grid"></div>
+<div class="progress" id="progress"></div>
+
+<!-- ============================================================
+     NAV
+     ============================================================ -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="../index.html" class="brand">MOHAMMED <span>OUDAI</span></a>
+    <a href="../index.html#projects" class="back-link">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M19 12H5M12 19l-7-7 7-7"/>
+      </svg>
+      <span>BACK_TO_VAULT</span>
+    </a>
+  </div>
+</nav>
+
+<!-- ============================================================
+     HERO
+     ============================================================ -->
+<header class="cs-hero">
+  <div class="wrap">
+
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <a href="../index.html">PORTFOLIO</a>
+      <span class="sep">/</span>
+      <a href="../index.html#projects">VAULT</a>
+      <span class="sep">/</span>
+      <a href="../index.html#projects">IT_OPERATIONS</a>
+    </nav>
+
+    <div class="pill-row">
+      <span class="pill"><span class="dot"></span>VIRTUALIZATION</span>
+      <span class="pill neutral">CASE_STUDY</span>
+      <span class="pill neutral">READ_TIME 6 MIN</span>
+    </div>
+
+    <h1>Implementation of Client-Side Virtualization for Multi-Platform Staging</h1>
+
+    <p class="standfirst">
+      Auditing a Type-2 hypervisor deployment — mapping physical resources to a
+      <strong>Kali Linux guest VM</strong>, and evaluating <strong>NAT versus Bridged</strong>
+      virtual networking modes to contrast a fully isolated sandbox against direct LAN identity
+      on the home network.
+    </p>
+
+    <dl class="meta-grid">
+      <div class="meta-cell">
+        <dt>Hypervisor</dt>
+        <dd>VMware Workstation (Type-2, on Windows host)</dd>
+      </div>
+      <div class="meta-cell">
+        <dt>Guest OS</dt>
+        <dd>Kali Linux 2026.2 x64</dd>
+      </div>
+      <div class="meta-cell">
+        <dt>Allocation</dt>
+        <dd>2 vCPU sockets × 2 cores · 4 GB vRAM · 80.1 GB thin disk</dd>
+      </div>
+      <div class="meta-cell">
+        <dt>Networking</dt>
+        <dd>NAT (sandbox) → Bridged (LAN-visible)</dd>
+      </div>
+    </dl>
+
+  </div>
+</header>
+
+<!-- ============================================================
+     BODY
+     ============================================================ -->
+<main class="cs-body">
+  <div class="wrap">
+
+    <!-- ---------- OBJECTIVE ---------- -->
+    <section class="cs-section">
+      <p>
+        Client-side virtualization is one of the most under-appreciated skills in modern IT
+        operations. It's easy to click "create VM" in a hypervisor GUI and call it done — but
+        understanding what actually happens underneath is what separates a technician who can
+        deploy a VM from an engineer who can diagnose why it performs badly, why it can't reach
+        the internet, or why a security tool inside it behaves unexpectedly.
+      </p>
+
+      <p>
+        This engagement audits a <strong>Type-2 hypervisor environment</strong> from the ground
+        up: how virtual hardware is mapped from physical host resources, how the guest operating
+        system is isolated from the host, and how different virtual networking modes determine
+        what the guest can see and who can see it. The work spans hardware allocation theory,
+        two distinct networking profiles, and the CompTIA Cloud concepts that virtual
+        infrastructure is built on.
+      </p>
+
+      <div class="callout note">
+        <div class="callout-label">◆ SCOPE_CONSTRAINT</div>
+        <p>
+          The hypervisor was deployed on a personal Windows laptop with the guest running as an
+          isolated sandbox. No production infrastructure was involved. Networking analysis was
+          performed on a standard home LAN, and no third-party traffic was captured or inspected.
+        </p>
+      </div>
+    </section>
+
+    <!-- ---------- PHASE 1 ---------- -->
+    <section class="cs-section" id="phase-1">
+      <span class="phase-tag">PHASE 01</span>
+      <h2>Hypervisor Architecture &amp; Hardware Resource Mapping</h2>
+
+      <p>
+        The environment begins with a <strong>Type-2 hypervisor</strong> — VMware Workstation
+        running as a normal application on top of a Windows host OS. This is the fundamental
+        architectural distinction from <strong>Type-1 (bare-metal) hypervisors</strong> like
+        ESXi, Proxmox, or Hyper-V Server, which install directly on the physical hardware with
+        no host OS underneath. A Type-2 hypervisor's guest virtual machines do not access the
+        CPU, memory, or disk directly — every operation is mediated by the host OS and the
+        hypervisor layer, at a small but measurable cost.
+      </p>
+
+      <p>
+        That mediation cost is why Type-1 hypervisors dominate enterprise data centres: on a
+        workload running 200 VMs, a few percent of hypervisor overhead per VM becomes a
+        significant capacity loss. For a single user running one or two VMs on a laptop, the
+        trade-off is irrelevant — the flexibility of Type-2 vastly outweighs the overhead.
+      </p>
+
+      <h3>Physical-to-virtual resource allocation</h3>
+
+      <p>
+        Each guest VM is provisioned with a slice of the host's physical resources, presented
+        to the guest as its own dedicated hardware. For the Kali Linux VM in this engagement,
+        the allocation was deliberately balanced to leave the host fully usable while still
+        giving the guest enough capacity to run security tooling:
+      </p>
+
+      <ul>
+        <li>
+          <strong>CPU — 2 sockets × 2 cores = 4 vCPUs total.</strong> The host's physical cores
+          are time-shared between the host OS and the guest. VMware's scheduler is responsible
+          for arbitrating access, which means the guest sees four continuous processors even
+          though they are not four dedicated physical cores.
+        </li>
+        <li>
+          <strong>Memory — 4 GB vRAM.</strong> Allocated as a contiguous reservation from the
+          host's physical memory pool. 4 GB is a modest allocation by modern standards but
+          appropriate for a CLI-focused security lab — well above Kali's 1 GB minimum, well
+          below the point where the host would begin paging.
+        </li>
+        <li>
+          <strong>Storage — 80.1 GB thin-provisioned disk.</strong> Thin provisioning means
+          the disk file initially occupies only the blocks that have actually been written —
+          roughly 25.5 GB out of the 80.1 GB maximum. The disk file will grow as data is
+          written, but never exceeds the configured maximum. This is exactly the mechanism
+          that cloud IaaS providers use to oversubscribe storage across thousands of tenants.
+        </li>
+      </ul>
+
+      <!-- ---------- SCREENSHOT 1 ---------- -->
+      <figure class="cs-figure">
+        <div class="fig-bar">
+          <span class="dot" aria-hidden="true"></span>
+          <span>virtual_hardware_allocation.png</span>
+        </div>
+        <img src="../assets/img/virtual_hardware_allocation.png"
+             alt="VMware Workstation settings panel showing the Kali Linux VM's hardware allocation — memory 4 GB, processors 4, hard disk 80.1 GB with thin-provisioned storage, and the disk detail panel confirming current size 25.5 GB against a maximum of 80.1 GB"
+             loading="lazy"
+             onerror="this.closest('figure').classList.add('img-missing')">
+        <div class="img-placeholder" aria-hidden="true">
+          [ TELEMETRY_CAPTURE_PENDING ]<br>
+          assets/img/virtual_hardware_allocation.png
+        </div>
+        <figcaption>
+          <b>Figure 3.1</b> — VMware hardware allocation for the Kali Linux guest. The summary
+          panel confirms <strong>4 GB vRAM</strong>, <strong>4 total vCPUs</strong> (2 sockets ×
+          2 cores), and an <strong>80.1 GB thin-provisioned disk</strong> currently occupying
+          25.5 GB. The disk detail panel confirms non-preallocated storage — VMware's thin
+          provisioning mechanism, the same pattern that enables storage oversubscription in
+          cloud IaaS environments.
+        </figcaption>
+      </figure>
+
+      <div class="callout note">
+        <div class="callout-label">◆ IaaS_ARCHITECTURE_MAPPING</div>
+        <p>
+          This resource-provisioning model — manually selecting vCPU count, memory size, and
+          storage capacity from a raw pool — is exactly the workflow of
+          <strong>Infrastructure as a Service</strong> at cloud scale. The interface is
+          different (a web console instead of a desktop application), but the underlying
+          operation is identical: a customer declares the resources they need, and a
+          virtualization layer carves those resources out of a shared physical pool.
+        </p>
+      </div>
+    </section>
+
+    <!-- ---------- PHASE 2 ---------- -->
+    <section class="cs-section" id="phase-2">
+      <span class="phase-tag">PHASE 02</span>
+      <h2>Dual-Mode Virtual Networking Integration</h2>
+
+      <p>
+        The most consequential configuration decision in any VM deployment is the network mode.
+        The choice determines three things simultaneously: whether the VM can reach the outside
+        world, whether the outside world can reach the VM, and what IP address the VM appears to
+        have from every observer's perspective. VMware Workstation ships with four distinct
+        virtual networking modes, and this engagement tested the two most useful for a
+        staging environment.
+      </p>
+
+      <h3>NAT mode — the sandbox profile</h3>
+
+      <p>
+        In NAT mode, the guest VM sits behind a virtual router that VMware runs inside the
+        hypervisor. The guest receives an IP address on a private subnet (in this case
+        <code>192.168.40.128/24</code>) that exists only inside the hypervisor's virtual
+        network. When the guest wants to reach the internet, its packets are routed through
+        the virtual router, which performs <strong>Network Address Translation</strong> —
+        rewriting the source address to the host's own IP before forwarding.
+      </p>
+
+      <p>
+        The consequences of this design are precisely what makes NAT ideal for security
+        sandboxing:
+      </p>
+
+      <ul>
+        <li>
+          <strong>Outbound traffic works transparently.</strong> The guest can reach any
+          internet destination — DNS, HTTP, package repositories — because the NAT virtual
+          router forwards and translates on its behalf.
+        </li>
+        <li>
+          <strong>The guest is completely invisible to the local network.</strong> No device
+          on the home LAN can reach the VM directly, because the VM's IP address doesn't exist
+          outside the hypervisor's private subnet. Any unsolicited inbound packet addressed to
+          the VM has nowhere to go.
+        </li>
+        <li>
+          <strong>Isolation is structural, not configured.</strong> The sandboxing isn't a
+          firewall rule or an ACL that could be misconfigured — it's a consequence of the
+          address topology. The VM is behind a router with no port forwarding, period.
+        </li>
+      </ul>
+
+      <h3>Bridged mode — the LAN-visible profile</h3>
+
+      <p>
+        Bridged mode removes the virtual router entirely. The guest's virtual network adapter
+        is connected directly to the host's physical NIC through a software bridge, so from the
+        network's perspective the VM is a fully independent device sitting on the same wire as
+        the host laptop. The guest now issues its own DHCP request to the home router, receives
+        a real LAN address, and becomes a first-class peer on the local network.
+      </p>
+
+      <p>
+        In this deployment, the transition was demonstrable: after changing the VMware setting
+        from NAT to Bridged, the Linux NetworkManager service detected the network-layer change
+        and requested a fresh DHCP lease from the home router. The guest's address moved from
+        <code>192.168.40.128/24</code> (private to the hypervisor) to
+        <code>172.28.230.89/20</code> — a real LAN address assigned by the home router, on the
+        same subnet as the physical laptop.
+      </p>
+
+      <p>
+        Bridged mode is the correct choice when the VM needs to be reachable as a distinct
+        network host — running a local web server that other devices should access, participating
+        in a home lab where multiple VMs need to talk to each other directly, or testing
+        network behaviour that depends on the VM having its own identity. It is <em>not</em>
+        the correct choice for a security sandbox, because the VM is now exposed to every
+        device on the LAN and every device on the LAN can be reached by the VM.
+      </p>
+
+      <!-- ---------- SCREENSHOT 2 ---------- -->
+      <figure class="cs-figure">
+        <div class="fig-bar">
+          <span class="dot" aria-hidden="true"></span>
+          <span>nat_vs_bridged_ipconfig.png</span>
+        </div>
+        <img src="../assets/img/nat_vs_bridged_ipconfig.png"
+             alt="Kali Linux terminal showing two network states side by side — the top section shows eth0 with the NAT-mode address 192.168.40.128/24 and a successful internet ping, the bottom section shows eth0 with the Bridged-mode address 172.28.230.89/20 assigned by the home router"
+             loading="lazy"
+             onerror="this.closest('figure').classList.add('img-missing')">
+        <div class="img-placeholder" aria-hidden="true">
+          [ TELEMETRY_CAPTURE_PENDING ]<br>
+          assets/img/nat_vs_bridged_ipconfig.png
+        </div>
+        <figcaption>
+          <b>Figure 3.2</b> — NAT versus Bridged mode network identity. <strong>Top:</strong>
+          in NAT mode the guest holds a <code>192.168.40.128/24</code> address on VMware's
+          internal virtual subnet, with confirmed outbound internet reachability via
+          NAT-translated traffic. <strong>Bottom:</strong> after switching to Bridged mode,
+          NetworkManager obtained a fresh DHCP lease from the home router and the guest now
+          holds <code>172.28.230.89/20</code> — a real LAN address with direct peer visibility,
+          no longer isolated behind the virtual router.
+        </figcaption>
+      </figure>
+    </section>
+
+    <!-- ---------- OUTCOMES ---------- -->
+    <section class="cs-section" id="outcomes">
+      <span class="phase-tag">OUTCOMES</span>
+      <h2>Verification Results</h2>
+
+      <p>
+        Three outcomes emerge from the engagement, each mapping to a distinct skill that
+        transfers directly to enterprise infrastructure work.
+      </p>
+
+      <ul>
+        <li>
+          <strong>Full physical-to-virtual resource mapping observed.</strong> CPU, memory, and
+          storage were provisioned with balanced parameters that leave the host fully usable
+          while giving the guest adequate capacity. The thin-provisioned disk demonstrated the
+          same storage-oversubscription mechanism that cloud IaaS providers rely on.
+        </li>
+        <li>
+          <strong>Two distinct virtual network topologies validated.</strong> The guest was
+          successfully migrated from NAT (isolated sandbox) to Bridged (LAN-visible peer)
+          without reinstalling the OS or reconfiguring the guest. The network mode is a
+          hypervisor-level setting, and changing it produces a demonstrable address change on
+          the guest side — a live demonstration of how virtual networking is layered on top of
+          virtual hardware.
+        </li>
+        <li>
+          <strong>CompTIA Cloud concepts grounded in practice.</strong> The engagement
+          connected two theoretical certifications topics to concrete hands-on experience:
+          <em>Infrastructure as a Service</em> (manually provisioning virtual compute blocks
+          from a raw pool) and <em>Type-2 hypervisor mechanics</em> (software-based
+          virtualization running on a host OS, contrasted with bare-metal Type-1 deployments
+          used in enterprise data centres).
+        </li>
+      </ul>
+
+      <div class="callout remediation">
+        <div class="callout-label">✓ VIRTUALIZATION_VALIDATED</div>
+        <p>
+          <strong>Client-side virtualization stack confirmed operational.</strong> The
+          hypervisor successfully shares host resources across an isolated guest operating
+          system, and the two tested networking modes provide distinct, verifiable isolation
+          profiles suited to different use cases — NAT for security sandboxing and staging,
+          Bridged for multi-VM lab environments where VMs must behave as real network peers.
+          Both modes were demonstrated with live IP-layer evidence.
+        </p>
+      </div>
+    </section>
+
+    <!-- ---------- PRIVACY ---------- -->
+    <section class="cs-section" id="privacy">
+      <span class="phase-tag">DISCLOSURE</span>
+      <h2>Security &amp; Data Privacy Note</h2>
+
+      <div class="callout note">
+        <div class="callout-label">◆ ENVIRONMENT_DISCLOSURE</div>
+        <p>
+          This engagement was conducted on a personal Windows laptop with a Type-2 hypervisor
+          guest deployed as an isolated sandbox. The networking analysis was performed on a
+          standard home LAN and no third-party traffic was captured, inspected, or modified.
+          The guest's Bridged-mode address (<code>172.28.230.89/20</code>) is a private RFC 1918
+          address and does not identify any specific network — the same subnet range is used by
+          thousands of home deployments worldwide. The Kali Linux default credentials visible
+          in the terminal prompt are the vendor-standard values and carry no operational
+          sensitivity.
+        </p>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<!-- ============================================================
+     FOOTER
+     ============================================================ -->
+<footer class="footer">
+  <div class="wrap wrap-wide footer-inner">
+    <div>
+      <p>&copy; 2026 Mohammed Oudai Helaleh. All rights cryptographically reserved.</p>
+      <p class="meta">Informatics &amp; Communications Engineering Architecture Deployment</p>
+    </div>
+  </div>
+</footer>
+
+<script src="../case-study.js" defer></script>
+</body>
+</html>

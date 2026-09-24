@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Enterprise Windows Endpoint Inventory &amp; Automation | Mohammed Oudai Helaleh</title>
+<meta name="description" content="Production-grade PowerShell automation for Windows endpoint inventory — CIM hardware discovery, byte-to-gigabyte storage math, and crash-resistant registry crawling across 32-bit and 64-bit application keys.">
+
+<link rel="stylesheet" href="../case-study.css">
+</head>
+
+<body class="theme-ops">
+
+<div class="bg-grid"></div>
+<div class="progress" id="progress"></div>
+
+<!-- ============================================================
+     NAV
+     ============================================================ -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="../index.html" class="brand">MOHAMMED <span>OUDAI</span></a>
+    <a href="../index.html#projects" class="back-link">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M19 12H5M12 19l-7-7 7-7"/>
+      </svg>
+      <span>BACK_TO_VAULT</span>
+    </a>
+  </div>
+</nav>
+
+<!-- ============================================================
+     HERO
+     ============================================================ -->
+<header class="cs-hero">
+  <div class="wrap">
+
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <a href="../index.html">PORTFOLIO</a>
+      <span class="sep">/</span>
+      <a href="../index.html#projects">VAULT</a>
+      <span class="sep">/</span>
+      <a href="../index.html#projects">IT_OPERATIONS</a>
+    </nav>
+
+    <div class="pill-row">
+      <span class="pill"><span class="dot"></span>POWERSHELL_AUTOMATION</span>
+      <span class="pill neutral">CASE_STUDY</span>
+      <span class="pill neutral">READ_TIME 7 MIN</span>
+    </div>
+
+    <h1>Enterprise Windows Endpoint Inventory &amp; Automation Script</h1>
+
+    <p class="standfirst">
+      A standalone, production-grade PowerShell script (<code>SystemAudit.ps1</code>) that
+      performs full hardware, storage and software inventory collection on a Windows endpoint —
+      using the <strong>Common Information Model</strong> interface for kernel-level discovery
+      and a <strong>try/catch isolation layer</strong> that survives corrupted registry keys
+      without dropping data or crashing.
+    </p>
+
+    <div class="cs-actions">
+      <a class="cs-repo-link"
+         href="https://github.com/Mohammed-Oudai-Helaleh/Enterprise-Windows-Endpoint-Inventory-Automation-Script.git"
+         target="_blank" rel="noopener noreferrer"
+         aria-label="View the SystemAudit.ps1 source code on GitHub">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M12 .5C5.73.5.5 5.73.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.56v-2c-3.2.7-3.88-1.54-3.88-1.54-.53-1.34-1.29-1.7-1.29-1.7-1.05-.72.08-.71.08-.71 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.23-1.28-5.23-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.04 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.79 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.58.23 2.75.11 3.04.74.81 1.19 1.84 1.19 3.1 0 4.42-2.69 5.39-5.25 5.68.41.35.78 1.05.78 2.12v3.14c0 .31.21.68.8.56A11.5 11.5 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5z"/>
+        </svg>
+        <span>VIEW_REPOSITORY</span>
+        <span class="arrow" aria-hidden="true">→</span>
+      </a>
+    </div>
+
+    <dl class="meta-grid">
+      <div class="meta-cell">
+        <dt>Platform</dt>
+        <dd>Windows 10 Pro — Windows PowerShell 5.1</dd>
+      </div>
+      <div class="meta-cell">
+        <dt>Script</dt>
+        <dd>SystemAudit.ps1 — standalone, no external modules</dd>
+      </div>
+      <div class="meta-cell">
+        <dt>Discovery Layer</dt>
+        <dd>CIM (Common Information Model) via <code>Get-CimInstance</code></dd>
+      </div>
+      <div class="meta-cell">
+        <dt>Output</dt>
+        <dd>Timestamped text manifest — hardware, storage, software</dd>
+      </div>
+    </dl>
+
+  </div>
+</header>
+
+<!-- ============================================================
+     BODY
+     ============================================================ -->
+<main class="cs-body">
+  <div class="wrap">
+
+    <!-- ---------- OBJECTIVE ---------- -->
+    <section class="cs-section">
+      <p>
+        Manual endpoint inventory does not scale. In an organization with fifty workstations,
+        the process of physically checking each machine's CPU model, RAM size, disk capacity,
+        and installed applications produces stale data before the audit is even complete — and
+        on a fleet of hundreds, it's an impossibility. Enterprise IT departments solve this with
+        automation, and on Windows the standard toolkit for the job is PowerShell talking to the
+        kernel through the Common Information Model.
+      </p>
+
+      <p>
+        This engagement builds and executes a standalone script —
+        <code>SystemAudit.ps1</code> — that performs complete hardware, storage, and software
+        inventory on a single endpoint and produces a timestamped report on the Desktop. The
+        interesting engineering isn't the discovery itself; it's the handling of the unexpected
+        failure mode the script encounters during registry crawling, and how a proper isolation
+        layer keeps the report intact even when one of its data sources is corrupt.
+      </p>
+
+      <div class="callout note">
+        <div class="callout-label">◆ SCOPE_CONSTRAINT</div>
+        <p>
+          The script was executed against a single Windows 10 endpoint in a lab environment.
+          It requires no external modules, no administrative elevation for the read-only
+          inventory operations shown here, and no network access — all discovery is performed
+          locally against the endpoint's own kernel management interfaces. The report output
+          contains only that endpoint's own hardware and software specifications.
+        </p>
+      </div>
+    </section>
+
+    <!-- ---------- PHASE 1 ---------- -->
+    <section class="cs-section" id="phase-1">
+      <span class="phase-tag">PHASE 01</span>
+      <h2>Headless Endpoint Discovery via CIM</h2>
+
+      <p>
+        The first phase collects the endpoint's static hardware identity — the specs that
+        rarely change and that define what the machine <em>is</em>. Modern PowerShell targets
+        the <strong>Common Information Model</strong> interface rather than the older Windows
+        Management Instrumentation layer, even though both ultimately surface the same
+        underlying data. CIM is the DMTF standard that WMI implements; PowerShell's
+        <code>Get-CimInstance</code> cmdlet talks to it directly, avoiding the COM
+        marshalling and object-casting overhead that the legacy <code>Get-WmiObject</code>
+        command carries.
+      </p>
+
+      <div class="code-block">
+        <div class="code-head">
+          <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="code-lang">powershell</span>
+          <button class="copy-btn" data-copy type="button">COPY</button>
+        </div>
+        <pre><code><span class="cmt"># Query the operating system and CPU identity directly from the kernel layer</span>
+$os  = Get-CimInstance -ClassName Win32_OperatingSystem
+$cpu = Get-CimInstance -ClassName Win32_Processor
+$cs  = Get-CimInstance -ClassName Win32_ComputerSystem
+
+<span class="cmt"># Extract the values used by the report</span>
+$osCaption  = $os.Caption            <span class="cmt"># e.g. "Microsoft Windows 10 Pro"</span>
+$osArch     = $os.OSArchitecture     <span class="cmt"># e.g. "64-bit"</span>
+$hostname   = $cs.Name               <span class="cmt"># endpoint hostname</span>
+$totalRamGB = [math]::Round($cs.TotalPhysicalMemory / 1GB, 2)
+$cpuModel   = $cpu.Name              <span class="cmt"># e.g. "Intel(R) Core(TM) i5-8300H..."</span></code></pre>
+      </div>
+
+      <p>
+        Three CIM classes do the work here. <code>Win32_OperatingSystem</code> provides the OS
+        caption and architecture — the values that identify which Windows SKU is installed and
+        whether it's a 32-bit or 64-bit build. <code>Win32_Processor</code> provides the CPU
+        model string, read directly from the processor's own identification registers through
+        the kernel. <code>Win32_ComputerSystem</code> provides the hostname and total physical
+        memory, exposed as a raw byte count that the script converts to a human-readable
+        gigabyte value.
+      </p>
+
+      <p>
+        That last conversion is worth noting because it's the kind of detail that separates a
+        script that works from a script that produces correct output. <code>TotalPhysicalMemory</code>
+        returns bytes as a 64-bit integer — for a machine with 32 GB of RAM that's a number in
+        the tens of billions. Dividing by <code>1GB</code> (PowerShell's automatic byte-scale
+        shorthand for <code>1073741824</code>) produces a decimal value, and rounding to two
+        places yields the number that appears in the report: <strong>31.86 GB</strong>. The
+        small deficit against the nominal 32 GB is not a bug — it's the amount of memory the
+        kernel reserves for hardware mappings before the operating system even loads, and it's
+        the reason a "32 GB" machine never reports exactly 32.
+      </p>
+    </section>
+
+    <!-- ---------- PHASE 2 ---------- -->
+    <section class="cs-section" id="phase-2">
+      <span class="phase-tag">PHASE 02</span>
+      <h2>Storage Calculation Engine</h2>
+
+      <p>
+        The second phase enumerates every mounted local volume and calculates its capacity
+        utilization. The discovery is done by querying
+        <code>Win32_LogicalDisk</code> with a filter on the <code>DriveType</code> property —
+        and that filter is doing meaningful work.
+      </p>
+
+      <p>
+        Windows assigns a numeric type code to every logical device it mounts. Type
+        <strong>3</strong> is the code for a <em>local fixed disk</em> — the physical storage
+        built into the machine. Other codes cover network shares (4), optical media (5), and
+        removable drives (2). Filtering to <code>DriveType = 3</code> ensures the report
+        describes only the machine's own storage and doesn't accidentally include a mapped
+        network drive or a USB stick that happened to be plugged in when the script ran. An
+        inventory report that claims an endpoint has 4 TB of storage because someone left a
+        backup drive connected is worse than useless — it's misleading.
+      </p>
+
+      <div class="code-block">
+        <div class="code-head">
+          <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="code-lang">powershell</span>
+          <button class="copy-btn" data-copy type="button">COPY</button>
+        </div>
+        <pre><code><span class="cmt"># Target only locally-attached fixed disks (DriveType 3)</span>
+$drives = Get-CimInstance -ClassName Win32_LogicalDisk -Filter "DriveType = 3"
+
+foreach ($drive in $drives) {
+    $totalGB = [math]::Round($drive.Size      / 1GB, 2)
+    $freeGB  = [math]::Round($drive.FreeSpace / 1GB, 2)
+    $usedGB  = [math]::Round($totalGB - $freeGB, 2)
+
+    <span class="cmt"># Emit a formatted block for the report</span>
+    "Drive Letter : $($drive.DeviceID)"
+    "Total Space  : $totalGB GB"
+    "Used Space   : $usedGB GB"
+    "Free Space   : $freeGB GB"
+    ""
+}</code></pre>
+      </div>
+
+      <p>
+        Each volume produces four computed values: total capacity, free space, used space, and
+        — implicitly — the utilization ratio. The used value is derived by subtraction rather
+        than read from the disk, because CIM exposes only total and free; the operating system
+        does not maintain a separate "used" counter. Deriving it in the script means the two
+        values that <em>are</em> authoritative (total and free) remain the source of truth, and
+        the derived value can never drift out of sync with them.
+      </p>
+
+      <p>
+        Every byte count is converted through <code>[math]::Round(x / 1GB, 2)</code> before it
+        reaches the report. The two-decimal precision is deliberate: raw bytes are useless to a
+        human reader, and unrounded gigabytes produce fifteen decimal places of noise. The
+        report renders the same clean values a person would write down if they were checking
+        the disk manually.
+      </p>
+    </section>
+
+    <!-- ---------- PHASE 3 ---------- -->
+    <section class="cs-section" id="phase-3">
+      <span class="phase-tag">PHASE 03</span>
+      <h2>Crash-Proof Registry Crawling</h2>
+
+      <p>
+        The third phase is the most consequential one, because it's where the script
+        encountered a real-world failure that would have crashed a naive implementation. The
+        goal of this phase is to enumerate every installed application on the endpoint —
+        which Windows tracks in the registry under <code>Uninstall</code> keys, but across
+        <strong>two separate locations</strong> depending on the bitness of the application.
+      </p>
+
+      <h3>Why two registry paths are required</h3>
+
+      <p>
+        On 64-bit Windows, the registry is split into two logical views. Native 64-bit
+        applications register their uninstall metadata under the standard path at
+        <code>HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall</code>. But 32-bit
+        applications — including most legacy line-of-business software — register under
+        <code>HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall</code>,
+        a redirected mirror path that exists to preserve backward compatibility. A script
+        that crawls only one of these paths will silently miss half the installed software on
+        the machine.
+      </p>
+
+      <p>
+        The script handles this by iterating over both paths, collecting application entries
+        from each, and merging the results into a single sorted inventory. The output is
+        therefore a complete picture of the endpoint's software — not just the subset that
+        happens to be 64-bit native.
+      </p>
+
+      <h3>The failure that almost broke the report</h3>
+
+      <p>
+        During development, execution on the target endpoint terminated with an
+        <strong><code>InvalidCastException</code></strong> — the specific error message being
+        <em>"Specified cast is not valid."</em> This is a .NET runtime error, and on the
+        surface it looks unrelated to registry crawling. But the cause is directly tied to how
+        Windows stores application metadata.
+      </p>
+
+      <p>
+        Every property under an Uninstall key — <code>DisplayName</code>,
+        <code>DisplayVersion</code>, <code>Publisher</code>, and others — is stored with a
+        declared data type. Occasionally, an application installer writes one of these values
+        with a type that PowerShell's property accessor cannot automatically coerce. A value
+        registered as <code>REG_MULTI_SZ</code> (a multi-line string array) being read into a
+        property the script expects to be a single string, for example, produces exactly this
+        error. The corrupted key isn't dangerous — it's just non-conforming — but a script
+        that reads the registry without protection will die on it, taking the entire report
+        down with it.
+      </p>
+
+      <h3>The isolation layer</h3>
+
+      <p>
+        The remediation was structural: each registry path was wrapped in its own
+        <code>try/catch</code> block, so that a failure while reading one path cannot
+        propagate to the others or abort the script entirely.
+      </p>
+
+      <div class="code-block">
+        <div class="code-head">
+          <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="code-lang">powershell</span>
+          <button class="copy-btn" data-copy type="button">COPY</button>
+        </div>
+        <pre><code><span class="cmt"># Both registry paths — 64-bit native and 32-bit Wow6432Node redirect</span>
+$registryPaths = @(
+    'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*',
+    'HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*'
+)
+
+$installedApps = foreach ($path in $registryPaths) {
+    try {
+        Get-ItemProperty -Path $path -ErrorAction Stop |
+            Where-Object { $_.DisplayName } |
+            Select-Object DisplayName, DisplayVersion, Publisher
+    }
+    catch [System.InvalidCastException] {
+        <span class="cmt"># Log the corrupt node and continue with the next path</span>
+        Write-Warning "Skipped unreadable registry entry under: $path"
+    }
+}
+
+<span class="cmt"># Sort the merged inventory for readable output</span>
+$installedApps | Sort-Object DisplayName</code></pre>
+      </div>
+
+      <p>
+        Two design choices in that block matter. First, <code>-ErrorAction Stop</code> forces
+        PowerShell to treat the failure as a terminating error, which is what allows the
+        <code>try/catch</code> to trap it — by default, PowerShell would emit a non-terminating
+        error and continue past the broken entry, but the surrounding catch block would never
+        fire. Second, the <code>catch</code> clause is typed to
+        <code>[System.InvalidCastException]</code> specifically, rather than catching all
+        exceptions indiscriminately. This is important discipline: an untyped
+        <code>catch { }</code> would suppress <em>every</em> error the registry read could
+        throw, including errors that indicate a real problem (permission issues, drive
+        failures, etc.). Typing the catch to the specific exception class it expects to see
+        means unexpected failures still surface, while the known-benign corrupted-key case is
+        handled cleanly.
+      </p>
+
+      <p>
+        The <code>Where-Object { $_.DisplayName }</code> clause is a smaller detail with a
+        larger purpose: some Uninstall registry keys exist as containers without actually
+        describing an application, and they lack a <code>DisplayName</code> value. Filtering
+        those out prevents blank rows and placeholder entries from polluting the software
+        inventory, keeping the report focused on real installed software.
+      </p>
+    </section>
+
+    <!-- ---------- OUTCOMES ---------- -->
+    <section class="cs-section" id="outcomes">
+      <span class="phase-tag">OUTCOMES</span>
+      <h2>Execution &amp; Output Verification</h2>
+
+      <p>
+        The script was executed from a standard PowerShell prompt on the target endpoint. Two
+        verification captures confirm the full cycle — first that the script completed
+        successfully, then that the report it produced is complete and correctly formatted.
+      </p>
+
+      <h3>Execution confirmation</h3>
+
+      <p>
+        The script was invoked by its full path from the system directory, and PowerShell
+        returned a clean exit with a single explicit success message written to the console.
+        This confirms the script ran end-to-end without a terminating error — including the
+        registry crawl phase where the InvalidCastException would have aborted execution
+        without the isolation layer:
+      </p>
+
+      <!-- ---------- SCREENSHOT 1 ---------- -->
+      <figure class="cs-figure">
+        <div class="fig-bar">
+          <span class="dot" aria-hidden="true"></span>
+          <span>powershell_execution_confirmation.png</span>
+        </div>
+        <img src="../assets/img/powershell_execution_confirmation.png"
+             alt="Windows PowerShell prompt showing SystemAudit.ps1 being invoked from the Documents directory, followed by a green success message confirming the system inventory report was generated on the Desktop"
+             loading="lazy"
+             onerror="this.closest('figure').classList.add('img-missing')">
+        <div class="img-placeholder" aria-hidden="true">
+          [ TELEMETRY_CAPTURE_PENDING ]<br>
+          assets/img/powershell_execution_confirmation.png
+        </div>
+        <figcaption>
+          <b>Figure 5.1</b> — Execution confirmation. The script was invoked by its full path
+          from <code>system32</code> and completed with the explicit success message
+          <em>"Success! The system inventory report has been generated on your Desktop."</em>
+          The clean termination confirms that the try/catch isolation layer successfully
+          trapped the registry exception encountered during the software inventory phase,
+          allowing the script to finish without dropping data or aborting prematurely.
+        </figcaption>
+      </figure>
+
+      <h3>Timestamped corporate manifest</h3>
+
+      <p>
+        The report generated by the script is a plaintext manifest containing three fully
+        populated sections — hardware profile, logical drive volumes, and the sorted software
+        inventory — prefixed by an automatic timestamp recording exactly when the scan was
+        executed:
+      </p>
+
+      <!-- ---------- SCREENSHOT 2 ---------- -->
+      <figure class="cs-figure">
+        <div class="fig-bar">
+          <span class="dot" aria-hidden="true"></span>
+          <span>system_inventory_report.png</span>
+        </div>
+        <img src="../assets/img/system_inventory_report.png"
+             alt="Windows terminal showing the ENTERPRISE WINDOWS ENDPOINT SYSTEM AUDIT REPORT with a scan timestamp, hardware profile section listing OS caption, architecture, hostname, total RAM and CPU model, and logical drive volumes section listing drive letter, total space, used space and free space for the C: and D: drives"
+             loading="lazy"
+             onerror="this.closest('figure').classList.add('img-missing')">
+        <div class="img-placeholder" aria-hidden="true">
+          [ TELEMETRY_CAPTURE_PENDING ]<br>
+          assets/img/system_inventory_report.png
+        </div>
+        <figcaption>
+          <b>Figure 5.2</b> — Timestamped corporate inventory manifest. The header records the
+          scan time (<code>08/31/2026 08:48:34</code>) automatically at runtime. Section 1.0
+          <strong>Hardware Profile</strong> reports OS caption (Windows 10 Pro), architecture
+          (64-bit), hostname, total RAM (<code>31.86 GB</code> — correctly converted from raw
+          bytes to gigabytes with the reserved kernel memory accounted for), and CPU model
+          string. Section 2.0 <strong>Logical Drive Volumes</strong> reports the C: and D:
+          drives with their total, used, and free space values computed from the byte-to-GB
+          conversion engine.
+        </figcaption>
+      </figure>
+
+      <ul>
+        <li>
+          <strong>Clean termination confirmed.</strong> The script completed end-to-end with an
+          explicit success message, proving that all three phases — hardware discovery, storage
+          calculation, and software registry crawl — executed without a terminating error. The
+          try/catch isolation layer served its purpose: an exception that would have aborted a
+          naive implementation was trapped, logged, and bypassed, and the report was generated
+          in full.
+        </li>
+        <li>
+          <strong>Report contents verified against expected values.</strong> The hardware
+          profile reports the CPU model (<code>Intel(R) Core(TM) i5-8300H CPU @ 2.30GHz</code>),
+          the OS caption (<code>Microsoft Windows 10 Pro</code>), the architecture
+          (<code>64-bit</code>), and the RAM total (<code>31.86 GB</code>) — all read directly
+          from the CIM interface. Section 2.0 renders the drive volumes with correctly computed
+          space metrics. Every value in the report reflects a live query rather than a
+          hardcoded placeholder.
+        </li>
+        <li>
+          <strong>Automatic timestamping proven at runtime.</strong> The
+          <code>Scan Timestamp</code> field was generated by the script itself, not written into
+          the report template. This means every execution produces a uniquely identifiable
+          manifest — a property that matters for fleet-scale deployments, where hundreds of
+          endpoints might be audited within a single hour and each report needs to be
+          independently traceable to its scan window.
+        </li>
+      </ul>
+
+      <div class="callout remediation">
+        <div class="callout-label">✓ AUTOMATION_VALIDATED</div>
+        <p>
+          <strong>Full endpoint inventory automation confirmed operational.</strong> A single
+          command produces a complete, timestamped, structured report covering hardware,
+          storage, and software across both 64-bit and 32-bit application registry paths — with
+          a built-in fault-isolation layer that preserves report integrity in the presence of
+          corrupted registry keys. The script is a working template for fleet-scale deployment:
+          point it at a list of endpoints, collect the reports, and the organization has a
+          current, accurate, and identical-format inventory of its entire Windows environment.
+        </p>
+      </div>
+    </section>
+
+    <!-- ---------- PRIVACY ---------- -->
+    <section class="cs-section" id="privacy">
+      <span class="phase-tag">DISCLOSURE</span>
+      <h2>Security &amp; Data Privacy Note</h2>
+
+      <div class="callout note">
+        <div class="callout-label">◆ LAB_ENVIRONMENT_DISCLOSURE</div>
+        <p>
+          The script was executed against a single lab-owned Windows 10 endpoint. The hostname
+          shown in the report (<code>DESKTOP-6ID08P6</code>) is a Windows default
+          machine-generated identifier assigned automatically during initial OS provisioning —
+          it carries no organizational or personal information and identifies a lab machine
+          only. Hardware specifications (CPU model, RAM size, disk capacity) are generic
+          consumer component identities and do not identify any individual or organization.
+          No production system, user data, or application-level credential appears in the
+          report output.
+        </p>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<!-- ============================================================
+     FOOTER
+     ============================================================ -->
+<footer class="footer">
+  <div class="wrap wrap-wide footer-inner">
+    <div>
+      <p>&copy; 2026 Mohammed Oudai Helaleh. All rights cryptographically reserved.</p>
+      <p class="meta">Informatics &amp; Communications Engineering Architecture Deployment</p>
+    </div>
+  </div>
+</footer>
+
+<script src="../case-study.js" defer></script>
+</body>
+</html>

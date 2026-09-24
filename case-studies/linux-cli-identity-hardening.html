@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Enterprise Linux CLI Administration &amp; Identity Hardening | Mohammed Oudai Helaleh</title>
+<meta name="description" content="Role-Based Access Control on a headless Ubuntu Server — user and group provisioning, a chmod 770 directory lockdown, and a live security audit confirming authorization boundaries and blocked privilege escalation.">
+
+<link rel="stylesheet" href="../case-study.css">
+</head>
+
+<body class="theme-ops">
+
+<div class="bg-grid"></div>
+<div class="progress" id="progress"></div>
+
+<!-- ============================================================
+     NAV
+     ============================================================ -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="../index.html" class="brand">MOHAMMED <span>OUDAI</span></a>
+    <a href="../index.html#projects" class="back-link">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M19 12H5M12 19l-7-7 7-7"/>
+      </svg>
+      <span>BACK_TO_VAULT</span>
+    </a>
+  </div>
+</nav>
+
+<!-- ============================================================
+     HERO
+     ============================================================ -->
+<header class="cs-hero">
+  <div class="wrap">
+
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <a href="../index.html">PORTFOLIO</a>
+      <span class="sep">/</span>
+      <a href="../index.html#projects">VAULT</a>
+      <span class="sep">/</span>
+      <a href="../index.html#projects">IT_OPERATIONS</a>
+    </nav>
+
+    <div class="pill-row">
+      <span class="pill"><span class="dot"></span>IDENTITY_MANAGEMENT</span>
+      <span class="pill neutral">CASE_STUDY</span>
+      <span class="pill neutral">READ_TIME 7 MIN</span>
+    </div>
+
+    <h1>Enterprise Linux CLI Administration &amp; Identity Hardening</h1>
+
+    <p class="standfirst">
+      Deploying Role-Based Access Control on a headless Ubuntu Server — user and POSIX
+      group provisioning, a <strong>chmod 770 directory lockdown</strong> with
+      <strong>chown root:accounting</strong> ownership hardening, and a live security audit
+      proving that the authorization boundary holds under three distinct attack surfaces.
+    </p>
+
+    <dl class="meta-grid">
+      <div class="meta-cell">
+        <dt>Environment</dt>
+        <dd>Ubuntu Server 24.04 LTS — headless (CLI-only)</dd>
+      </div>
+      <div class="meta-cell">
+        <dt>Identity Model</dt>
+        <dd>POSIX users + POSIX group (<code>accounting</code>)</dd>
+      </div>
+      <div class="meta-cell">
+        <dt>Permission Mask</dt>
+        <dd><code>drwxrwx---</code> (octal 770)</dd>
+      </div>
+      <div class="meta-cell">
+        <dt>Ownership</dt>
+        <dd><code>root:accounting</code></dd>
+      </div>
+    </dl>
+
+  </div>
+</header>
+
+<!-- ============================================================
+     BODY
+     ============================================================ -->
+<main class="cs-body">
+  <div class="wrap">
+
+    <!-- ---------- OBJECTIVE ---------- -->
+    <section class="cs-section">
+      <p>
+        File system permissions are the oldest and most reliable access control mechanism in
+        the Unix model, and they are still the foundation of every enterprise Linux deployment.
+        A firewall controls what traffic reaches a service; a permission mask controls what
+        users can do with the data once they're on the machine. The two operate at different
+        layers, and both are required for a meaningful security posture.
+      </p>
+
+      <p>
+        This engagement hardens a sensitive corporate directory using the standard Unix access
+        control toolkit — users, groups, ownership, and permission bits — then validates the
+        resulting security boundary against three distinct threat models: a legitimate user
+        within the authorized group, an unauthorized user attempting access, and a privilege
+        escalation attempt that tries to bypass the file permission model entirely. The goal is
+        not merely to configure permissions but to <strong>prove they hold under load</strong>.
+      </p>
+
+      <div class="callout note">
+        <div class="callout-label">◆ SCOPE_CONSTRAINT</div>
+        <p>
+          All work was performed in an isolated Ubuntu Server VM. The account names, group
+          identifier, and file names used here reflect lab-only identities — they are not
+          associated with any production directory, and the sensitive file created during the
+          audit contains only placeholder data for testing purposes.
+        </p>
+      </div>
+    </section>
+
+    <!-- ---------- PHASE 1 ---------- -->
+    <section class="cs-section" id="phase-1">
+      <span class="phase-tag">PHASE 01</span>
+      <h2>Identity Infrastructure Provisioning</h2>
+
+      <p>
+        Role-Based Access Control begins with identity. Before a permission boundary can mean
+        anything, the accounts and groups that will exist on either side of that boundary have
+        to be defined — and each one needs a purpose. In this lab, three identities were
+        provisioned with distinct roles:
+      </p>
+
+      <ul>
+        <li>
+          <strong>oudaidev</strong> — the primary administrative account, the only user with
+          full sudo privileges. This is the account that created the protected directory and
+          installed the test file.
+        </li>
+        <li>
+          <strong>oliver_accountant</strong> — a standard user account provisioned specifically
+          to be a member of the <code>accounting</code> group. This account represents an
+          authorized business user whose job requires access to the financial directory.
+        </li>
+        <li>
+          <strong>claire_employee</strong> — a standard user account deliberately left
+          <em>outside</em> the accounting group. This account represents any other employee in
+          the organization — someone with a legitimate user account on the system, but no
+          business justification for touching financial data.
+        </li>
+      </ul>
+
+      <p>
+        The <code>accounting</code> group was created with a specific GID, and
+        <code>oliver_accountant</code> was added to it as a supplementary group membership.
+        Crucially, <code>claire_employee</code> was <strong>not</strong> added — and that single
+        decision is what the entire permission model will enforce. The group membership is the
+        authorization boundary.
+      </p>
+
+      <div class="code-block">
+        <div class="code-head">
+          <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="code-lang">bash</span>
+          <button class="copy-btn" data-copy type="button">COPY</button>
+        </div>
+        <pre><code><span class="cmt"># Provision the accounting group and its two standard users</span>
+sudo groupadd accounting
+sudo useradd -m -s /bin/bash oliver_accountant
+sudo useradd -m -s /bin/bash claire_employee
+
+<span class="cmt"># Add only the authorized user to the accounting group</span>
+sudo usermod -aG accounting oliver_accountant
+
+<span class="cmt"># Confirm group membership</span>
+getent group accounting</code></pre>
+      </div>
+
+      <p>
+        The <code>getent group accounting</code> output confirms the membership list — the
+        <code>accounting</code> group exists with the correct GID, and
+        <code>oliver_accountant</code> appears as its only member. <code>claire_employee</code>
+        is conspicuously absent. That absence is the whole point of the exercise; everything
+        from here forward is about proving the operating system respects it.
+      </p>
+    </section>
+
+    <!-- ---------- PHASE 2 ---------- -->
+    <section class="cs-section" id="phase-2">
+      <span class="phase-tag">PHASE 02</span>
+      <h2>Directory Lockdown — chmod 770 &amp; chown Hardening</h2>
+
+      <p>
+        With the identities in place, the protected resource was created. A directory named
+        <code>/company_financials</code> was established at the root of the file system — a
+        deliberate choice, because placing sensitive data at the top level makes it visible to
+        any future administrator inheriting the system, which is exactly what you want for a
+        corporate directory that a business function depends on.
+      </p>
+
+      <p>
+        Two distinct operations were then applied. The first was the
+        <strong>ownership hardening via chown</strong>: the directory's owning user was set to
+        <code>root</code> and its owning group was set to <code>accounting</code>. This is a
+        critically important decision that is easy to miss. If the directory were owned by
+        <code>oliver_accountant</code> instead, then any user who compromised
+        oliver's credentials would inherit full control — the entire authorization model would
+        reduce to "whoever has oliver's password wins." By making <code>root</code> the owner,
+        the directory is anchored to the system administrator identity, and the
+        <code>accounting</code> group is the only non-root identity that can touch it.
+      </p>
+
+      <p>
+        The second operation was the <strong>permission mask via chmod 770</strong>. The
+        three-digit octal notation encodes three separate permission sets — one for the owner,
+        one for the group, and one for everyone else:
+      </p>
+
+      <ul>
+        <li>
+          <strong>Owner permissions (root) — <code>7</code> = rwx.</strong> Full read, write,
+          and execute access. The owner is the administrator and can do anything to the
+          directory.
+        </li>
+        <li>
+          <strong>Group permissions (accounting) — <code>7</code> = rwx.</strong> Full read,
+          write, and execute access. Members of the accounting group can list, read, create,
+          modify, and delete contents inside the directory — exactly the access the accounting
+          team requires.
+        </li>
+        <li>
+          <strong>Others permissions — <code>0</code> = ---.</strong> No permissions
+          whatsoever. Users who are neither the owner nor members of the accounting group
+          cannot even list the directory contents, let alone read or write anything inside it.
+        </li>
+      </ul>
+
+      <div class="code-block">
+        <div class="code-head">
+          <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="code-lang">bash</span>
+          <button class="copy-btn" data-copy type="button">COPY</button>
+        </div>
+        <pre><code><span class="cmt"># Create the protected directory and its dummy test file</span>
+sudo mkdir /company_financials
+echo "CONFIDENTIAL REPORT: Q3 Store Revenue Data" | sudo tee /company_financials/revenue_report.txt
+
+<span class="cmt"># Harden ownership: root owns it, accounting group controls it</span>
+sudo chown root:accounting /company_financials
+
+<span class="cmt"># Apply the 770 permission mask</span>
+sudo chmod 770 /company_financials
+
+<span class="cmt"># Confirm the resulting state</span>
+ls -ld /company_financials</code></pre>
+      </div>
+
+      <p>
+        The resulting <code>ls -ld</code> output reads
+        <code>drwxrwx--- 2 root accounting</code>. Every character in that string is doing
+        work:
+      </p>
+
+      <ul>
+        <li>
+          <strong><code>d</code></strong> — the entry is a directory, not a file.
+        </li>
+        <li>
+          <strong><code>rwx</code></strong> — the owning user (root) has full access.
+        </li>
+        <li>
+          <strong><code>rwx</code></strong> — members of the owning group (accounting) have full
+          access.
+        </li>
+        <li>
+          <strong><code>---</code></strong> — everyone else has no access at all.
+        </li>
+        <li>
+          <strong><code>root accounting</code></strong> — ownership is anchored to the system
+          administrator identity, with the accounting group as the sole authorized non-root
+          entity.
+        </li>
+      </ul>
+
+      <p>
+        This is the classic expression of the <strong>Principle of Least Privilege</strong>: each
+        identity has exactly the access it needs and no more. The accounting team gets full
+        control of their data; the rest of the organization gets nothing; and no individual user
+        account is empowered to unilaterally change the boundary.
+      </p>
+    </section>
+
+    <!-- ---------- PHASE 3 ---------- -->
+    <section class="cs-section" id="phase-3">
+      <span class="phase-tag">PHASE 03</span>
+      <h2>Security Audit — Three Attack Surfaces Tested</h2>
+
+      <p>
+        A permission configuration is only as good as its enforcement. Three distinct tests
+        were run to validate that the boundary held under different threat models, each one
+        representing a class of user behavior the directory needs to correctly handle.
+      </p>
+
+      <h3>Test 01 — Authorized access</h3>
+
+      <p>
+        The first test was the positive case: an authorized member of the accounting group
+        attempting to access the directory. The <code>accounting</code> user session was
+        invoked via <code>su - oliver_accountant</code>, and the directory was listed with
+        <code>ls /company_financials</code>. The command executed without error and returned
+        the directory contents — the authorization boundary correctly recognized oliver as a
+        member of the owning group and granted the access his role requires.
+      </p>
+
+      <h3>Test 02 — Unauthorized access blocked</h3>
+
+      <p>
+        The second test was the negative case: a standard user without accounting group
+        membership attempting the same operation. The session was switched to
+        <code>claire_employee</code>, and the same <code>ls /company_financials</code> command
+        was issued. The result was immediate and unambiguous:
+      </p>
+
+      <div class="code-block">
+        <div class="code-head">
+          <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="code-lang">bash</span>
+          <button class="copy-btn" data-copy type="button">COPY</button>
+        </div>
+        <pre><code>claire_employee@ubs2604vm:~$ ls /company_financials
+ls: cannot open directory '/company_financials': Permission denied</code></pre>
+      </div>
+
+      <p>
+        The <code>Permission denied</code> message is produced by the Linux kernel itself, not
+        by the shell — the <code>ls</code> command attempted to open the directory and the
+        kernel's Virtual File System layer intercepted the system call before any file
+        descriptors were allocated. This is the crucial architectural detail that makes Unix
+        permissions different from application-level access control: the enforcement is at the
+        kernel level, and no userspace program — however it is written or what libraries it
+        links against — can bypass it. Claire cannot read the directory contents, cannot list
+        filenames, and cannot even confirm the directory exists as anything more than an
+        opaque entry.
+      </p>
+
+      <h3>Test 03 — Privilege escalation blocked</h3>
+
+      <p>
+        The third test was the most important from a security standpoint, because it addresses
+        the natural workaround any unauthorized user will reach for first: trying to use
+        <code>sudo</code> to gain temporary administrative privileges and bypass the permission
+        model. From the <code>oliver_accountant</code> session, an attempt was made to write
+        directly into the protected directory via <code>sudo tee</code>. The result was a hard
+        authentication rejection:
+      </p>
+
+      <div class="code-block">
+        <div class="code-head">
+          <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="code-lang">bash</span>
+          <button class="copy-btn" data-copy type="button">COPY</button>
+        </div>
+        <pre><code>oliver_accountant@ubs2604vm:~$ echo "CONFIDENTIAL REPORT: Q3 Store Revenue Data" | sudo tee /company_financials/revenue_report.txt
+[sudo] password for oliver_accountant:
+sudo: I'm sorry oliver_accountant. I'm afraid I can't do that</code></pre>
+      </div>
+
+      <p>
+        The <code>sudo</code> denial message — borrowed from a well-known science fiction film,
+        as it happens — is emitted by sudo's authentication layer when the requesting user is
+        not present in the sudoers configuration. This confirms the second security layer
+        enforced in the environment: not only is <code>oliver_accountant</code> not authorized
+        to override the permission model, but no standard user account is. Only the primary
+        administrative account (oudaidev) has sudo privileges, and that is a deliberate
+        separation of duties. The accounting team has full access to their data through the
+        group mechanism; the system administrator has full access to everything through the
+        sudo mechanism; and neither can be used to short-circuit the other.
+      </p>
+
+      <!-- ---------- SCREENSHOT ---------- -->
+      <figure class="cs-figure">
+        <div class="fig-bar">
+          <span class="dot" aria-hidden="true"></span>
+          <span>linux_permissions_audit.png</span>
+        </div>
+        <img src="../assets/img/linux_permissions_audit.png"
+             alt="Ubuntu Server terminal showing the /company_financials directory with drwxrwx--- permissions owned by root:accounting, oliver_accountant successfully accessing the directory, sudo escalation blocked with a hard authentication error, and claire_employee receiving a kernel-level Permission denied response"
+             loading="lazy"
+             onerror="this.closest('figure').classList.add('img-missing')">
+        <div class="img-placeholder" aria-hidden="true">
+          [ TELEMETRY_CAPTURE_PENDING ]<br>
+          assets/img/linux_permissions_audit.png
+        </div>
+        <figcaption>
+          <b>Figure 4.1</b> — Live permission enforcement audit. <strong>Top section:</strong>
+          the <code>ls -ld</code> output confirms the directory's <code>drwxrwx---</code> mask and
+          <code>root accounting</code> ownership; <code>getent group accounting</code> shows
+          <code>oliver_accountant</code> as an authorized group member; the session switch to
+          <code>oliver_accountant</code> succeeds and directory access is granted; and the
+          <code>sudo tee</code> escalation attempt is rejected by sudo's authentication layer.
+          <strong>Bottom section:</strong> the session switch to <code>claire_employee</code>
+          followed by an identical directory listing attempt produces a kernel-level
+          <code>Permission denied</code> — the boundary holds against unauthorized users with
+          the same technical precision it holds against the group's authorized members.
+        </figcaption>
+      </figure>
+    </section>
+
+    <!-- ---------- OUTCOMES ---------- -->
+    <section class="cs-section" id="outcomes">
+      <span class="phase-tag">OUTCOMES</span>
+      <h2>Verification Results</h2>
+
+      <p>
+        The audit produced three verifiable outcomes, each mapping to a distinct security
+        property that the configuration was designed to enforce.
+      </p>
+
+      <ul>
+        <li>
+          <strong>Authorization boundary operates as specified.</strong> Authorized group
+          members gain access without friction; unauthorized users are denied at the kernel
+          level; there is no configuration where the boundary is respected sometimes and
+          ignored other times. The permission model is not a suggestion — it is enforced by the
+          same subsystem that mediates every file system operation on the machine.
+        </li>
+        <li>
+          <strong>Privilege separation is enforced at two independent layers.</strong> The
+          group membership model controls who can access the directory, and the sudo
+          configuration controls who can elevate to administrator privileges. Both layers are
+          required for meaningful security: without the first, any account could read the
+          directory; without the second, any account could simply grant itself the access it
+          wants. The combination produces defense in depth against both accidental misuse and
+          deliberate bypass attempts.
+        </li>
+        <li>
+          <strong>Principle of Least Privilege demonstrated end-to-end.</strong> Every identity
+          in the environment has exactly the access their role requires and nothing more.
+          <code>oudaidev</code> administers the system but has no business accessing financial
+          data through the group mechanism (and vice versa); <code>oliver_accountant</code>
+          accesses the financial directory but cannot elevate to administrator; and
+          <code>claire_employee</code> has a normal user session but touches none of the
+          sensitive resources. This is the access pattern that every enterprise RBAC
+          deployment aspires to, demonstrated at the file-system level with verifiable
+          telemetry.
+        </li>
+      </ul>
+
+      <div class="callout remediation">
+        <div class="callout-label">✓ RBAC_VALIDATED</div>
+        <p>
+          <strong>Role-Based Access Control confirmed operational.</strong> The hardened
+          directory provides full access to its authorized group, denies access to unauthorized
+          users, and resists escalation attempts through the sudo path — all three properties
+          verified through live terminal sessions rather than asserted through documentation.
+          The configuration is a working example of the principle that a security control is
+          only real when it has been tested against the threats it exists to stop.
+        </p>
+      </div>
+    </section>
+
+    <!-- ---------- PRIVACY ---------- -->
+    <section class="cs-section" id="privacy">
+      <span class="phase-tag">DISCLOSURE</span>
+      <h2>Security &amp; Data Privacy Note</h2>
+
+      <div class="callout note">
+        <div class="callout-label">◆ LAB_IDENTITY_DISCLOSURE</div>
+        <p>
+          All account names, group identifiers, and file names presented here reflect an
+          isolated lab environment. The "confidential report" file created during the audit
+          contains only placeholder text for testing purposes and does not represent any real
+          organizational data. The primary administrative account
+          (<code>oudaidev</code>) and the two test user accounts
+          (<code>oliver_accountant</code>, <code>claire_employee</code>) exist only on the lab
+          VM shown in the telemetry. No production directory, credential, or file system
+          identifier appears in this case study.
+        </p>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<!-- ============================================================
+     FOOTER
+     ============================================================ -->
+<footer class="footer">
+  <div class="wrap wrap-wide footer-inner">
+    <div>
+      <p>&copy; 2026 Mohammed Oudai Helaleh. All rights cryptographically reserved.</p>
+      <p class="meta">Informatics &amp; Communications Engineering Architecture Deployment</p>
+    </div>
+  </div>
+</footer>
+
+<script src="../case-study.js" defer></script>
+</body>
+</html>

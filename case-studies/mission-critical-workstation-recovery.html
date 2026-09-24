@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mission-Critical Workstation &amp; LAN Print Restoration | Mohammed Oudai Helaleh</title>
+<meta name="description" content="Bare-metal disaster recovery on a revenue-critical network print server — PSU replacement, CPU thermal remediation, clean OS rebuild, and full LAN print infrastructure re-architecture.">
+
+<link rel="stylesheet" href="../case-study.css">
+</head>
+
+<body class="theme-ops">
+
+<div class="bg-grid"></div>
+<div class="progress" id="progress"></div>
+
+<!-- ============================================================
+     NAV
+     ============================================================ -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="../index.html" class="brand">MOHAMMED <span>OUDAI</span></a>
+    <a href="../index.html#projects" class="back-link">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M19 12H5M12 19l-7-7 7-7"/>
+      </svg>
+      <span>BACK_TO_VAULT</span>
+    </a>
+  </div>
+</nav>
+
+<!-- ============================================================
+     HERO
+     ============================================================ -->
+<header class="cs-hero">
+  <div class="wrap">
+
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <a href="../index.html">PORTFOLIO</a>
+      <span class="sep">/</span>
+      <a href="../index.html#projects">VAULT</a>
+      <span class="sep">/</span>
+      <a href="../index.html#projects">IT_OPERATIONS</a>
+    </nav>
+
+    <div class="pill-row">
+      <span class="pill"><span class="dot"></span>DISASTER_RECOVERY</span>
+      <span class="pill neutral">CASE_STUDY</span>
+      <span class="pill neutral">READ_TIME 8 MIN</span>
+    </div>
+
+    <h1>Mission-Critical Production Workstation &amp; LAN Print Infrastructure Restoration</h1>
+
+    <p class="standfirst">
+      A live disaster recovery on the workstation that drove <strong>35–50% of a commercial
+      retail operation's revenue</strong> — end-to-end bare-metal restoration spanning
+      <strong>PSU replacement</strong>, CPU thermal remediation, a clean OS rebuild, and a full
+      <strong>LAN print path re-architecture</strong> across an Ethernet hub fabric.
+    </p>
+
+    <dl class="meta-grid">
+      <div class="meta-cell">
+        <dt>Role</dt>
+        <dd>Lead Infrastructure &amp; Systems Technician (anonymised contract)</dd>
+      </div>
+      <div class="meta-cell">
+        <dt>Environment</dt>
+        <dd>High-volume commercial retail and print operation</dd>
+      </div>
+      <div class="meta-cell">
+        <dt>Business Criticality</dt>
+        <dd>Asset controlled 35–50% of total operational revenue</dd>
+      </div>
+      <div class="meta-cell">
+        <dt>Recovery Scope</dt>
+        <dd>Hardware · OS · Network printing — full stack</dd>
+      </div>
+    </dl>
+
+  </div>
+</header>
+
+<!-- ============================================================
+     BODY
+     ============================================================ -->
+<main class="cs-body">
+  <div class="wrap">
+
+    <!-- ---------- OBJECTIVE ---------- -->
+    <section class="cs-section">
+      <p>
+        This was not a lab exercise. The asset in question — a production workstation serving as
+        the central network print server for a retail store — had suffered a total hardware
+        failure mid-operation, and the business was losing access to the peripheral
+        infrastructure that generated the majority of its daily transactions. Every hour offline
+        was a direct revenue loss, and there was no spare machine.
+      </p>
+
+      <p>
+        The work that followed crossed the entire IT stack: physical hardware diagnostics and
+        component-level repair, a full bare-metal operating system rebuild, and — the piece most
+        likely to be underestimated — re-establishing the network-layer communication paths
+        between the freshly-installed OS and the store's dedicated print peripherals. Each phase
+        had to succeed before the next could begin, and the whole engagement had to complete
+        without a single failed print job in the final acceptance test.
+      </p>
+
+      <div class="callout note">
+        <div class="callout-label">◆ CLIENT_ANONYMITY</div>
+        <p>
+          The client operates under a standard infrastructure support contract with an
+          anonymity clause covering all operational details. Store branding, physical location,
+          asset serial numbers, and internal network identifiers are not disclosed. The
+          technical methodology and business-criticality framing are presented here because they
+          demonstrate the operational and diagnostic competencies involved; the client remains
+          unidentifiable.
+        </p>
+      </div>
+    </section>
+
+    <!-- ---------- PHASE 1 ---------- -->
+    <section class="cs-section" id="phase-1">
+      <span class="phase-tag">PHASE 01</span>
+      <h2>Emergency Hardware Diagnostics &amp; Physical Overhaul</h2>
+
+      <p>
+        Phase 1 was entirely hands-on, and it split into two distinct problems that had to be
+        solved in order: the acute failure that had taken the machine down, and the chronic
+        degradation that had been silently damaging it for months.
+      </p>
+
+      <h3>Root cause analysis — sudden power failure</h3>
+
+      <p>
+        The workstation had suffered a complete blackout mid-operation and then failed to
+        complete the <strong>Power-On Self-Test</strong>. No fans spinning, no diagnostic beep
+        codes, no video output — the classic signature of a machine that isn't receiving clean
+        power rather than one with a corrupted boot device or failed RAM.
+      </p>
+
+      <p>
+        Initial voltage line audits confirmed the pattern: the <strong>Power Supply Unit had
+        failed internally</strong> after continuous 24/7 runtime fatigue. This is a documented
+        failure mode for consumer-grade PSUs subjected to years of uninterrupted service — the
+        electrolytic capacitors age, their internal resistance rises, and eventually the rail
+        voltage drifts outside the tolerance the motherboard will accept. The system refuses to
+        POST because it correctly identifies the incoming power as unsafe.
+      </p>
+
+      <p>
+        The remediation sequence was standard hardware discipline: isolate the terminal from the
+        main electrical line, extract the failed PSU, integrate a verified replacement unit of
+        equivalent specification, and route the internal cabling with deliberate attention to
+        airflow — not just functionality, but thermal clearance. Cable routing is a factor in
+        every repair on a densely-populated workstation, because a poorly-routed bundle can
+        block the exhaust path that keeps the CPU cooler working.
+      </p>
+
+      <h3>Component teardown &amp; advanced thermal remediation</h3>
+
+      <p>
+        With the machine powered back up, the audit moved from the acute failure to the chronic
+        one. A complete physical inspection of the internal chassis revealed two compounding
+        problems.
+      </p>
+
+      <p>
+        First, <strong>high-density dust blocks</strong> had accumulated along the critical
+        exhaust vents and across the CPU heatsink fins. In a retail environment — high foot
+        traffic, airborne particulates, continuous 24/7 operation — dust accumulation is not
+        cosmetic. It is a direct performance bottleneck. A blocked heatsink cannot dissipate
+        heat, and the system compensates by throttling the processor down.
+      </p>
+
+      <p>
+        Second, and more seriously, the CPU's original <strong>Thermal Interface Material had
+        fully degraded into dry ash</strong>. TIM is the compound that bridges the microscopic
+        gaps between the CPU's integrated heat spreader and the heatsink base, and its thermal
+        conductivity is what makes the whole cooling stack work. When TIM dries out — typically
+        after several years of thermal cycling — it loses most of its conductivity, and the CPU
+        runs hotter than its heatsink ever intended.
+      </p>
+
+      <p>
+        The remediation was a full physical teardown to the bare chassis frame:
+      </p>
+
+      <ul>
+        <li>
+          <strong>Deep cleaning.</strong> Anti-static brushes and compressed air, working
+          through every heatsink fin, fan blade, and exhaust grille.
+        </li>
+        <li>
+          <strong>Heatsink removal.</strong> The CPU cooler was unmounted and the degraded TIM
+          residue thoroughly cleaned off both mating surfaces with <strong>99% isopropyl
+          alcohol</strong> — the correct solvent because it evaporates completely without
+          leaving any conductive or oily residue that would compromise the new application.
+        </li>
+        <li>
+          <strong>Fresh TIM application.</strong> A premium thermal compound was reapplied in
+          the correct quantity — enough to fill the surface imperfections without overflowing
+          the die edge and creating a conductive bridging hazard.
+        </li>
+        <li>
+          <strong>Balanced remounting.</strong> The cooling array was reattached with evenly
+          distributed mounting pressure across all retention points. Uneven pressure is one of
+          the most common causes of a heatsink that appears correct but performs poorly,
+          because it leaves an air gap under one corner of the IHS.
+        </li>
+      </ul>
+
+      <p>
+        Once reassembled and booted, the thermal results confirmed the diagnosis. Idle CPU core
+        temperatures dropped by more than <strong>18°C</strong> compared to the pre-failure
+        baseline, and the thermal throttling that had been silently degrading performance for
+        months ended entirely.
+      </p>
+    </section>
+
+    <!-- ---------- PHASE 2 ---------- -->
+    <section class="cs-section" id="phase-2">
+      <span class="phase-tag">PHASE 02</span>
+      <h2>Bare-Metal OS Deployment &amp; System Hardening</h2>
+
+      <p>
+        With the physical hardware stabilised, the software layer became the next concern. The
+        original Windows installation had accumulated years of operational drift — background
+        services, startup applications, registry bloat, and an unknown amount of corruption from
+        the PSU failure itself. Attempting to boot from the existing disk into a working state
+        would have carried forward every latent problem the machine had been developing, and
+        there was no guarantee that filesystem damage hadn't occurred during the sudden power
+        loss.
+      </p>
+
+      <p>
+        The decision was made to rebuild rather than attempt recovery. The sequence was:
+      </p>
+
+      <ul>
+        <li>
+          <strong>Storage sanitization.</strong> Full destructive partition wipe and storage
+          format, which clears bad sectors, removes corrupted system directories, and gives the
+          fresh installation a clean substrate to write on. This is a deliberate destructive
+          step — appropriate here because the only authoritative data lived on the network
+          peripherals, not on the workstation's local disk.
+        </li>
+        <li>
+          <strong>Clean OS installation.</strong> Bare-metal deployment of
+          <strong>Windows 10 Professional</strong>, chosen for its support of the store's
+          commercial print stack and its capacity for long-term update servicing.
+        </li>
+        <li>
+          <strong>Host hardening and optimization.</strong> Rather than accepting the default
+          Windows configuration, the fresh install was deliberately trimmed: unneeded background
+          services disabled, startup applications reduced to the operational minimum, all
+          critical security updates applied, and local user profiles configured with the
+          restricted privileges the print server role actually requires.
+        </li>
+      </ul>
+
+      <p>
+        The performance result was measurable: <strong>system boot times were cut roughly in
+        half</strong> compared to the pre-failure baseline, and print queue processing latency
+        dropped to the point that daily customer checkout speeds improved. On a machine whose
+        entire purpose is to accept and dispatch print jobs, spooler responsiveness is not a
+        minor metric — it directly affects how quickly a customer can complete a transaction.
+      </p>
+    </section>
+
+    <!-- ---------- PHASE 3 ---------- -->
+    <section class="cs-section" id="phase-3">
+      <span class="phase-tag">PHASE 03</span>
+      <h2>LAN Network Print Infrastructure Re-Architecting</h2>
+
+      <p>
+        This was the phase most likely to be underestimated by anyone who hasn't done production
+        IT support. In a consumer environment, a printer is a USB device that Windows
+        auto-detects. In this deployment, that assumption was completely wrong — and the
+        formatting of the workstation had just severed every one of the print paths.
+      </p>
+
+      <p>
+        The store's commercial printers were <strong>independent network endpoints</strong>,
+        each with its own IP address, connected through a dedicated local Ethernet hub fabric.
+        They were never USB peripherals and had never relied on the workstation for anything
+        other than receiving print jobs. From the workstation's perspective, however, the freshly
+        installed OS had no knowledge of those endpoints at all. The network printers existed on
+        the wire; the OS simply didn't know they were there.
+      </p>
+
+      <h3>Network endpoint discovery</h3>
+
+      <p>
+        The first step was auditing the LAN segment to identify each printer's <strong>IP
+        address and local hostname</strong>. Because the store's network was flat (single subnet,
+        no VLAN segmentation), the audit required nothing more complex than inspecting the ARP
+        table and probing the subnet for known printer vendor MAC prefixes — but the discipline
+        of confirming every endpoint before touching any configuration matters. Guessing at
+        printer IPs and finding out later that one was reassigned by DHCP is a common source of
+        "why does printer #3 print to printer #4's tray" incidents.
+      </p>
+
+      <h3>Protocol and port configuration</h3>
+
+      <p>
+        With each printer's address confirmed, <strong>Standard TCP/IP network print ports</strong>
+        were constructed manually inside the fresh Windows 10 environment. Each port binds a
+        specific IP address and protocol to a named endpoint the OS can send jobs to — the
+        network-layer equivalent of the cable that would connect a USB printer.
+      </p>
+
+      <p>
+        Because these are network-attached devices rather than USB peripherals, the port had to
+        be configured to speak the correct transport protocol. <strong>RAW</strong> (port 9100)
+        is the default for most modern network printers, sending the print data stream directly
+        to the printer's embedded web server without any intermediate processing.
+        <strong>LPR</strong> (Line Printer Remote, port 515) is the older standard still used by
+        some commercial units, and requires a queue name in addition to the IP. Getting the
+        protocol wrong produces a port that appears configured correctly but silently drops every
+        job — a failure mode that is easy to miss until a customer is standing at the counter.
+      </p>
+
+      <h3>Driver provisioning and conflict resolution</h3>
+
+      <p>
+        Windows 10 ships with generic print drivers, but generic drivers rarely support the
+        full feature set of commercial equipment — duplex, tray selection, finishing, and
+        vendor-specific job accounting all require manufacturer-certified drivers. The correct
+        drivers were sourced directly from the printer vendor's support site, verified for
+        architecture and OS compatibility, and installed cleanly.
+      </p>
+
+      <p>
+        The <strong>Windows Print Spooler</strong> was then configured to handle the data
+        packets correctly across the network printing protocols. The spooler is the service that
+        accepts jobs from applications, holds them in a queue, and dispatches them to the correct
+        print port — and its configuration determines whether a network print job completes
+        cleanly or collides with another job mid-flight.
+      </p>
+
+      <h3>Parallel network stress testing</h3>
+
+      <p>
+        Before the workstation could be considered returned to service, the entire print
+        infrastructure needed to prove it could handle the operational load it would actually
+        face. A single sequential test print proves nothing — production printing happens in
+        parallel, with multiple jobs queued simultaneously across multiple printers.
+      </p>
+
+      <p>
+        Print queues were cleared and <strong>heavy simultaneous print jobs were dispatched
+        across the entire Ethernet hub fabric</strong> — every printer receiving a job
+        concurrently, exactly as it would on a busy trading day. The acceptance criterion was
+        absolute: no dropped packets, no print job collisions, no missing pages, and no
+        spooler hangs. Every job completed correctly on its intended device.
+      </p>
+    </section>
+
+    <!-- ---------- OUTCOMES ---------- -->
+    <section class="cs-section" id="outcomes">
+      <span class="phase-tag">OUTCOMES</span>
+      <h2>Quantifiable Business Outcomes</h2>
+
+      <p>
+        The engagement closed with three measurable results, each traceable to a specific phase
+        of the recovery.
+      </p>
+
+      <ul>
+        <li>
+          <strong>Operational revenue restored — 100% of peripheral infrastructure back online
+          with zero data loss.</strong> The workstation returned to production status, and the
+          print array that generated 35–50% of the store's revenue was fully operational. No
+          customer transactions were lost after the recovery, and no print jobs required
+          re-issuing once the parallel stress test passed.
+        </li>
+        <li>
+          <strong>Thermal deficit reduced by more than 18°C at idle.</strong> The combination of
+          full chassis de-dusting and fresh thermal interface material eliminated the thermal
+          throttling that had been silently damaging performance for months. This was not merely
+          a repair — it removed an underlying cause of the failure that had taken the machine
+          down in the first place.
+        </li>
+        <li>
+          <strong>Performance materially improved over the pre-failure baseline.</strong> System
+          boot times were cut roughly in half by the clean OS rebuild, and print queue
+          processing latency dropped enough to be measurable in daily customer checkout speeds.
+          The station did not merely return to service — it returned in better condition than it
+          had been running for a considerable time before the failure.
+        </li>
+      </ul>
+
+      <div class="callout remediation">
+        <div class="callout-label">✓ FULL_STACK_RECOVERY</div>
+        <p>
+          <strong>Bare-metal disaster recovery completed end-to-end.</strong> This engagement
+          crossed three distinct technical layers — hardware diagnostics and repair, operating
+          system deployment and hardening, and network print infrastructure re-architecture —
+          and each layer had to succeed before the next could begin. That the final acceptance
+          test passed on the first attempt reflects the diagnostic discipline of addressing root
+          causes rather than symptoms at every stage.
+        </p>
+      </div>
+    </section>
+
+    <!-- ---------- PRIVACY ---------- -->
+    <section class="cs-section" id="privacy">
+      <span class="phase-tag">DISCLOSURE</span>
+      <h2>Client Anonymity &amp; Data Privacy</h2>
+
+      <div class="callout note">
+        <div class="callout-label">◆ CONTRACT_CONFIDENTIALITY</div>
+        <p>
+          This engagement was performed under a professional infrastructure support contract
+          containing a standard client-anonymity clause. Store branding, physical location,
+          asset serial numbers, personnel identifiers, and internal network identifiers are not
+          disclosed. The business-criticality framing — the 35–50% revenue dependency and the
+          emergency-recovery timeline — is included because it materially affects the technical
+          decisions made during the recovery, not because it identifies the client. All
+          technical methodology is presented in a form that transfers to other production
+          recoveries without reference to the specific environment.
+        </p>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<!-- ============================================================
+     FOOTER
+     ============================================================ -->
+<footer class="footer">
+  <div class="wrap wrap-wide footer-inner">
+    <div>
+      <p>&copy; 2026 Mohammed Oudai Helaleh. All rights cryptographically reserved.</p>
+      <p class="meta">Informatics &amp; Communications Engineering Architecture Deployment</p>
+    </div>
+  </div>
+</footer>
+
+<script src="../case-study.js" defer></script>
+</body>
+</html>

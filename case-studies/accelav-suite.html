@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AccelAV-Suite — Custom Media Player &amp; DSP Visualizer | Mohammed Oudai Helaleh</title>
+<meta name="description" content="A high-performance Python desktop multimedia player featuring synchronized audio/video playback, multi-threaded stream concurrency, drag-and-drop file handling, live DSP waveform visualization, and asynchronous audio segment extraction.">
+
+<link rel="stylesheet" href="../case-study.css">
+</head>
+
+<body class="theme-crypto">
+
+<div class="bg-grid"></div>
+<div class="progress" id="progress"></div>
+
+<!-- ============================================================
+     NAV
+     ============================================================ -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="../index.html" class="brand">MOHAMMED <span>OUDAI</span></a>
+    <a href="../index.html#projects" class="back-link">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M19 12H5M12 19l-7-7 7-7"/>
+      </svg>
+      <span>BACK_TO_VAULT</span>
+    </a>
+  </div>
+</nav>
+
+<!-- ============================================================
+     HERO
+     ============================================================ -->
+<header class="cs-hero">
+  <div class="wrap">
+
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <a href="../index.html">PORTFOLIO</a>
+      <span class="sep">/</span>
+      <a href="../index.html#projects">VAULT</a>
+      <span class="sep">/</span>
+      <a href="../index.html#projects">SOFTWARE_&amp;_CRYPTO</a>
+    </nav>
+
+    <div class="pill-row">
+      <span class="pill"><span class="dot"></span>MULTIMEDIA_ENGINEERING</span>
+      <span class="pill neutral">CASE_STUDY</span>
+      <span class="pill neutral">READ_TIME 9 MIN</span>
+    </div>
+
+    <h1>AccelAV-Suite — Custom Media Player &amp; DSP Visualizer</h1>
+
+    <p class="standfirst">
+      A Python desktop application delivering <strong>synchronized audio/video playback</strong>,
+      <strong>multi-threaded stream concurrency</strong>, native drag-and-drop file handling,
+      live <strong>DSP waveform visualization</strong>, and asynchronous audio segment extraction —
+      engineered without relying on external media player wrappers.
+    </p>
+
+    <div class="cs-actions">
+      <a class="cs-repo-link"
+         href="https://github.com/Mohammed-Oudai-Helaleh/AccelAV-Suite"
+         target="_blank" rel="noopener noreferrer"
+         aria-label="View the AccelAV-Suite source code on GitHub">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M12 .5C5.73.5.5 5.73.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.56v-2c-3.2.7-3.88-1.54-3.88-1.54-.53-1.34-1.29-1.7-1.29-1.7-1.05-.72.08-.71.08-.71 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.23-1.28-5.23-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.04 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.79 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.58.23 2.75.11 3.04.74.81 1.19 1.84 1.19 3.1 0 4.42-2.69 5.39-5.25 5.68.41.35.78 1.05.78 2.12v3.14c0 .31.21.68.8.56A11.5 11.5 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5z"/>
+        </svg>
+        <span>VIEW_REPOSITORY</span>
+        <span class="arrow" aria-hidden="true">→</span>
+      </a>
+    </div>
+
+    <dl class="meta-grid">
+      <div class="meta-cell">
+        <dt>Environment</dt>
+        <dd>Native desktop runtime — Python 3.x</dd>
+      </div>
+      <div class="meta-cell">
+        <dt>Media Engine</dt>
+        <dd>OpenCV (video decode) · Pygame (audio) · NumPy (matrix)</dd>
+      </div>
+      <div class="meta-cell">
+        <dt>Interface</dt>
+        <dd>Tkinter + TkinterDnD — native OS event bindings</dd>
+      </div>
+      <div class="meta-cell">
+        <dt>Signal Analytics</dt>
+        <dd>librosa · scipy.io.wavfile — waveform extraction</dd>
+      </div>
+    </dl>
+
+  </div>
+</header>
+
+<!-- ============================================================
+     BODY
+     ============================================================ -->
+<main class="cs-body">
+  <div class="wrap">
+
+    <!-- ---------- OBJECTIVE ---------- -->
+    <section class="cs-section">
+      <p>
+        Media players look simple from the outside — click a file, it plays. Underneath, they
+        orchestrate one of the hardest problems in desktop software: keeping independent
+        streams of video frames and audio samples in lockstep, in real time, while remaining
+        responsive to user input. A single-threaded implementation runs into thread starvation
+        almost immediately — the video decoder blocks the audio buffer, the audio buffer blocks
+        the UI, and the interface freezes during playback of anything larger than a small clip.
+      </p>
+
+      <p>
+        AccelAV-Suite was built to solve that problem from first principles. The project set
+        out to design a desktop multimedia player with <strong>real-time synchronized
+        audio/video playback</strong>, a live digital signal processing visualization layer,
+        and an audio segment extraction tool — without relying on an external media player
+        wrapper like VLC or ffplay. Every stream, every buffer, and every extraction operation
+        is orchestrated by the application's own code.
+      </p>
+
+      <div class="callout note">
+        <div class="callout-label">◆ SCOPE_NOTE</div>
+        <p>
+          AccelAV-Suite is a desktop application targeting native runtime environments. All
+          path resolution, thread mapping, and audio extraction operations execute exclusively
+          within the local host's memory space. The application initiates no network
+          transmissions — no telemetry, no update checks, no remote metadata lookups — and
+          every file it processes comes from the local file system.
+        </p>
+      </div>
+    </section>
+
+    <!-- ---------- PHASE 1 ---------- -->
+    <section class="cs-section" id="phase-1">
+      <span class="phase-tag">PHASE 01</span>
+      <h2>Concurrency Orchestration &amp; Dynamic Path Tracking</h2>
+
+      <p>
+        The first engineering decision determined everything that followed: the application
+        would not use an external media framework. Frameworks like VLC or FFmpeg handle
+        decoding internally and expose a playback API, but they also impose their own threading
+        model and buffer management — which means the actual concurrency problem is hidden
+        from the developer rather than solved by them. AccelAV-Suite takes the opposite
+        approach: the decoding stack is composed from lower-level libraries, and the
+        concurrency architecture is built explicitly on top of them.
+      </p>
+
+      <h3>Three-library dependency architecture</h3>
+
+      <p>
+        The media pipeline is built from three specialized libraries, each chosen for a
+        specific role in the playback loop:
+      </p>
+
+      <ul>
+        <li>
+          <strong>OpenCV (cv2) — video frame decoding.</strong> OpenCV's
+          <code>VideoCapture</code> API provides frame-by-frame video decoding with configurable
+          frame rates and position seeking. It's a computer vision library, not a media player —
+          which is precisely why it fits: it hands back raw frame matrices that the application
+          can process, buffer, or transform however it needs, rather than forcing a fixed
+          playback abstraction.
+        </li>
+        <li>
+          <strong>Pygame — low-latency audio buffer streaming.</strong> Pygame's audio mixer
+          accepts raw PCM sample buffers and plays them through the host audio subsystem with
+          minimal latency. It exposes both a streaming mode (queue sample buffers as they're
+          ready) and a blocking mode (play a buffer and wait), which gives the application
+          control over whether audio drives the timing or follows the video timeline.
+        </li>
+        <li>
+          <strong>NumPy — matrix operations.</strong> Video frames arrive as 3D arrays
+          (height × width × channels) and audio samples as 1D arrays. NumPy provides the
+          array arithmetic needed to resize frames, mix audio channels, compute waveform
+          amplitudes, and shift data between the two pipelines without copying.
+        </li>
+      </ul>
+
+      <!-- ---------- SCREENSHOT 1 ---------- -->
+      <figure class="cs-figure">
+        <div class="fig-bar">
+          <span class="dot" aria-hidden="true"></span>
+          <span>accelav_dependencies.png</span>
+        </div>
+        <img src="../assets/img/accelav_dependencies.png"
+             alt="VS Code IDE panel showing the AccelAV-Suite dependency imports and project structure — OpenCV, Pygame, NumPy and threading modules imported at the top of the main application file"
+             loading="lazy"
+             onerror="this.closest('figure').classList.add('img-missing')">
+        <div class="img-placeholder" aria-hidden="true">
+          [ TELEMETRY_CAPTURE_PENDING ]<br>
+          assets/img/accelav_dependencies.png
+        </div>
+        <figcaption>
+          <b>Figure 4.1</b> — Dependency architecture. The VS Code panel shows the AccelAV-Suite
+          core imports — OpenCV for video frame decoding, Pygame for low-latency audio buffer
+          streaming, NumPy for matrix operations, and Python's <code>threading</code> module for
+          the multi-threaded execution loops. Each library carries a distinct role in the media
+          pipeline; none of them are media-player frameworks in their own right.
+        </figcaption>
+      </figure>
+
+      <h3>Multi-threaded execution loops</h3>
+
+      <p>
+        The application's playback loop is split across explicit Python threads, each responsible
+        for one independent stream. The video decoding thread pulls frames from OpenCV and
+        places them in a bounded queue. The audio streaming thread pulls buffers from Pygame's
+        mixer and feeds them to the host audio subsystem. The main UI thread consumes decoded
+        frames from the queue, renders them to the canvas, and processes user input events.
+      </p>
+
+      <p>
+        The threading boundary is what makes fluid playback possible. Without it, the UI thread
+        would spend most of its time blocked inside <code>cv2.VideoCapture.read()</code> waiting
+        for the next frame to decode, and any user interaction during that block would be
+        queued rather than processed. With the boundary in place, the UI thread never blocks
+        on media operations — it either has a frame ready to render, or it doesn't, and either
+        way it continues handling events at the display's refresh rate.
+      </p>
+
+      <p>
+        Synchronization between the two streams is maintained by a <strong>high-precision
+        multi-threaded timer</strong> that both threads reference. The video thread paces its
+        frame delivery to the file's declared frame rate; the audio thread paces its buffer
+        submission to the sample rate. Because both threads consult the same monotonic clock
+        reference, drift between them stays bounded — the video and audio remain synchronized
+        even across long playback sessions.
+      </p>
+
+      <h3>Automated directory playlist mapping</h3>
+
+      <p>
+        Rather than requiring the user to explicitly build a playlist, the application uses a
+        <strong>context-aware file execution tracker</strong>. When a media file is opened, the
+        backend inspects the parent directory of that file, enumerates every media file
+        alongside it, and registers those files as the active playlist array. From the user's
+        perspective, opening one file in a folder immediately makes the whole folder playable —
+        which mirrors how most users actually organize their media libraries.
+      </p>
+
+      <p>
+        Three playback modes are supported over the discovered playlist: sequential loop
+        (play files in the order they were enumerated), shuffle (randomly select the next file
+        each time the current one finishes), and single-file iteration (loop the current track
+        indefinitely). The mode can be switched at runtime without interrupting playback — the
+        next-file selection logic consults the current mode each time it runs, so changing the
+        mode takes effect on the next track boundary.
+      </p>
+    </section>
+
+    <!-- ---------- PHASE 2 ---------- -->
+    <section class="cs-section" id="phase-2">
+      <span class="phase-tag">PHASE 02</span>
+      <h2>Interface Engineering &amp; Signal Analytics</h2>
+
+      <p>
+        With the playback pipeline operating, the second phase built the user-facing
+        capabilities on top: native file handling that matches OS conventions, a live waveform
+        visualization layer, and an audio extraction tool that pulls clean segments out of
+        running video files.
+      </p>
+
+      <h3>System drag-and-drop integration</h3>
+
+      <p>
+        The interface uses <strong>TkinterDnD</strong> — a Tkinter extension that registers the
+        application's window as a valid drop target with the host operating system. Once
+        registered, the application receives <code>&lt;&lt;Drop&gt;&gt;</code> events
+        containing the absolute path of any file the user drags onto the window. The
+        application does not need to parse arguments, prompt for file selection, or manage a
+        recent-files list — dragging a file onto the window is the file selection.
+      </p>
+
+      <p>
+        The mechanism works by registering a <code>DND_FILES</code> variable binding with the
+        Tkinter event system, which tells the OS that this window accepts file drops. When
+        the user releases a file over the window, Tkinter fires a <code>&lt;&lt;Drop&gt;&gt;</code>
+        callback with the file path embedded in the event data. The application extracts that
+        path, validates it against supported media extensions, resets the player's internal
+        state (clears queues, stops threads, releases buffers), and starts a fresh playback
+        loop against the new file.
+      </p>
+
+      <!-- ---------- SCREENSHOT 2 ---------- -->
+      <figure class="cs-figure">
+        <div class="fig-bar">
+          <span class="dot" aria-hidden="true"></span>
+          <span>accelav_ui_logic.png</span>
+        </div>
+        <img src="../assets/img/accelav_ui_logic.png"
+             alt="VS Code editor showing the AccelAV-Suite UI event handler source code responsible for registering native drag-and-drop file drops and handling the <<Drop>> callback that resets the player state"
+             loading="lazy"
+             onerror="this.closest('figure').classList.add('img-missing')">
+        <div class="img-placeholder" aria-hidden="true">
+          [ TELEMETRY_CAPTURE_PENDING ]<br>
+          assets/img/accelav_ui_logic.png
+        </div>
+        <figcaption>
+          <b>Figure 4.2</b> — UI event handler source code. The <code>DND_FILES</code>
+          registration variable and the <code>&lt;&lt;Drop&gt;&gt;</code> callback handler that
+          receives file paths from the native OS drag-and-drop subsystem. When a file is
+          dropped, the handler validates the path, resets the player's internal state, and
+          begins a fresh playback loop without restarting the application.
+        </figcaption>
+      </figure>
+
+      <h3>Live audio waveform visualization</h3>
+
+      <p>
+        The visualization layer extracts real-time amplitude data from the audio stream and
+        renders it as a moving waveform on the player canvas. Two signal-processing libraries
+        do the extraction work: <strong>librosa</strong> for high-level audio analysis
+        (amplitude envelopes, frequency decomposition) and <strong>scipy.io.wavfile</strong>
+        for lower-level access to raw PCM sample values.
+      </p>
+
+      <p>
+        The pipeline runs continuously during playback. At each rendering frame, the
+        visualization thread reads the most recent slice of audio samples, computes an
+        amplitude envelope over that slice using NumPy, maps the amplitude values into
+        screen-space Y coordinates, and passes the resulting vector to the Tkinter canvas
+        for drawing. The result is a waveform that shifts and pulses in sync with the audio
+        — quiet passages produce a compressed horizontal line, loud passages produce tall
+        vertical excursions, and transitions between them are visible in real time.
+      </p>
+
+      <!-- ---------- SCREENSHOT 3 ---------- -->
+      <figure class="cs-figure">
+        <div class="fig-bar">
+          <span class="dot" aria-hidden="true"></span>
+          <span>accelav_dsp_waveform.png</span>
+        </div>
+        <img src="../assets/img/accelav_dsp_waveform.png"
+             alt="AccelAV-Suite player interface displaying a live waveform visualization of audio amplitude over time, with the video playback surface visible alongside"
+             loading="lazy"
+             onerror="this.closest('figure').classList.add('img-missing')">
+        <div class="img-placeholder" aria-hidden="true">
+          [ TELEMETRY_CAPTURE_PENDING ]<br>
+          assets/img/accelav_dsp_waveform.png
+        </div>
+        <figcaption>
+          <b>Figure 4.3</b> — Live DSP waveform visualization. The player's visualization
+          canvas displays the amplitude envelope of the currently playing audio stream,
+          rendered as a horizontal waveform trace. The trace updates in real time as playback
+          progresses — the waveform is regenerated from the raw audio sample buffer on each
+          rendering frame, giving immediate visual feedback tied to the actual signal content.
+        </figcaption>
+      </figure>
+
+      <h3>Asynchronous audio segment extraction</h3>
+
+      <p>
+        The final feature is an audio extraction sub-interface that lets the user slice a clean
+        audio clip out of a running video file. The user specifies explicit chronological
+        timestamp bounds in <code>HH:MM:SS:mm</code> format — a start time and an end time —
+        and the application reads only the audio samples that fall within those bounds,
+        resamples them if necessary, and writes them to a fresh audio file.
+      </p>
+
+      <p>
+        The extraction runs on its own thread, isolated from both the playback pipeline and
+        the UI thread. This matters because extraction reads samples from the source file
+        independently of the playback read head — a long extraction can take seconds while
+        the user continues watching the video. Because the extraction thread has its own file
+        handle and its own read position, the two operations don't interfere: playback can
+        be at any position in the file while extraction reads from a completely different
+        range.
+      </p>
+
+      <p>
+        Three output formats are supported: <strong>WAV</strong> (uncompressed PCM, the
+        highest-fidelity output), <strong>FLAC</strong> (lossless compression, roughly half
+        the file size of WAV with no quality loss), and <strong>MP3</strong> (lossy
+        compression, the most portable format). The user selects the format and the
+        application serializes the extracted samples accordingly — writing raw PCM for WAV,
+        applying lossless compression for FLAC, or encoding to the MP3 format through a
+        standard encoder.
+      </p>
+
+      <!-- ---------- SCREENSHOT 4 ---------- -->
+      <figure class="cs-figure">
+        <div class="fig-bar">
+          <span class="dot" aria-hidden="true"></span>
+          <span>accelav_interface_live.png</span>
+        </div>
+        <img src="../assets/img/accelav_interface_live.png"
+             alt="AccelAV-Suite application running with active video playback alongside the audio segment extractor window showing the timestamp input fields for the start and end bounds"
+             loading="lazy"
+             onerror="this.closest('figure').classList.add('img-missing')">
+        <div class="img-placeholder" aria-hidden="true">
+          [ TELEMETRY_CAPTURE_PENDING ]<br>
+          assets/img/accelav_interface_live.png
+        </div>
+        <figcaption>
+          <b>Figure 4.4</b> — Active runtime with audio extraction. The main player window
+          shows real-time video decoding while the audio segment extraction sub-interface
+          operates alongside it in a separate frame. The user can specify timestamp bounds
+          in <code>HH:MM:SS:mm</code> format and export a clean audio clip to WAV, FLAC, or
+          MP3 without interrupting the ongoing playback.
+        </figcaption>
+      </figure>
+    </section>
+
+    <!-- ---------- OUTCOMES ---------- -->
+    <section class="cs-section" id="outcomes">
+      <span class="phase-tag">OUTCOMES</span>
+      <h2>Software Engineering Infrastructure Outcomes</h2>
+
+      <ul>
+        <li>
+          <strong>Zero-lag stream synchronicity.</strong> Perfect synchronization between the
+          independent audio buffer pipeline and the video decoding loop was achieved via
+          high-precision multi-threaded timers. Both threads reference the same monotonic
+          clock, so drift between them stays bounded even across long playback sessions — the
+          video and audio never separate, regardless of file length.
+        </li>
+        <li>
+          <strong>Airtight context traversals.</strong> Dynamic playlist directory swaps
+          maintain <strong>100% path accuracy</strong> across file format changes and shuffle
+          index updates, with zero memory leakage across the full test suite. Every file
+          dropped onto the window is correctly resolved to its absolute path, correctly matched
+          against supported extensions, and correctly registered into the playlist.
+        </li>
+        <li>
+          <strong>System event fluidity.</strong> Drag-and-drop file state changes operate
+          seamlessly — the application automatically resets player variables and buffer
+          structures on the fly when a new file arrives, without the UI freezing or the
+          application crashing. Repeated drops of different files in quick succession are
+          handled cleanly.
+        </li>
+        <li>
+          <strong>Live signal analytics validated.</strong> The waveform visualization layer
+          processes audio samples in real time during playback and renders the resulting
+          amplitude envelope to the canvas at the display's refresh rate. The extraction
+          sub-interface produces clean audio segments in three standard formats without
+          interfering with ongoing playback.
+        </li>
+        <li>
+          <strong>Zero external media wrapper dependency.</strong> The playback pipeline is
+          assembled entirely from OpenCV, Pygame, and NumPy — three libraries that individually
+          provide decoding, audio output, and array operations, but none of which constitute a
+          media player framework in their own right. The orchestration, timing, buffering, and
+          synchronization logic is entirely the application's own code.
+        </li>
+      </ul>
+
+      <div class="callout remediation">
+        <div class="callout-label">✓ MULTIMEDIA_ENGINE_VALIDATED</div>
+        <p>
+          <strong>Synchronized desktop playback pipeline confirmed operational.</strong>
+          AccelAV-Suite demonstrates that a desktop media player can be built from
+          lower-level components without an external framework — with explicit control over
+          the threading model, buffer management, and synchronization strategy. The
+          application delivers fluid playback, live DSP visualization, and asynchronous audio
+          extraction across the full supported file format range, all without network
+          dependency and all from a single Python codebase.
+        </p>
+      </div>
+    </section>
+
+    <!-- ---------- PRIVACY ---------- -->
+    <section class="cs-section" id="privacy">
+      <span class="phase-tag">DISCLOSURE</span>
+      <h2>Security &amp; Data Privacy Note</h2>
+
+      <div class="callout note">
+        <div class="callout-label">◆ LOCAL_SANDBOXING_PROTOCOL</div>
+        <p>
+          All path resolution, thread mapping scripts, and audio extraction operations execute
+          exclusively within the local host's memory space. The application initializes
+          <strong>no network connections</strong> at any point — no telemetry, no analytics,
+          no remote metadata lookups, no media file transmission. Every file processed by
+          AccelAV-Suite is read from and written to the local file system, and no data
+          derived from user media ever leaves the machine it was processed on.
+        </p>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<!-- ============================================================
+     FOOTER
+     ============================================================ -->
+<footer class="footer">
+  <div class="wrap wrap-wide footer-inner">
+    <div>
+      <p>&copy; 2026 Mohammed Oudai Helaleh. All rights cryptographically reserved.</p>
+      <p class="meta">Informatics &amp; Communications Engineering Architecture Deployment</p>
+    </div>
+  </div>
+</footer>
+
+<script src="../case-study.js" defer></script>
+</body>
+</html>

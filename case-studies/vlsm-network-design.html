@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Core Enterprise Network Design &amp; VLSM | Mohammed Oudai Helaleh</title>
+<meta name="description" content="Multi-subnet corporate network architecture designed in Cisco Packet Tracer — Variable Length Subnet Masking across /25, /26, and /30 boundaries, cascaded switch fabric, and Layer-3 gateway provisioning validated with 0% packet loss.">
+
+<link rel="stylesheet" href="../case-study.css">
+</head>
+
+<body class="theme-network">
+
+<div class="bg-grid"></div>
+<div class="progress" id="progress"></div>
+
+<!-- ============================================================
+     NAV
+     ============================================================ -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="../index.html" class="brand">MOHAMMED <span>OUDAI</span></a>
+    <a href="../index.html#projects" class="back-link">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M19 12H5M12 19l-7-7 7-7"/>
+      </svg>
+      <span>BACK_TO_VAULT</span>
+    </a>
+  </div>
+</nav>
+
+<!-- ============================================================
+     HERO
+     ============================================================ -->
+<header class="cs-hero">
+  <div class="wrap">
+
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <a href="../index.html">PORTFOLIO</a>
+      <span class="sep">/</span>
+      <a href="../index.html#projects">VAULT</a>
+      <span class="sep">/</span>
+      <a href="../index.html#projects">NETWORK_ENGINEERING</a>
+    </nav>
+
+    <div class="pill-row">
+      <span class="pill"><span class="dot"></span>NETWORK_ARCHITECTURE</span>
+      <span class="pill neutral">CASE_STUDY</span>
+      <span class="pill neutral">READ_TIME 6 MIN</span>
+    </div>
+
+    <h1>Core Enterprise Network Design &amp; Variable Length Subnet Masking</h1>
+
+    <p class="standfirst">
+      Designing a multi-subnet corporate architecture in <strong>Cisco Packet Tracer</strong> —
+      slicing a single Class C private block into <strong>/25, /26 and /30 subnet boundaries</strong>
+      that match department headcounts exactly, cascading switch fabric to expand port capacity, and
+      provisioning the Layer-3 gateway layer that restores end-to-end reachability across the
+      topology.
+    </p>
+
+    <div class="cs-actions">
+      <a class="cs-repo-link"
+         href="https://github.com/Mohammed-Oudai-Helaleh/Variable-Length-Subnet-Masking-VLSM-Core-Enterprise-Network-Design.git"
+         target="_blank" rel="noopener noreferrer"
+         aria-label="View the topology files and Packet Tracer simulation on GitHub">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M12 .5C5.73.5.5 5.73.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.56v-2c-3.2.7-3.88-1.54-3.88-1.54-.53-1.34-1.29-1.7-1.29-1.7-1.05-.72.08-.71.08-.71 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.23-1.28-5.23-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.04 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.79 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.58.23 2.75.11 3.04.74.81 1.19 1.84 1.19 3.1 0 4.42-2.69 5.39-5.25 5.68.41.35.78 1.05.78 2.12v3.14c0 .31.21.68.8.56A11.5 11.5 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5z"/>
+        </svg>
+        <span>VIEW_REPOSITORY</span>
+        <span class="arrow" aria-hidden="true">→</span>
+      </a>
+    </div>
+
+    <dl class="meta-grid">
+      <div class="meta-cell">
+        <dt>Environment</dt>
+        <dd>Cisco Packet Tracer — multi-router topology</dd>
+      </div>
+      <div class="meta-cell">
+        <dt>Hardware</dt>
+        <dd>2× Cisco 1941 routers · 3× Catalyst 2960 switches</dd>
+      </div>
+      <div class="meta-cell">
+        <dt>Address Plan</dt>
+        <dd>VLSM from a single Class C block — /25 · /26 · /30</dd>
+      </div>
+      <div class="meta-cell">
+        <dt>Verification</dt>
+        <dd>ICMP trace — 4/4 replies, 0% packet loss</dd>
+      </div>
+    </dl>
+
+  </div>
+</header>
+
+<!-- ============================================================
+     BODY
+     ============================================================ -->
+<main class="cs-body">
+  <div class="wrap">
+
+    <!-- ---------- OBJECTIVE ---------- -->
+    <section class="cs-section">
+      <p>
+        Handing out equal-sized subnets from a single block is the most common mistake in enterprise
+        IP planning. A department with five workstations gets a subnet sized for two hundred and
+        fifty — and the addresses wasted there are unavailable when a new building comes online
+        eighteen months later. <strong>Variable Length Subnet Masking</strong> is the corrective
+        technique: right-size every subnet to its actual headcount, and you preserve room to grow
+        inside the block you already own.
+      </p>
+
+      <p>
+        This engagement designs and simulates a multi-subnet corporate topology in Cisco Packet
+        Tracer, taking a single Class C private block and slicing it mathematically into the exact
+        subnet sizes each department requires. The work spans address-planning math, physical
+        topology design (including a cascaded switch fabric to extend port count without adding
+        router hardware), and CLI-level Layer-3 provisioning to make the resulting subnets
+        reachable end-to-end.
+      </p>
+
+      <div class="callout note">
+        <div class="callout-label">◆ SCOPE_CONSTRAINT</div>
+        <p>
+          All design and verification work was performed inside Cisco Packet Tracer. The topology
+          uses the standard router-on-a-stick and cascaded-switch patterns that transfer directly
+          to physical hardware, but the engagement did not extend to physical deployment.
+        </p>
+      </div>
+    </section>
+
+    <!-- ---------- PHASE 1 ---------- -->
+    <section class="cs-section" id="phase-1">
+      <span class="phase-tag">PHASE 01</span>
+      <h2>Multi-Subnet VLSM Matrix</h2>
+
+      <p>
+        The plan begins with a single Class C block — <code>192.168.10.0/24</code> — and the
+        constraint that every department must be fully serviced without borrowing a second public or
+        private range. That is 256 total addresses, of which 254 are usable once the network and
+        broadcast addresses are excluded. The VLSM exercise is to allocate those 254 addresses
+        across departments of different sizes, plus one point-to-point link between the two routers,
+        without wasting any block larger than the department it serves.
+      </p>
+
+      <p>
+        Three mask sizes cover the entire design:
+      </p>
+
+      <ul>
+        <li>
+          <strong>/25 — 126 usable hosts.</strong> The largest segment, assigned to the department
+          with the highest headcount. A /25 uses exactly half the available block, so it must go
+          only to a department that actually needs that capacity.
+        </li>
+        <li>
+          <strong>/26 — 62 usable hosts.</strong> The mid-size segment. Two /26 blocks fit inside
+          the remaining half of the block, matching two departments of moderate headcount without
+          wasting the space a second /25 would consume.
+        </li>
+        <li>
+          <strong>/30 — 2 usable hosts.</strong> The smallest IPv4 allocation possible. Reserved
+          exclusively for <strong>point-to-point router links</strong>, where only two addresses are
+          ever needed — one on each end of the wire. Every other mask size wastes addresses on a
+          router link; the /30 wastes exactly zero.
+        </li>
+      </ul>
+
+      <p>
+        The result is a binary-math address schema where each department's subnet boundary lands
+        precisely on a bit-aligned power-of-two offset. This is not decoration — it's what allows
+        the routers to compute the correct route table entries automatically, and what allows a
+        future subnet to be added into the unused remainder without re-addressing a single host.
+      </p>
+    </section>
+
+    <!-- ---------- PHASE 2 ---------- -->
+    <section class="cs-section" id="phase-2">
+      <span class="phase-tag">PHASE 02</span>
+      <h2>Cascaded Switching Fabric</h2>
+
+      <p>
+        The physical topology pairs two Cisco 1941 routers with three Catalyst 2960 switches. The
+        HQ side carries the largest segment and the mid-size segment, while the branch side carries
+        the smallest. Rather than provisioning one switch per department, the HQ switches are
+        <strong>cascaded</strong> — Switch-Sales and Switch-IT are joined by a Layer-2 cross-over
+        link, extending the LAN's usable port count without requiring additional router slots or
+        uplinks.
+      </p>
+
+      <p>
+        Cascading is a standard enterprise technique because it lets one wiring closet serve multiple
+        departments on the same physical hardware without collapsing them into the same broadcast
+        domain. Once VLANs are applied to the cascade — as in the managed-switch case study alongside
+        this one — the two switches can serve different departments on the same wire, with the switch
+        fabric enforcing the boundary in hardware.
+      </p>
+
+      <p>
+        For this design, both switches operate in a single flat Layer-2 domain per department, and
+        the cascade carries whichever VLAN each host belongs to. The cross-over link between the two
+        switches carries tagged frames for both subnets, so a host on Switch-IT reaches its gateway
+        on the HQ router by traversing two switch hops — Switch-IT to Switch-Sales to the router —
+        without any visible change to the end-user configuration.
+      </p>
+    </section>
+
+    <!-- ---------- PHASE 3 ---------- -->
+    <section class="cs-section" id="phase-3">
+      <span class="phase-tag">PHASE 03</span>
+      <h2>Layer-3 Gateway Provisioning</h2>
+
+      <p>
+        With the topology laid out and the address plan calculated, the Cisco 1941 routers were
+        configured through the CLI to give every department a default gateway on its own subnet. Each
+        router interface was programmed with its high-precision subnet mask, a host address from
+        the correct subnet, and brought into an active link state with <code>no shutdown</code>.
+      </p>
+
+      <p>
+        The first interface serves the largest department on the HQ router, and its configuration
+        demonstrates the correct way to allocate the gateway address at the bottom of a /25 block —
+        the address immediately after the subnet's network boundary:
+      </p>
+
+      <div class="code-block">
+        <div class="code-head">
+          <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="code-lang">cisco ios</span>
+          <button class="copy-btn" data-copy type="button">COPY</button>
+        </div>
+        <pre><code><span class="cmt">! HQ router interface serving the /25 department segment</span>
+Router&gt;enable
+Router#configure terminal
+
+Router(config)#interface GigabitEthernet0/0
+Router(config-if)#ip address 192.168.10.1 255.255.255.128
+Router(config-if)#no shutdown
+Router(config-if)#exit</code></pre>
+      </div>
+
+      <p>
+        The <code>255.255.255.128</code> mask is the CIDR <code>/25</code> expressed in dotted-decimal
+        form. It is the single most important line in the block — it tells the router that this
+        interface's network spans <code>192.168.10.0</code> through
+        <code>192.168.10.127</code>, and that anything outside that range must be routed elsewhere.
+        The mask is what makes the address plan real; without it, the router has an IP address with
+        no subnet context and routes incorrectly.
+      </p>
+
+      <p>
+        A second interface on the HQ router serves the mid-size segment, and the branch router
+        serves the smallest department on the far side of the topology. The interfaces on both
+        routers were brought up identically and the end hosts immediately negotiated their Layer-2
+        and Layer-3 parameters without any manual client configuration.
+      </p>
+    </section>
+
+    <!-- ---------- OUTCOMES ---------- -->
+    <section class="cs-section" id="outcomes">
+      <span class="phase-tag">OUTCOMES</span>
+      <h2>Performance Outcomes &amp; Diagnostics</h2>
+
+      <p>
+        The completed topology spans two routers, three switches, three endpoint clients, and a
+        cascade link between the two HQ switches. Two independent verification passes confirmed the
+        design behaves as intended — first a visual audit of the physical layout, then a live
+        endpoint trace from a client to its gateway.
+      </p>
+
+      <h3>Physical topology — routers, switches, and cascade</h3>
+
+      <p>
+        The network diagram below shows the full topology layout. The HQ router bridges the large
+        and mid-size department segments on the left, and the branch router serves the small
+        department segment on the right. The dashed line between the two routers is the WAN
+        link — the point-to-point connection that receives the <code>/30</code> allocation from
+        the Class C block. The cascade link between Switch-Sales and Switch-IT is the physical
+        cross-over that expands the HQ wiring closet's port capacity:
+      </p>
+
+      <!-- ---------- SCREENSHOT 1 ---------- -->
+      <figure class="cs-figure">
+        <div class="fig-bar">
+          <span class="dot" aria-hidden="true"></span>
+          <span>vlsm_topology.png</span>
+        </div>
+        <img src="../assets/img/vlsm_topology.png"
+             alt="Cisco Packet Tracer topology diagram showing Router-HQ and Router-Branch connected by a WAN link, with Router-HQ feeding a cascaded Switch-Sales into Switch-IT serving PC-Sales and PC-IT, and Router-Branch feeding Switch-Exec serving PC-Exec"
+             loading="lazy"
+             onerror="this.closest('figure').classList.add('img-missing')">
+        <div class="img-placeholder" aria-hidden="true">
+          [ TELEMETRY_CAPTURE_PENDING ]<br>
+          assets/img/vlsm_topology.png
+        </div>
+        <figcaption>
+          <b>Figure 13.1</b> — Cisco Packet Tracer topology showing the full multi-subnet
+          architecture. Router-HQ anchors the cascaded Switch-Sales → Switch-IT fabric serving
+          PC-Sales and PC-IT, while Router-Branch serves the remote PC-Exec. The dashed line
+          between the two routers is the point-to-point WAN link allocated a /30 mask from the
+          Class C block.
+        </figcaption>
+      </figure>
+
+      <h3>Endpoint validation — client addressing and gateway reachability</h3>
+
+      <p>
+        The second verification pass runs a live diagnostic from one of the endpoint clients. The
+        <code>ipconfig</code> output confirms the host negotiated a correct address inside its
+        subnet, with the gateway configured at the router interface's IP — and the subsequent ICMP
+        trace to that gateway returns four replies out of four attempts, with zero packet loss and
+        sub-10ms round-trip times:
+      </p>
+
+      <!-- ---------- SCREENSHOT 2 ---------- -->
+      <figure class="cs-figure">
+        <div class="fig-bar">
+          <span class="dot" aria-hidden="true"></span>
+          <span>vlsm_endpoint_verification.png</span>
+        </div>
+        <img src="../assets/img/vlsm_endpoint_verification.png"
+             alt="Cisco Packet Tracer terminal output showing ipconfig on FastEthernet0 with IPv4 address 192.168.10.20 and subnet mask 255.255.255.128, default gateway 192.168.10.1, followed by a successful four-reply ICMP ping to the gateway with 0% packet loss"
+             loading="lazy"
+             onerror="this.closest('figure').classList.add('img-missing')">
+        <div class="img-placeholder" aria-hidden="true">
+          [ TELEMETRY_CAPTURE_PENDING ]<br>
+          assets/img/vlsm_endpoint_verification.png
+        </div>
+        <figcaption>
+          <b>Figure 13.2</b> — Endpoint-level verification. <code>ipconfig</code> confirms the client
+          negotiated a <code>/25</code> address (<code>192.168.10.20</code>) with subnet mask
+          <code>255.255.255.128</code> and the correct default gateway, and the ICMP trace to
+          <code>192.168.10.1</code> returns 4/4 replies with <strong>0% packet loss</strong>.
+        </figcaption>
+      </figure>
+
+      <ul>
+        <li>
+          <strong>All client endpoints initialized dynamic data links.</strong> Every PC in the
+          topology successfully negotiated its Layer-2 and Layer-3 parameters through the cascaded
+          switch hops — including the clients on Switch-IT that reach their gateway two switches
+          away through the HQ cascade.
+        </li>
+        <li>
+          <strong>ICMP validation traces returned 100% success.</strong> The endpoint-to-gateway
+          trace completed with <strong>0% data packet loss</strong> across all four attempts.
+          Minimum, maximum, and average round-trip times stayed in the single-digit-millisecond
+          range, confirming there is no routing loop, no misconfigured mask, and no dropped ARP
+          resolution anywhere along the path.
+        </li>
+        <li>
+          <strong>Address plan verified end-to-end.</strong> The <code>ipconfig</code> output
+          confirms the client is running with a host address inside the /25 segment
+          (<code>192.168.10.20</code>), the correct subnet mask
+          (<code>255.255.255.128</code>), and the router interface's address configured as its
+          default gateway (<code>192.168.10.1</code>). All three values are the ones the VLSM
+          matrix specified — the plan survives contact with live hosts.
+        </li>
+      </ul>
+
+      <div class="callout remediation">
+        <div class="callout-label">✓ DESIGN_VALIDATED</div>
+        <p>
+          <strong>Address-planning integrity confirmed.</strong> The single Class C block was
+          successfully subdivided into department-sized segments with no wasted allocations, the
+          cascaded switch fabric extended reachability without added router hardware, and the
+          Layer-3 gateway layer delivered end-to-end connectivity with zero packet loss. The
+          architecture is ready to be expanded — additional departments, additional cascaded
+          switches, and the inevitable future VLAN segmentation can all be layered on top without
+          re-addressing the subnets already in production.
+        </p>
+      </div>
+    </section>
+
+    <!-- ---------- PRIVACY ---------- -->
+    <section class="cs-section" id="privacy">
+      <span class="phase-tag">DISCLOSURE</span>
+      <h2>Security &amp; Data Privacy Note</h2>
+
+      <div class="callout note">
+        <div class="callout-label">◆ LAB_CONFIGURATION_DISCLOSURE</div>
+        <p>
+          The configuration presented here reflects a lab simulation only. Production deployments
+          typically layer additional controls on top of this design — DHCP snooping to prevent
+          rogue servers, PortFast and BPDU Guard on access ports, storm-control limits on the
+          cascade link, and administrative ACLs restricting which subnets may reach the router
+          management interfaces. Those controls are documented as recommended next steps but are
+          outside the scope of this lab exercise.
+        </p>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<!-- ============================================================
+     FOOTER
+     ============================================================ -->
+<footer class="footer">
+  <div class="wrap wrap-wide footer-inner">
+    <div>
+      <p>&copy; 2026 Mohammed Oudai Helaleh. All rights cryptographically reserved.</p>
+      <p class="meta">Informatics &amp; Communications Engineering Architecture Deployment</p>
+    </div>
+  </div>
+</footer>
+
+<script src="../case-study.js" defer></script>
+</body>
+</html>

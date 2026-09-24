@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Video Game Price Predictor Pipeline — ML Regression Ensemble | Mohammed Oudai Helaleh</title>
+<meta name="description" content="An end-to-end predictive analytics pipeline estimating software market pricing from Steam 2023 feature matrices — Box-Cox target normalization, RobustScaler feature insulation, a multi-model ensemble cascade, and Optuna-driven hyperparameter optimization.">
+
+<link rel="stylesheet" href="../case-study.css">
+</head>
+
+<body class="theme-ai">
+
+<div class="bg-grid"></div>
+<div class="progress" id="progress"></div>
+
+<!-- ============================================================
+     NAV
+     ============================================================ -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="../index.html" class="brand">MOHAMMED <span>OUDAI</span></a>
+    <a href="../index.html#projects" class="back-link">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M19 12H5M12 19l-7-7 7-7"/>
+      </svg>
+      <span>BACK_TO_VAULT</span>
+    </a>
+  </div>
+</nav>
+
+<!-- ============================================================
+     HERO
+     ============================================================ -->
+<header class="cs-hero">
+  <div class="wrap">
+
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <a href="../index.html">PORTFOLIO</a>
+      <span class="sep">/</span>
+      <a href="../index.html#projects">VAULT</a>
+      <span class="sep">/</span>
+      <a href="../index.html#projects">AI_&amp;_DATA_ENGINEERING</a>
+    </nav>
+
+    <div class="pill-row">
+      <span class="pill"><span class="dot"></span>DATA_ENGINEERING</span>
+      <span class="pill neutral">CASE_STUDY</span>
+      <span class="pill neutral">READ_TIME 8 MIN</span>
+    </div>
+
+    <h1>Video Game Price Predictor Pipeline — End-to-End ML Regression Ensemble</h1>
+
+    <p class="standfirst">
+      A full predictive analytics pipeline estimating software market pricing from the
+      <strong>Steam 2023 feature matrix</strong> — featuring high-dimensional feature
+      engineering, <strong>Box-Cox and logarithmic normalization</strong> of skewed
+      distributions, a multi-model ensemble evaluation cascade, and <strong>Optuna-driven
+      hyperparameter optimization</strong> producing a champion Gradient Boosting regressor.
+    </p>
+
+    <div class="cs-actions">
+      <a class="cs-repo-link"
+         href="https://github.com/Mohammed-Oudai-Helaleh/Video-Game-Pricing-Model"
+         target="_blank" rel="noopener noreferrer"
+         aria-label="View the Video Game Pricing Model source on GitHub">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M12 .5C5.73.5.5 5.73.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.56v-2c-3.2.7-3.88-1.54-3.88-1.54-.53-1.34-1.29-1.7-1.29-1.7-1.05-.72.08-.71.08-.71 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.23-1.28-5.23-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.04 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.79 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.58.23 2.75.11 3.04.74.81 1.19 1.84 1.19 3.1 0 4.42-2.69 5.39-5.25 5.68.41.35.78 1.05.78 2.12v3.14c0 .31.21.68.8.56A11.5 11.5 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5z"/>
+        </svg>
+        <span>VIEW_REPOSITORY</span>
+        <span class="arrow" aria-hidden="true">→</span>
+      </a>
+    </div>
+
+    <dl class="meta-grid">
+      <div class="meta-cell">
+        <dt>Environment</dt>
+        <dd>Python 3.x · Jupyter Notebook pipeline sandbox</dd>
+      </div>
+      <div class="meta-cell">
+        <dt>Data Source</dt>
+        <dd>Steam 2023 dataset + multi-platform telemetry</dd>
+      </div>
+      <div class="meta-cell">
+        <dt>Champion Model</dt>
+        <dd>Gradient Boosting Regressor (after Optuna tuning)</dd>
+      </div>
+      <div class="meta-cell">
+        <dt>Performance</dt>
+        <dd>R² = 0.7282 · MAE = 1.0874 · MSE = 2.5768</dd>
+      </div>
+    </dl>
+
+  </div>
+</header>
+
+<!-- ============================================================
+     BODY
+     ============================================================ -->
+<main class="cs-body">
+  <div class="wrap">
+
+    <!-- ---------- OBJECTIVE ---------- -->
+    <section class="cs-section">
+      <p>
+        Price prediction is one of the deceptive problems in machine learning. It sounds simple
+        — you have features, you have a target, you fit a regression — but real market data
+        brings a set of pathologies that will quietly destroy a naive model. The target variable
+        is heavily right-skewed because most software sells cheap and a tiny fraction sells
+        expensive. Feature columns arrive with wildly different scales. Categorical metadata
+        explodes into high-dimensional sparsity the moment you one-hot-encode it. And any
+        extreme outlier in the target will dominate the loss function, dragging the entire model
+        toward fitting that single data point instead of learning the general pattern.
+      </p>
+
+      <p>
+        This project set out to build a predictive pipeline that treated those pathologies as
+        first-class engineering problems rather than as cleanup work to handle later. The
+        result is an end-to-end regression system trained on the <strong>Steam 2023 dataset</strong>
+        combined with multi-platform telemetry — spanning data engineering, feature
+        engineering, distribution transformations, multi-model ensemble evaluation, and
+        automated hyperparameter optimization to select a champion production model.
+      </p>
+
+      <div class="callout note">
+        <div class="callout-label">◆ SCOPE_NOTE</div>
+        <p>
+          The pipeline uses public market metadata only. No private financial transaction
+          tokens, developer payment credentials, or company security layers were processed at
+          any stage. The dataset consists of publicly-listed game attributes: supported
+          languages, platform availability, achievement counts, concurrent user figures, and
+          listed prices — the same information visible to any user browsing the storefront.
+        </p>
+      </div>
+    </section>
+
+    <!-- ---------- PHASE 1 ---------- -->
+    <section class="cs-section" id="phase-1">
+      <span class="phase-tag">PHASE 01</span>
+      <h2>Data Engineering &amp; Dimensionality Reduction</h2>
+
+      <p>
+        Phase 1 handled the two structural problems that any machine learning model would
+        inherit if they were left unaddressed: unrefined feature types that high-capacity
+        estimators can't learn from directly, and pathological distributions that would distort
+        gradient calculations.
+      </p>
+
+      <h3>Schema cleansing &amp; aggregation</h3>
+
+      <p>
+        The first pass merged multiple data tables across shared categorical identifiers —
+        consolidating game records that were fragmented across separate database extracts.
+        Then, several columns that arrived as natural-language strings were transformed into
+        numerically meaningful features:
+      </p>
+
+      <ul>
+        <li>
+          <strong>Language attributes.</strong> Columns like
+          <code>supported_languages</code> and <code>full_audio_languages</code> arrived as
+          comma-separated text strings. Rather than one-hot encoding each language (which would
+          produce hundreds of sparse binary columns), these were converted into
+          <strong>integer counts</strong> — "how many languages does this game support?" — which
+          captures the underlying signal without the dimensionality explosion.
+        </li>
+        <li>
+          <strong>Platform availability flags.</strong> The <code>windows</code>,
+          <code>mac</code>, and <code>linux</code> columns were converted into clean
+          <strong>discrete binary layers</strong> (0/1), making them directly usable as
+          regression inputs.
+        </li>
+      </ul>
+
+      <h3>Tag &amp; genre cardinality compression</h3>
+
+      <p>
+        The game tags and genres fields were the highest-cardinality problem in the entire
+        dataset — each game has a list of user-assigned tags, and across the full Steam
+        catalogue there are hundreds of distinct tag values. One-hot encoding this directly
+        would have produced a feature matrix with hundreds of mostly-empty binary columns,
+        each contributing almost nothing to the model while consuming memory and inviting
+        overfitting.
+      </p>
+
+      <p>
+        The solution was a two-step compression: extract the multi-valued fields by parsing
+        them with Python's <code>ast.literal_eval</code> (because the source data stored
+        these lists as string representations of Python lists), then apply a
+        <strong>frequency threshold filter</strong> using <code>collections.Counter</code>.
+        Tags that appeared across a meaningful fraction of the catalogue were kept as
+        individual binary features; every tag that fell below the threshold was aggregated
+        into a single unified <code>"Other"</code> classification category. This preserved
+        the signal from high-frequency tags while eliminating the long tail of rare-tag
+        columns that would have contributed noise more than information.
+      </p>
+
+      <h3>Distribution hardening</h3>
+
+      <p>
+        The most consequential step in Phase 1 was the distribution transformations. Three
+        critical columns — <code>Achievements</code>, <code>CCU</code> (concurrent users), and
+        <code>Owners Data</code> — all exhibited severe right-skewness. A handful of extremely
+        popular games have enormous achievement counts, huge concurrent user numbers, and
+        millions of owners; the vast majority of games have values three or four orders of
+        magnitude smaller. Feeding a right-skewed distribution into a regression model biases
+        the gradient descent toward fitting the outliers at the expense of the bulk of the
+        data.
+      </p>
+
+      <p>
+        <strong>Logarithmic transformations</strong> were applied to these skewed feature
+        columns — a standard and reliable technique for compressing long right tails while
+        preserving monotonic order. The transformed values are what the model actually sees
+        during training, so a game with 10 owners and a game with 10,000 owners no longer
+        differ by a factor of 1000 in feature space; they differ by the log of that factor,
+        which is a much more balanced representation for a gradient-based learner.
+      </p>
+
+      <p>
+        The target variable itself — the game's price — received the more sophisticated
+        treatment. <strong>Box-Cox transformation</strong> was applied, which is a
+        parameterized family of power transformations that finds the exponent producing the
+        most Gaussian-like distribution for a given input. The transformation was chosen
+        because price data has distinctive heavy tails on the right that a plain log transform
+        only partially addresses; Box-Cox finds the exponent that makes the distribution as
+        close to a symmetric bell curve as the data allows. The model then predicts the
+        transformed target, and the inverse Box-Cox is applied to recover actual price
+        predictions for interpretation and evaluation.
+      </p>
+
+      <!-- ---------- SCREENSHOT 1 ---------- -->
+      <figure class="cs-figure">
+        <div class="fig-bar">
+          <span class="dot" aria-hidden="true"></span>
+          <span>ml_skewness_transformations.png</span>
+        </div>
+        <img src="../assets/img/ml_skewness_transformations.png"
+             alt="Jupyter Notebook visualization grid showing histograms of raw right-skewed feature distributions alongside their log-transformed counterparts, demonstrating the transformation of long-tailed metrics like achievements, concurrent users and owners data into approximately normal bell-curve distributions"
+             loading="lazy"
+             onerror="this.closest('figure').classList.add('img-missing')">
+        <div class="img-placeholder" aria-hidden="true">
+          [ TELEMETRY_CAPTURE_PENDING ]<br>
+          assets/img/ml_skewness_transformations.png
+        </div>
+        <figcaption>
+          <b>Figure 13.1</b> — Mathematical transformation grid. Raw feature distributions for
+          <code>Achievements</code>, <code>CCU</code>, and <code>Owners Data</code> arrive
+          severely right-skewed (top rows), with long tails that would bias gradient-based
+          learners toward fitting outliers. After logarithmic transformation (bottom rows),
+          the distributions compress into approximately bell-shaped curves — a form that
+          gradient descent optimizes against far more reliably than the raw skewed input.
+        </figcaption>
+      </figure>
+    </section>
+
+    <!-- ---------- PHASE 2 ---------- -->
+    <section class="cs-section" id="phase-2">
+      <span class="phase-tag">PHASE 02</span>
+      <h2>Model Architecture &amp; Ensemble Engineering</h2>
+
+      <p>
+        With the feature matrix cleaned and normalized, Phase 2 moved into the modelling work.
+        The approach was deliberately empirical — rather than committing to a single algorithm
+        and tuning it aggressively, the strategy was to <strong>train multiple high-capacity
+        regressors in parallel</strong>, evaluate each against identical cross-validation
+        splits, and let the empirical results determine the champion.
+      </p>
+
+      <h3>Feature insulation &amp; scaling</h3>
+
+      <p>
+        Before training, two final defensive steps were applied to the feature matrix. First,
+        <strong>outlying target values were clipped</strong> — a small set of games listed at
+        extreme prices (including free-to-play titles with unusual pricing structures) would
+        have dominated the mean-squared loss during training, dragging the model toward fitting
+        those specific points rather than the general pricing pattern. Clipping them away is a
+        deliberate choice that trades a small amount of information for a large amount of model
+        stability.
+      </p>
+
+      <p>
+        Second, a <strong>RobustScaler</strong> transformation was applied across the training
+        feature block. Unlike the more common <code>StandardScaler</code>, which normalizes by
+        mean and standard deviation, RobustScaler uses the <strong>interquartile range</strong>
+        — the spread between the 25th and 75th percentiles of the data. This matters because
+        standard deviation is itself heavily influenced by outliers; a single extreme value
+        inflates the standard deviation and effectively shrinks every other value toward zero.
+        IQR-based scaling is immune to that distortion, which is why it was the correct choice
+        for a feature matrix that had already required outlier remediation in the target.
+      </p>
+
+      <h3>Multi-model evaluation cascade</h3>
+
+      <p>
+        An automated evaluation engine was built to train and test five distinct regression
+        architectures under identical conditions, using cross-validation loops to establish
+        independent performance baselines:
+      </p>
+
+      <ul>
+        <li>
+          <strong>CatBoost Regressor.</strong> A gradient boosting variant from Yandex with
+          native support for categorical features — relevant here because the feature matrix
+          retained several categorical columns after compression.
+        </li>
+        <li>
+          <strong>LightGBM.</strong> Microsoft's gradient boosting implementation, optimized
+          for speed on large feature matrices. It uses a histogram-based split algorithm that
+          trains significantly faster than traditional gradient boosting while often achieving
+          comparable accuracy.
+        </li>
+        <li>
+          <strong>Random Forest Regressor.</strong> The classic bagged tree ensemble — a
+          robustness benchmark and a useful contrast to the boosting approaches, since it
+          builds trees independently rather than sequentially.
+        </li>
+        <li>
+          <strong>Extra Trees Regressor.</strong> An extremely randomized variant of Random
+          Forest that adds additional randomness to the split selection. It's faster to train
+          and often performs well on high-variance feature matrices where the extra randomness
+          acts as a regularizer.
+        </li>
+        <li>
+          <strong>Voting &amp; Gradient Boosting Ensemble methods.</strong> Two ensemble
+          strategies applied on top of the base learners — one averaging predictions from
+          multiple models, the other boosting a single estimator sequentially across
+          residuals.
+        </li>
+      </ul>
+
+      <p>
+        Training all five architectures was the correct choice because model performance is
+        highly data-dependent. There is no theoretical shortcut that determines which algorithm
+        will perform best on a given feature matrix; the only reliable way to know is to train
+        them all and compare. Cross-validation ensures the comparison is fair — each model is
+        evaluated against the same fold splits, so the performance differences reflect
+        architecture differences rather than luck in how the data happened to be partitioned.
+      </p>
+
+      <h3>Automated hyperparameter optimization</h3>
+
+      <p>
+        The final layer of the pipeline was <strong>Optuna</strong> — an automated
+        hyperparameter optimization framework that replaces manual tuning with a structured
+        search process. Optuna ran non-linear parameter exploration across the highest-impact
+        hyperparameters for each algorithm:
+      </p>
+
+      <ul>
+        <li>
+          <strong>Learning rates</strong> for the boosting models — the single most influential
+          hyperparameter for gradient boosting performance, controlling how much each tree
+          contributes to the final prediction.
+        </li>
+        <li>
+          <strong>Tree depth configurations</strong> — the maximum depth each decision tree can
+          grow, which controls the trade-off between model capacity and overfitting risk.
+        </li>
+        <li>
+          <strong>Estimator density markers</strong> — the number of trees in the ensemble,
+          which needs to be balanced against training time and marginal accuracy gains.
+        </li>
+      </ul>
+
+      <p>
+        Optuna's approach is meaningfully different from grid search or random search. It uses
+        a <strong>tree-structured Parzen estimator</strong> to model the relationship between
+        hyperparameter values and model performance, and then uses that model to propose the
+        next configurations to try. This means the search progressively focuses on regions of
+        the hyperparameter space that have already demonstrated promise, rather than wasting
+        trials on regions that are unlikely to improve. For a project with this many
+        hyperparameters across five different algorithms, that efficiency is the difference
+        between hours and days of tuning.
+      </p>
+    </section>
+
+    <!-- ---------- PHASE 3 ---------- -->
+    <section class="cs-section" id="phase-3">
+      <span class="phase-tag">PHASE 03</span>
+      <h2>Champion Model Selection &amp; Deployment</h2>
+
+      <p>
+        Following the full grid validation sweep — cross-validated training of five
+        architectures, each tuned by Optuna across its highest-impact hyperparameters — the
+        empirical results identified a clear champion.
+      </p>
+
+      <h3>Selected model: Gradient Boosting Regressor</h3>
+
+      <p>
+        The Gradient Boosting Regressor won on the four metrics that matter most for a
+        regression model: mean absolute error, mean squared error, R² score, and explained
+        variance. Its performance profile:
+      </p>
+
+      <div class="code-block">
+        <div class="code-head">
+          <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="code-lang">model metrics</span>
+          <button class="copy-btn" data-copy type="button">COPY</button>
+        </div>
+        <pre><code>Mean Absolute Error (MAE)        1.0874
+Mean Squared Error (MSE)         2.5768
+R² Score                         0.7282
+Explained Variance Score         0.7353</code></pre>
+      </div>
+
+      <p>
+        The <strong>R² score of 0.7282</strong> is the headline number and it deserves careful
+        interpretation. R² measures the fraction of the target variable's variance that the
+        model successfully explains — a value of 0.7282 means the feature matrix accounts for
+        roughly <strong>72.8% of the price variance</strong> observed across the dataset. In
+        market pricing problems, that's a strong result. Game pricing is influenced by factors
+        the feature matrix can't see — developer reputation, marketing spend, competitor
+        releases at the same time, platform promotional events, post-launch content updates —
+        and those unobserved factors place a natural ceiling on achievable R². A model that
+        captures over 70% of price variance from public storefront metadata alone is
+        demonstrating genuine predictive signal, not overfitting to noise.
+      </p>
+
+      <p>
+        The <strong>MAE of 1.0874</strong> is the metric to interpret practically. MAE is the
+        average absolute difference between predicted and actual price, measured in the target
+        variable's units (USD). An average error of just over one dollar per prediction is
+        remarkably tight for a pricing model — it means that for a typical game in the
+        dataset, the model's prediction is within roughly one dollar of the listed price.
+      </p>
+
+      <p>
+        The <strong>explained variance score of 0.7353</strong> runs slightly higher than R²
+        (0.7282), which is a subtle but informative detail. The two metrics measure related
+        but distinct quantities: R² penalizes systematic bias in predictions, while explained
+        variance does not. A model with a small constant offset — consistently predicting
+        slightly above or below the true mean — would show a gap between the two, with
+        explained variance exceeding R². The small 0.007 gap here indicates the model has
+        essentially no systematic bias; its errors are distributed around the true values
+        rather than shifted in one direction. That's the profile of a well-calibrated model.
+      </p>
+
+      <!-- ---------- SCREENSHOT 2 ---------- -->
+      <figure class="cs-figure">
+        <div class="fig-bar">
+          <span class="dot" aria-hidden="true"></span>
+          <span>ml_metrics_proof.png</span>
+        </div>
+        <img src="../assets/img/ml_metrics_proof.png"
+             alt="Jupyter Notebook execution output showing the final evaluation matrix for the Gradient Boosting Regressor with metrics for Mean Absolute Error, Mean Squared Error, R-squared score, and Explained Variance Score"
+             loading="lazy"
+             onerror="this.closest('figure').classList.add('img-missing')">
+        <div class="img-placeholder" aria-hidden="true">
+          [ TELEMETRY_CAPTURE_PENDING ]<br>
+          assets/img/ml_metrics_proof.png
+        </div>
+        <figcaption>
+          <b>Figure 13.2</b> — Execution evaluation matrix. The final regression metrics for the
+          champion Gradient Boosting Regressor, logged from the training pipeline after the
+          Optuna hyperparameter sweep completed. The narrow gap between the R² score (0.7282)
+          and the explained variance score (0.7353) indicates the model has negligible
+          systematic bias — its prediction errors are distributed symmetrically around the
+          true values rather than shifted in one direction.
+        </figcaption>
+      </figure>
+
+      <h3>Deployment readiness</h3>
+
+      <p>
+        The trained pipeline was then prepared for production use through three final steps:
+      </p>
+
+      <ul>
+        <li>
+          <strong>Model serialization.</strong> The final trained model layers were compiled
+          and serialized using <strong>joblib</strong> — a Python library optimized for
+          efficiently persisting objects that contain large NumPy arrays, which is exactly what
+          a trained tree-based model is. The serialized artifact is a single file that captures
+          the complete trained state of the model, loadable in any downstream Python process.
+        </li>
+        <li>
+          <strong>Zero-shot synthetic verification.</strong> Before declaring the model ready,
+          the serialized artifact was loaded fresh and tested against synthetic input vectors
+          generated to exercise the full feature matrix. This verifies that the serialization
+          round-trip preserves the model's behaviour — a step that's easy to skip and
+          expensive to skip, because silent serialization bugs that alter predictions are
+          notoriously hard to diagnose later.
+        </li>
+        <li>
+          <strong>Live deployment readiness confirmation.</strong> With serialization verified
+          and prediction behaviour confirmed against the synthetic test vectors, the model was
+          declared ready for live deployment. It can now be loaded by any process that needs
+          pricing predictions from the feature matrix, without retraining or re-tuning.
+        </li>
+      </ul>
+    </section>
+
+    <!-- ---------- OUTCOMES ---------- -->
+    <section class="cs-section" id="outcomes">
+      <span class="phase-tag">OUTCOMES</span>
+      <h2>Pipeline Outcomes</h2>
+
+      <ul>
+        <li>
+          <strong>End-to-end pipeline operational.</strong> The engagement delivered a complete
+          machine learning workflow — from raw multi-source data ingestion through feature
+          engineering, distribution transformation, ensemble training, hyperparameter
+          optimization, and serialized production deployment — without gaps between phases.
+        </li>
+        <li>
+          <strong>Champion model selected on empirical grounds.</strong> The Gradient Boosting
+          Regressor was chosen not by preference but by measured performance across
+          cross-validated evaluations of five competing architectures. The champion's metrics
+          (R² 0.7282, MAE 1.0874, MSE 2.5768, Explained Variance 0.7353) reflect genuine
+          predictive capability on a genuinely difficult target.
+        </li>
+        <li>
+          <strong>Feature engineering delivered measurable dimensionality reduction.</strong>
+          High-cardinality tag and genre fields were compressed via frequency thresholding,
+          preserving signal from common tags while eliminating the long-tail sparsity that would
+          have degraded model performance. The result is a feature matrix that trains faster
+          and generalizes better than a naive one-hot encoding would have produced.
+        </li>
+        <li>
+          <strong>Distribution transformations resolved the target skewness problem.</strong>
+          Log transforms on the skewed feature columns and Box-Cox transformation on the target
+          price variable combined to produce a training distribution that gradient-based
+          learners can optimize against reliably — a critical prerequisite for the R² achieved
+          by the champion model.
+        </li>
+        <li>
+          <strong>Automated tuning replaced manual hyperparameter guesswork.</strong> Optuna's
+          tree-structured Parzen estimator search found the champion model's optimal
+          hyperparameter configuration efficiently, without the compute waste that grid search
+          or random search would have incurred across the same space.
+        </li>
+      </ul>
+
+      <div class="callout remediation">
+        <div class="callout-label">✓ PIPELINE_VALIDATED</div>
+        <p>
+          <strong>Production-ready predictive model delivered.</strong> The pipeline outputs a
+          serialized model artifact that has been verified against synthetic test vectors and
+          is ready for downstream use. The engagement demonstrates the full lifecycle of a
+          regression project — recognising data pathologies, engineering around them
+          systematically rather than reactively, evaluating candidate architectures
+          empirically, and delivering a deployable model artifact rather than a notebook that
+          only runs in one environment.
+        </p>
+      </div>
+    </section>
+
+    <!-- ---------- PRIVACY ---------- -->
+    <section class="cs-section" id="privacy">
+      <span class="phase-tag">DISCLOSURE</span>
+      <h2>Security &amp; Data Privacy Note</h2>
+
+      <div class="callout note">
+        <div class="callout-label">◆ DATA_LAYER_INTEGRITY</div>
+        <p>
+          Source metadata streams utilize public market API records — the same information
+          visible to any user browsing the storefront. No private financial transaction tokens,
+          sensitive developer payment credentials, or company security layers were processed
+          during the optimization lifecycle. The trained model artifact contains no raw data
+          from the source dataset — it encodes only the statistical patterns learned during
+          training, and individual game records cannot be reconstructed from it.
+        </p>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<!-- ============================================================
+     FOOTER
+     ============================================================ -->
+<footer class="footer">
+  <div class="wrap wrap-wide footer-inner">
+    <div>
+      <p>&copy; 2026 Mohammed Oudai Helaleh. All rights cryptographically reserved.</p>
+      <p class="meta">Informatics &amp; Communications Engineering Architecture Deployment</p>
+    </div>
+  </div>
+</footer>
+
+<script src="../case-study.js" defer></script>
+</body>
+</html>

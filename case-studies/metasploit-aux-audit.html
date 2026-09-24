@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Metasploit Auxiliary Cipher Audit | Mohammed Oudai Helaleh</title>
+<meta name="description" content="Non-destructive SSH protocol auditing with the Metasploit Framework — isolating a weak elliptic curve host-key parameter on Ubuntu Server 24.04 LTS.">
+
+<!-- Shared case study stylesheet (lives at site root) -->
+<link rel="stylesheet" href="../case-study.css">
+</head>
+
+<!-- theme-offense sets the amber accent.
+     Swap to theme-defense / theme-ai / theme-crypto for other case studies. -->
+<body class="theme-offense">
+
+<div class="bg-grid"></div>
+<div class="progress" id="progress"></div>
+
+<!-- ============================================================
+     NAV
+     ============================================================ -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="../index.html" class="brand">MOHAMMED <span>OUDAI</span></a>
+    <a href="../index.html#projects" class="back-link">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M19 12H5M12 19l-7-7 7-7"/>
+      </svg>
+      <span>BACK_TO_VAULT</span>
+    </a>
+  </div>
+</nav>
+
+<!-- ============================================================
+     HERO
+     ============================================================ -->
+<header class="cs-hero">
+  <div class="wrap">
+
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <a href="../index.html">PORTFOLIO</a>
+      <span class="sep">/</span>
+      <a href="../index.html#projects">VAULT</a>
+      <span class="sep">/</span>
+      <a href="../index.html#projects">OFFENSIVE_FORENSICS</a>
+    </nav>
+
+    <div class="pill-row">
+      <span class="pill"><span class="dot"></span>VULNERABILITY_FORENSICS</span>
+      <span class="pill neutral">CASE_STUDY</span>
+      <span class="pill neutral">READ_TIME 6 MIN</span>
+    </div>
+
+    <h1>Vulnerability Verification, Protocol Auditing &amp; Metasploit Auxiliary Management</h1>
+
+    <p class="standfirst">
+      Deploying the Metasploit Framework to execute <strong>non-destructive SSH service interrogation</strong>
+      against a hardened Ubuntu Server endpoint — mapping the complete cryptographic cipher matrix and
+      isolating a <strong>weak elliptic-curve host key</strong> in a single auxiliary module pass.
+    </p>
+
+    <dl class="meta-grid">
+      <div class="meta-cell">
+        <dt>Environment</dt>
+        <dd>Kali Linux 2026.x → Ubuntu Server 24.04 LTS</dd>
+      </div>
+      <div class="meta-cell">
+        <dt>Network Loop</dt>
+        <dd>192.168.40.0/24 — isolated virtual LAN</dd>
+      </div>
+      <div class="meta-cell">
+        <dt>Framework</dt>
+        <dd>Metasploit Framework (MSF6) + PostgreSQL</dd>
+      </div>
+      <div class="meta-cell">
+        <dt>Module</dt>
+        <dd>auxiliary/scanner/ssh/ssh_version</dd>
+      </div>
+    </dl>
+
+  </div>
+</header>
+
+<!-- ============================================================
+     BODY
+     ============================================================ -->
+<main class="cs-body">
+  <div class="wrap">
+
+    <!-- ---------- OBJECTIVE ---------- -->
+    <section class="cs-section">
+      <p>
+        In professional vulnerability management, discovering open ports is merely the staging step.
+        An analyst must run <strong>deep protocol inquiries</strong> to verify whether active encryption
+        ciphers comply with global industry standards such as PCI-DSS or NIST boundaries. This engagement
+        demonstrates framework initialization, auxiliary module targeting, cryptographic cipher suite
+        auditing, and the identification of weak compliance algorithms — all without triggering a single
+        destructive exploit.
+      </p>
+
+      <div class="callout note">
+        <div class="callout-label">◆ SCOPE_CONSTRAINT</div>
+        <p>
+          Every action in this engagement is <strong>read-only</strong>. The auxiliary module queries
+          service banners and negotiated cipher parameters; it does not attempt authentication,
+          exploitation, or state modification on the target.
+        </p>
+      </div>
+    </section>
+
+    <!-- ---------- PHASE 1 ---------- -->
+    <section class="cs-section" id="phase-1">
+      <span class="phase-tag">PHASE 01</span>
+      <h2>Framework Initialization &amp; Module Configuration</h2>
+
+      <p>
+        The Metasploit console requires a backing datastore to track hosts, services, and findings across
+        a session. I initialized the localized PostgreSQL vulnerability tracking database and launched the
+        master console interface directly from the terminal:
+      </p>
+
+      <div class="code-block">
+        <div class="code-head">
+          <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="code-lang">bash</span>
+          <button class="copy-btn" data-copy type="button">COPY</button>
+        </div>
+        <pre><code>sudo msfdb init &amp;&amp; msfconsole</code></pre>
+      </div>
+
+      <p>
+        Rather than reaching for an exploit module, I deliberately selected an official
+        <strong>non-destructive auxiliary scanning module</strong> to interrogate the server's remote
+        administration handshake rules. Auxiliary modules gather intelligence; they do not weaponize it.
+      </p>
+
+      <div class="code-block">
+        <div class="code-head">
+          <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="code-lang">msf6</span>
+          <button class="copy-btn" data-copy type="button">COPY</button>
+        </div>
+        <pre><code><span class="prm">msf6 &gt;</span> use auxiliary/scanner/ssh/ssh_version
+<span class="prm">msf6 auxiliary(scanner/ssh/ssh_version) &gt;</span> set RHOSTS 192.168.40.131</code></pre>
+      </div>
+    </section>
+
+    <!-- ---------- PHASE 2 ---------- -->
+    <section class="cs-section" id="phase-2">
+      <span class="phase-tag">PHASE 02</span>
+      <h2>Active Cipher Interrogation &amp; Cryptographic Auditing</h2>
+
+      <p>
+        Upon executing the module pass, the scanning engine transmitted targeted protocol description
+        queries across the virtual network segment, forcing the destination interface to dump its raw
+        encryption matrix and metadata attributes directly into the framework ledger.
+      </p>
+
+      <ul>
+        <li>
+          <strong>Full-stack cipher extraction.</strong> The auxiliary module compiled a comprehensive list
+          of every enabled cryptographic primitive, mapping the precise encryption daemons, Message
+          Authentication Codes (HMACs), and key exchange parameters handled by the target operating system.
+        </li>
+        <li>
+          <strong>Cryptographic vulnerability discovered.</strong> The audit exposed a critical compliance
+          gap within the host configuration fields, raising an explicit warning signature on the
+          negotiated host-key curve.
+        </li>
+      </ul>
+
+      <div class="finding-card">
+        <div class="fc-head">
+          <span class="sev">WEAK_ALGORITHM</span>
+          <span class="fc-id">encryption.host_key</span>
+        </div>
+        <h3>ecdsa-sha2-nistp256 — weak elliptic curve</h3>
+        <p>
+          The target advertises a NIST P-256 host key as a valid negotiation option. Under current
+          security benchmarks this curve is considered susceptible to state-level mathematical
+          degradation and side-channel parsing attacks.
+        </p>
+      </div>
+    </section>
+
+    <!-- ---------- OUTCOMES ---------- -->
+    <section class="cs-section" id="outcomes">
+      <span class="phase-tag">OUTCOMES</span>
+      <h2>Forensic Verification Results</h2>
+
+      <p>
+        The framework mapped the structural service architecture of the target instance with
+        <strong>100% precision</strong>. Two conclusions follow directly from the telemetry:
+      </p>
+
+      <ul>
+        <li>
+          <strong>Protocol version validated.</strong> Confirmed the target is enforcing
+          <code>SSH-2.0</code> — old, vulnerable legacy SSHv1 connections are locked out at the
+          protocol level. This is a correct baseline configuration.
+        </li>
+        <li>
+          <strong>Compliance gap identified.</strong> The weak elliptic curve
+          (<code>nistp256</code>) exposure flags an active deviation from hardened deployment
+          standards. Left unaddressed, it widens the acceptable attack surface for a
+          sufficiently resourced adversary.
+        </li>
+      </ul>
+
+      <!-- ---------- SCREENSHOT ---------- -->
+      <figure class="cs-figure" id="telemetry">
+        <div class="fig-bar">
+          <span class="dot" aria-hidden="true"></span>
+          <span>metasploit_auxiliary_audit.png</span>
+        </div>
+        <img src="../assets/img/metasploit_auxiliary_audit.png"
+             alt="Metasploit auxiliary scanner output showing the SSH cipher matrix and a flagged weak host-key curve"
+             loading="lazy"
+             onerror="this.closest('figure').classList.add('img-missing')">
+        <div class="img-placeholder" aria-hidden="true">
+          [ TELEMETRY_CAPTURE_PENDING ]<br>
+          assets/img/metasploit_auxiliary_audit.png
+        </div>
+        <figcaption>
+          <b>Figure 12.1</b> — Metasploit auxiliary scanner output revealing the full cryptographic
+          cipher matrix of the destination server and successfully isolating a weak host-key curve
+          vulnerability.
+        </figcaption>
+      </figure>
+    </section>
+
+    <!-- ---------- REMEDIATION ---------- -->
+    <section class="cs-section" id="remediation">
+      <span class="phase-tag">REMEDIATION</span>
+      <h2>Closing the Attack Vector</h2>
+
+      <p>
+        To remove the weak curve from the negotiation table, the server's central configuration file must
+        be edited to explicitly strip out the <code>ecdsa-sha2-nistp256</code> key parameters. This forces
+        the host to exclusively negotiate hard, high-entropy alternatives before entering production
+        deployment.
+      </p>
+
+      <div class="code-block">
+        <div class="code-head">
+          <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="code-lang">/etc/ssh/sshd_config</span>
+          <button class="copy-btn" data-copy type="button">COPY</button>
+        </div>
+        <pre><code><span class="cmt"># Restrict host key algorithms to hardened curves only</span>
+HostKeyAlgorithms ssh-ed25519,rsa-sha2-512
+
+<span class="cmt"># Explicitly disable the weak P-256 curve</span>
+PubkeyAcceptedAlgorithms -ecdsa-sha2-nistp256</code></pre>
+      </div>
+
+      <div class="callout remediation">
+        <div class="callout-label">✓ VERIFICATION_STEP</div>
+        <p>
+          After applying the change, reload the SSH daemon and re-run the auxiliary module. A clean pass
+          should no longer surface <code>ecdsa-sha2-nistp256</code> in the advertised host-key set — the
+          finding is only closed when the telemetry confirms it.
+        </p>
+      </div>
+    </section>
+
+    <!-- ---------- PRIVACY ---------- -->
+    <section class="cs-section" id="privacy">
+      <span class="phase-tag">DISCLOSURE</span>
+      <h2>Security &amp; Data Privacy Note</h2>
+
+      <div class="callout note">
+        <div class="callout-label">◆ DATA_MASKING_PROTOCOL</div>
+        <p>
+          Hardware MAC layer strings, session process identifiers, and localized administrative user tags
+          have been purposefully filtered within the telemetry presentation logs to maintain strict
+          network anonymity.
+        </p>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<!-- ============================================================
+     FOOTER
+     ============================================================ -->
+<footer class="footer">
+  <div class="wrap wrap-wide footer-inner">
+    <div>
+      <p>&copy; 2026 Mohammed Oudai Helaleh. All rights cryptographically reserved.</p>
+      <p class="meta">Informatics &amp; Communications Engineering Architecture Deployment</p>
+    </div>
+  </div>
+</footer>
+
+<!-- Shared case study script -->
+<script src="../case-study.js" defer></script>
+</body>
+</html>

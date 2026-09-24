@@ -1,0 +1,518 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+      Managed Switch VLAN Segmentation &amp; 802.1Q Trunking | Mohammed Oudai
+      Helaleh
+    </title>
+    <meta
+      name="description"
+      content="Engineering enterprise Layer-2 segmentation with VLANs and 802.1Q trunking on a Cisco Catalyst switch — broadcast domain isolation and Router-on-a-Stick inter-VLAN routing."
+    />
+
+    <link rel="stylesheet" href="../case-study.css" />
+  </head>
+
+  <body class="theme-network">
+    <div class="bg-grid"></div>
+    <div class="progress" id="progress"></div>
+
+    <!-- ============================================================
+     NAV
+     ============================================================ -->
+    <nav class="nav">
+      <div class="nav-inner">
+        <a href="../index.html" class="brand">MOHAMMED <span>OUDAI</span></a>
+        <a href="../index.html#projects" class="back-link">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M19 12H5M12 19l-7-7 7-7" />
+          </svg>
+          <span>BACK_TO_VAULT</span>
+        </a>
+      </div>
+    </nav>
+
+    <!-- ============================================================
+     HERO
+     ============================================================ -->
+    <header class="cs-hero">
+      <div class="wrap">
+        <nav class="breadcrumb" aria-label="Breadcrumb">
+          <a href="../index.html">PORTFOLIO</a>
+          <span class="sep">/</span>
+          <a href="../index.html#projects">VAULT</a>
+          <span class="sep">/</span>
+          <a href="../index.html#projects">NETWORK_ENGINEERING</a>
+        </nav>
+
+        <div class="pill-row">
+          <span class="pill"><span class="dot"></span>NETWORK_HARDENING</span>
+          <span class="pill neutral">CASE_STUDY</span>
+          <span class="pill neutral">READ_TIME 6 MIN</span>
+        </div>
+
+        <h1>Managed Switch Segmentation, VLANs &amp; 802.1Q Trunking</h1>
+
+        <p class="standfirst">
+          Engineering enterprise-grade
+          <strong>Layer-2 security segmentation</strong> on a Cisco Catalyst
+          switch — carving a single physical switch fabric into isolated
+          broadcast domains (<strong>VLAN 10 Sales</strong>,
+          <strong>VLAN 20 IT Support</strong>), formatting the uplink as an
+          <strong>IEEE 802.1Q trunk</strong>, and provisioning Router-on-a-Stick
+          subinterfaces to restore controlled Inter-VLAN communication.
+        </p>
+        <div class="cs-actions">
+          <a
+            class="cs-repo-link"
+            href="https://github.com/mohammedoudaihelaleh/REPO-SLUG"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="View the full project repository on GitHub"
+          >
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path
+                d="M12 .5C5.73.5.5 5.73.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.56v-2c-3.2.7-3.88-1.54-3.88-1.54-.53-1.34-1.29-1.7-1.29-1.7-1.05-.72.08-.71.08-.71 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.23-1.28-5.23-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.04 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.79 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.58.23 2.75.11 3.04.74.81 1.19 1.84 1.19 3.1 0 4.42-2.69 5.39-5.25 5.68.41.35.78 1.05.78 2.12v3.14c0 .31.21.68.8.56A11.5 11.5 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5z"
+              />
+            </svg>
+            <span>VIEW_REPOSITORY</span>
+            <span class="arrow" aria-hidden="true">→</span>
+          </a>
+        </div>
+
+        <dl class="meta-grid">
+          <div class="meta-cell">
+            <dt>Environment</dt>
+            <dd>Cisco Catalyst Managed Switch + edge router</dd>
+          </div>
+          <div class="meta-cell">
+            <dt>Address Plan</dt>
+            <dd>VLSM subnetted — Sales &amp; IT Support segments</dd>
+          </div>
+          <div class="meta-cell">
+            <dt>Switching</dt>
+            <dd>VLAN database · 802.1Q trunk · native VLAN 1</dd>
+          </div>
+          <div class="meta-cell">
+            <dt>Routing</dt>
+            <dd>Router-on-a-Stick — g0/0.10, g0/0.20 subinterfaces</dd>
+          </div>
+        </dl>
+      </div>
+    </header>
+
+    <!-- ============================================================
+     BODY
+     ============================================================ -->
+    <main class="cs-body">
+      <div class="wrap">
+        <!-- ---------- OBJECTIVE ---------- -->
+        <section class="cs-section">
+          <p>
+            An unsegmented switch fabric is a single broadcast domain. Every ARP
+            request, every DHCP discovery, every infected host's traffic storm
+            reaches every port on the switch — which means a compromised
+            workstation in Sales can reach the IT Support subnet without leaving
+            the Layer-2 plane.
+            <strong
+              >VLANs are the primary defence against that lateral
+              movement</strong
+            >, and they cost nothing but configuration effort.
+          </p>
+
+          <p>
+            This engagement demonstrates the full lifecycle of Layer-2
+            segmentation on a Cisco managed switch: constructing isolated
+            broadcast domains, formatting the inter-switch uplink to carry
+            tagged traffic for multiple VLANs, and restoring controlled
+            Inter-VLAN routing at Layer 3 through a Router-on-a-Stick
+            configuration. The goal is containment — physical switch, logical
+            separation, zero cross-VLAN leakage.
+          </p>
+
+          <div class="callout note">
+            <div class="callout-label">◆ SCOPE_CONSTRAINT</div>
+            <p>
+              All configurations were deployed inside an isolated lab topology.
+              VLAN numbering follows the common practice of avoiding VLAN 1 for
+              production data traffic — a well-documented security consideration
+              because VLAN 1 is the default native VLAN and is often reachable
+              from any port with default configuration.
+            </p>
+          </div>
+        </section>
+
+        <!-- ---------- PHASE 1 ---------- -->
+        <section class="cs-section" id="phase-1">
+          <span class="phase-tag">PHASE 01</span>
+          <h2>VLAN Database Provisioning</h2>
+
+          <p>
+            Two department-specific VLANs were constructed to establish hard
+            Layer-2 boundaries inside the switching fabric. Each VLAN was given
+            a semantic name rather than a bare number, so the configuration
+            self-documents in production operations:
+          </p>
+
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+              <span class="code-lang">cisco ios</span>
+              <button class="copy-btn" data-copy type="button">COPY</button>
+            </div>
+            <pre><code>Switch&gt;enable
+Switch#configure terminal
+
+Switch(config)#vlan 10
+Switch(config-vlan)#name Sales_Dept
+Switch(config-vlan)#exit
+
+Switch(config)#vlan 20
+Switch(config-vlan)#name IT_Support
+Switch(config-vlan)#exit</code></pre>
+          </div>
+
+          <p>
+            With the VLAN database populated, individual switchports were bound
+            to their respective segments as <strong>access ports</strong>. An
+            access port belongs to exactly one VLAN — any frame arriving on that
+            port is automatically tagged with the port's VLAN membership, and
+            any frame forwarded out of that port has its tag stripped before
+            transmission to the end device:
+          </p>
+
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+              <span class="code-lang">cisco ios</span>
+              <button class="copy-btn" data-copy type="button">COPY</button>
+            </div>
+            <pre><code><span class="cmt">! Bind port Fa0/1 to the Sales segment</span>
+Switch(config)#interface FastEthernet0/1
+Switch(config-if)#switchport mode access
+Switch(config-if)#switchport access vlan 10
+Switch(config-if)#exit
+
+<span class="cmt">! Bind port Fa0/2 to the IT Support segment</span>
+Switch(config)#interface FastEthernet0/2
+Switch(config-if)#switchport mode access
+Switch(config-if)#switchport access vlan 20
+Switch(config-if)#exit</code></pre>
+          </div>
+
+          <p>
+            The end hosts on those two ports are now physically connected to the
+            same switch chassis but
+            <strong>logically on different networks</strong>. A broadcast
+            emitted by the Sales host on Fa0/1 will never reach the IT Support
+            host on Fa0/2 — the switch enforces the boundary in hardware, at
+            wire speed, without any software filtering overhead.
+          </p>
+        </section>
+
+        <!-- ---------- PHASE 2 ---------- -->
+        <section class="cs-section" id="phase-2">
+          <span class="phase-tag">PHASE 02</span>
+          <h2>IEEE 802.1Q Trunking</h2>
+
+          <p>
+            Access ports carry one VLAN. To move multiple VLANs between switches
+            — or between a switch and a router — the interconnecting link must
+            be formatted as a <strong>trunk</strong>. A trunk carries frames
+            from every permitted VLAN over a single physical wire, with each
+            frame tagged using the IEEE 802.1Q standard: a 4-byte header
+            inserted into the Ethernet frame that identifies which VLAN the
+            frame belongs to.
+          </p>
+
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+              <span class="code-lang">cisco ios</span>
+              <button class="copy-btn" data-copy type="button">COPY</button>
+            </div>
+            <pre><code><span class="cmt">! Format the GigabitEthernet0/1 uplink as an 802.1Q trunk</span>
+Switch(config)#interface GigabitEthernet0/1
+Switch(config-if)#switchport trunk encapsulation dot1q
+Switch(config-if)#switchport mode trunk
+Switch(config-if)#exit</code></pre>
+          </div>
+
+          <p>
+            The 802.1Q tag exists only on the trunk itself. At the far end —
+            whether another switch or a router subinterface — the tag is read,
+            the frame is delivered to the correct VLAN context, and the tag is
+            stripped before the frame reaches the destination end device. The
+            end host never sees a tagged frame; from its perspective it's on an
+            ordinary network.
+          </p>
+
+          <div class="callout note">
+            <div class="callout-label">◆ NATIVE_VLAN_NOTE</div>
+            <p>
+              The <strong>native VLAN</strong> is a special case: frames
+              belonging to it traverse the trunk <em>untagged</em>. By default
+              this is VLAN 1 on Cisco equipment, which is why security best
+              practice recommends changing the native VLAN to a dedicated unused
+              ID. In this lab the native VLAN remains at its default, and
+              access-port traffic is only assigned to VLANs 10 and 20 — but the
+              config that would harden this in production is a one-line change
+              (<code>switchport trunk native vlan 999</code>).
+            </p>
+          </div>
+        </section>
+
+        <!-- ---------- PHASE 3 ---------- -->
+        <section class="cs-section" id="phase-3">
+          <span class="phase-tag">PHASE 03</span>
+          <h2>Router-on-a-Stick Inter-VLAN Routing</h2>
+
+          <p>
+            Layer-2 isolation alone would leave the two departments unable to
+            reach each other — which defeats the purpose of running a shared
+            corporate network. Inter-VLAN routing reconnects them at Layer 3,
+            where policy can be applied. The classic implementation is
+            <strong>Router-on-a-Stick</strong>: a single physical router
+            interface, divided into virtual subinterfaces, each serving as the
+            default gateway for one VLAN.
+          </p>
+
+          <p>
+            First, the parent interface is stripped of any IP address to
+            eliminate routing conflicts, then brought up. It carries no logic of
+            its own — it exists only to host the subinterfaces:
+          </p>
+
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+              <span class="code-lang">cisco ios</span>
+              <button class="copy-btn" data-copy type="button">COPY</button>
+            </div>
+            <pre><code><span class="cmt">! Strip the parent interface — it becomes a container only</span>
+Router&gt;enable
+Router#configure terminal
+
+Router(config)#interface GigabitEthernet0/0
+Router(config-if)#no ip address
+Router(config-if)#no shutdown
+Router(config-if)#exit</code></pre>
+          </div>
+
+          <p>
+            The two subinterfaces are then provisioned. Each one is bound to a
+            specific VLAN ID via the
+            <code>encapsulation dot1Q</code> directive, and assigned an IP
+            address that becomes the default gateway for every host on that
+            VLAN:
+          </p>
+
+          <div class="code-block">
+            <div class="code-head">
+              <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+              <span class="code-lang">cisco ios</span>
+              <button class="copy-btn" data-copy type="button">COPY</button>
+            </div>
+            <pre><code><span class="cmt">! Subinterface for Sales (VLAN 10)</span>
+Router(config)#interface GigabitEthernet0/0.10
+Router(config-subif)#encapsulation dot1Q 10
+Router(config-subif)#ip address 192.168.10.1 255.255.255.0
+Router(config-subif)#exit
+
+<span class="cmt">! Subinterface for IT Support (VLAN 20)</span>
+Router(config)#interface GigabitEthernet0/0.20
+Router(config-subif)#encapsulation dot1Q 20
+Router(config-subif)#ip address 192.168.20.1 255.255.255.0
+Router(config-subif)#exit</code></pre>
+          </div>
+
+          <p>
+            The <code>encapsulation dot1Q 10</code> directive is what ties the
+            subinterface to its VLAN. When a tagged frame arrives on the parent
+            interface with a VLAN ID of 10, the router recognises the tag,
+            delivers the frame into the <code>g0/0.10</code> subinterface
+            context, and routes it based on the destination IP. The return path
+            works the same way in reverse — the router tags the outbound frame
+            with VLAN 10 before transmitting it back down the trunk.
+          </p>
+        </section>
+
+        <!-- ---------- OUTCOMES ---------- -->
+        <section class="cs-section" id="outcomes">
+          <span class="phase-tag">OUTCOMES</span>
+          <h2>Verification &amp; Performance Results</h2>
+
+          <p>
+            Two independent verification passes confirmed the configuration was
+            deployed correctly and behaving as designed. Each pass audits a
+            distinct layer of the design — first the static VLAN database, then
+            the dynamic trunk state — and both must agree for the segmentation
+            to be considered operational.
+          </p>
+
+          <h3>VLAN database and port assignment</h3>
+
+          <p>
+            The <code>show vlan brief</code> output confirms both department
+            VLANs are active with the correct access ports bound. Sales on
+            <code>Fa0/1</code>, IT Support on <code>Fa0/2</code>, and every
+            other user-facing port remains on the default VLAN 1 — which means
+            the segmentation boundary is enforced exactly where intended and
+            nowhere else:
+          </p>
+
+          <!-- ---------- SCREENSHOT 1 ---------- -->
+          <figure class="cs-figure">
+            <div class="fig-bar">
+              <span class="dot" aria-hidden="true"></span>
+              <span>show_vlan_brief.png</span>
+            </div>
+            <img
+              src="../assets/img/show_vlan_brief.png"
+              alt="Cisco IOS show vlan brief output confirming VLAN 10 Sales_Dept on Fa0/1 and VLAN 20 IT_Support on Fa0/2, with all other access ports remaining on default VLAN 1"
+              loading="lazy"
+              onerror="this.closest('figure').classList.add('img-missing')"
+            />
+            <div class="img-placeholder" aria-hidden="true">
+              [ TELEMETRY_CAPTURE_PENDING ]<br />
+              assets/img/show_vlan_brief.png
+            </div>
+            <figcaption>
+              <b>Figure 4.1</b> — Cisco IOS
+              <code>show vlan brief</code> diagnostics confirming the VLAN
+              database provisioning. Sales_Dept (VLAN 10) is bound to
+              <code>Fa0/1</code>, IT_Support (VLAN 20) is bound to
+              <code>Fa0/2</code>, and all remaining user ports stay on the
+              default VLAN 1 — establishing the intended segmentation boundary.
+            </figcaption>
+          </figure>
+
+          <h3>Trunk negotiation and forwarding state</h3>
+
+          <p>
+            The <code>show interface trunk</code> output confirms the uplink is
+            operating as an 802.1Q trunk in static "on" mode, with VLANs 1, 10,
+            and 20 both <em>allowed</em> across the trunk and actively
+            <em>forwarding</em> in the management domain. The spanning-tree
+            state matching the allowed list means no VLAN is being unexpectedly
+            pruned:
+          </p>
+
+          <!-- ---------- SCREENSHOT 2 ---------- -->
+          <figure class="cs-figure">
+            <div class="fig-bar">
+              <span class="dot" aria-hidden="true"></span>
+              <span>show_interface_trunk.png</span>
+            </div>
+            <img
+              src="../assets/img/show_interface_trunk.png"
+              alt="Cisco IOS show interface trunk output confirming Gig0/1 is trunking with 802.1q encapsulation, native VLAN 1, VLANs 1-1005 allowed on trunk, and VLANs 1, 10, 20 allowed, active, and forwarding in the management domain"
+              loading="lazy"
+              onerror="this.closest('figure').classList.add('img-missing')"
+            />
+            <div class="img-placeholder" aria-hidden="true">
+              [ TELEMETRY_CAPTURE_PENDING ]<br />
+              assets/img/show_interface_trunk.png
+            </div>
+            <figcaption>
+              <b>Figure 4.2</b> — Cisco IOS
+              <code>show interface trunk</code> diagnostics confirming
+              <code>Gig0/1</code> is operating as an active 802.1Q trunk. VLANs
+              1, 10, and 20 appear in all three verification columns — allowed,
+              active in the management domain, and forwarding in spanning tree —
+              proving the trunk is carrying every department VLAN without
+              unexpected pruning.
+            </figcaption>
+          </figure>
+
+          <ul>
+            <li>
+              <strong>Absolute broadcast domain isolation.</strong> Layer-2
+              boundaries were enforced at the switch fabric, containing
+              potential malware propagation and background storm traffic. A
+              broadcast storm in Sales cannot reach IT Support, and vice versa.
+            </li>
+            <li>
+              <strong>Full Inter-VLAN packet delivery — 0% data loss.</strong>
+              Re-routing internal communication loops through the
+              Router-on-a-Stick gateway layer validated end-to-end packet
+              delivery across the segment boundary. Hosts in VLAN 10 can reach
+              hosts in VLAN 20 via the router, but only through the Layer-3
+              gateway where policy can be applied.
+            </li>
+            <li>
+              <strong>Dual verification confirms intent.</strong> The
+              <code>show vlan brief</code> output proves the static
+              configuration; the <code>show interface trunk</code> output proves
+              the dynamic state matches it. A misconfiguration in either
+              direction would surface as a mismatch — the trunk would be up but
+              a VLAN would be missing from the active domain, or a VLAN would be
+              configured but not forwarding.
+            </li>
+          </ul>
+
+          <div class="callout remediation">
+            <div class="callout-label">✓ SEGMENTATION_VALIDATED</div>
+            <p>
+              <strong>Containment control confirmed.</strong> The switch now
+              behaves as multiple independent Layer-2 networks on shared
+              hardware, with controlled Layer-3 routing between them. Any future
+              security policy — firewall rules, ACLs, IDS inspection — can now
+              be applied per-VLAN rather than per-port, which is the foundation
+              of enterprise network security architecture.
+            </p>
+          </div>
+        </section>
+
+        <!-- ---------- PRIVACY ---------- -->
+        <section class="cs-section" id="privacy">
+          <span class="phase-tag">DISCLOSURE</span>
+          <h2>Security &amp; Data Privacy Note</h2>
+
+          <div class="callout note">
+            <div class="callout-label">◆ DATA_MASKING_PROTOCOL</div>
+            <p>
+              The configuration presented here reflects lab topology only.
+              Production switch configurations typically include additional
+              hardening — a non-default native VLAN, unused ports
+              administratively disabled and assigned to a quarantine VLAN, BPDU
+              Guard and PortFast configured on all access ports, and DHCP
+              snooping enabled on all user VLANs. Those controls are documented
+              as recommended next steps but are outside the scope of this lab
+              exercise.
+            </p>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <!-- ============================================================
+     FOOTER
+     ============================================================ -->
+    <footer class="footer">
+      <div class="wrap wrap-wide footer-inner">
+        <div>
+          <p>
+            &copy; 2026 Mohammed Oudai Helaleh. All rights cryptographically
+            reserved.
+          </p>
+          <p class="meta">
+            Informatics &amp; Communications Engineering Architecture Deployment
+          </p>
+        </div>
+      </div>
+    </footer>
+
+    <script src="../case-study.js" defer></script>
+  </body>
+</html>

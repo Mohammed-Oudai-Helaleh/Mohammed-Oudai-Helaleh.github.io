@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Enterprise Packet Analysis &amp; Protocol Auditing | Mohammed Oudai Helaleh</title>
+<meta name="description" content="Live network capture and protocol audit with Wireshark — dissecting DNS UDP headers and ICMP IPv4 traversal frames on a physical endpoint interface.">
+
+<link rel="stylesheet" href="../case-study.css">
+</head>
+
+<body class="theme-network">
+
+<div class="bg-grid"></div>
+<div class="progress" id="progress"></div>
+
+<!-- ============================================================
+     NAV
+     ============================================================ -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="../index.html" class="brand">MOHAMMED <span>OUDAI</span></a>
+    <a href="../index.html#projects" class="back-link">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M19 12H5M12 19l-7-7 7-7"/>
+      </svg>
+      <span>BACK_TO_VAULT</span>
+    </a>
+  </div>
+</nav>
+
+<!-- ============================================================
+     HERO
+     ============================================================ -->
+<header class="cs-hero">
+  <div class="wrap">
+
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <a href="../index.html">PORTFOLIO</a>
+      <span class="sep">/</span>
+      <a href="../index.html#projects">VAULT</a>
+      <span class="sep">/</span>
+      <a href="../index.html#projects">NETWORK_ENGINEERING</a>
+    </nav>
+
+    <div class="pill-row">
+      <span class="pill"><span class="dot"></span>PACKET_ANALYSIS</span>
+      <span class="pill neutral">CASE_STUDY</span>
+      <span class="pill neutral">READ_TIME 6 MIN</span>
+    </div>
+
+    <h1>Enterprise Packet Analysis &amp; Protocol Auditing with Wireshark</h1>
+
+    <p class="standfirst">
+      Live capture and deep protocol audit on a physical endpoint NIC — dissecting raw
+      packet streams down to their <strong>UDP and IP headers</strong> to map DNS resolver
+      behaviour, ephemeral port allocation, and the <strong>TTL-based network path</strong>
+      that ICMP traffic traverses between the host and a remote anycast edge.
+    </p>
+
+    <dl class="meta-grid">
+      <div class="meta-cell">
+        <dt>Environment</dt>
+        <dd>Physical endpoint — live NIC capture</dd>
+      </div>
+      <div class="meta-cell">
+        <dt>Capture Stack</dt>
+        <dd>Wireshark + Npcap driver (Windows)</dd>
+      </div>
+      <div class="meta-cell">
+        <dt>Display Filter</dt>
+        <dd><code>dns || icmp</code> — compound OR expression</dd>
+      </div>
+      <div class="meta-cell">
+        <dt>Layers Audited</dt>
+        <dd>Layer 2 Ethernet · Layer 3 IPv4 · Layer 4 UDP</dd>
+      </div>
+    </dl>
+
+  </div>
+</header>
+
+<!-- ============================================================
+     BODY
+     ============================================================ -->
+<main class="cs-body">
+  <div class="wrap">
+
+    <!-- ---------- OBJECTIVE ---------- -->
+    <section class="cs-section">
+      <p>
+        Packet-level visibility is what separates "the network is slow" from "the DNS resolver
+        is taking 400ms per query because the OS is falling back to the secondary server after
+        the primary times out." It's the diagnostic layer underneath every monitoring tool,
+        every application log, and every service dashboard — the raw record of what actually
+        travelled across the wire.
+      </p>
+
+      <p>
+        This engagement captures live traffic from a physical network interface and audits two
+        of the most fundamental protocols in the TCP/IP stack: <strong>DNS</strong> for name
+        resolution and <strong>ICMP</strong> for diagnostic reachability. The goal is not
+        merely to see packets — it's to read them accurately, layer by layer, and derive
+        operational intelligence that would be invisible to a higher-level observer.
+      </p>
+
+      <div class="callout note">
+        <div class="callout-label">◆ SCOPE_CONSTRAINT</div>
+        <p>
+          Capture was performed on a lab network with a single analyst workstation. No third-party
+          traffic was inspected, and no decryption or session reconstruction was attempted —
+          the audit is deliberately limited to protocol headers visible in plaintext, which is
+          the correct scope for a connectivity and resolver-behaviour investigation.
+        </p>
+      </div>
+    </section>
+
+    <!-- ---------- PHASE 1 ---------- -->
+    <section class="cs-section" id="phase-1">
+      <span class="phase-tag">PHASE 01</span>
+      <h2>Capture Initialization &amp; Filter Design</h2>
+
+      <p>
+        Wireshark captures at the driver layer, not the application layer. On Windows this means
+        installing the <strong>Npcap</strong> packet capture driver, which exposes the raw NIC
+        to user-space software — the same mechanism tools like Nmap use for their SYN-scan
+        technique. Once Npcap is in place, Wireshark can read frames directly off the interface
+        without any application cooperation.
+      </p>
+
+      <p>
+        Capture was initialized against the active physical Wi-Fi NIC. Because a modern endpoint
+        receives hundreds of packets per second of background chatter — ARP, mDNS, DHCP, TLS
+        heartbeats, service advertisements — a raw capture becomes unusable without filtering.
+        The first filter applied was a <strong>capture-time scope limiter</strong> that narrowed
+        the stream to only the protocol families under audit:
+      </p>
+
+      <div class="code-block">
+        <div class="code-head">
+          <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="code-lang">wireshark display filter</span>
+          <button class="copy-btn" data-copy type="button">COPY</button>
+        </div>
+        <pre><code>dns || icmp</code></pre>
+      </div>
+
+      <p>
+        The <code>||</code> operator is a logical OR — the filter keeps any frame that matches
+        <em>either</em> condition and discards everything else. That single expression reduced a
+        live capture of 100 frames down to a focused set of 14 relevant packets, exactly the
+        ones relevant to this audit. This is the analyst's leverage: the difference between
+        reading a needle in a haystack and moving the haystack out of the way.
+      </p>
+    </section>
+
+    <!-- ---------- PHASE 2 ---------- -->
+    <section class="cs-section" id="phase-2">
+      <span class="phase-tag">PHASE 02</span>
+      <h2>Layer-4 DNS Header Dissection</h2>
+
+      <p>
+        DNS is a lightweight request-reply protocol that rides on top of the connectionless
+        <strong>UDP transport layer</strong>. That choice is deliberate: name resolution is a
+        single packet in, single packet out, with no need for TCP's handshake overhead. The
+        trade-off is that DNS has no built-in retransmission — if a query packet is lost, the
+        client must simply ask again.
+      </p>
+
+      <p>
+        In the capture, several DNS queries originated from the local host toward
+        <code>8.8.8.8</code>, Google's public resolver. Reading the frame detail revealed the
+        full structural anatomy of a DNS query:
+      </p>
+
+      <ul>
+        <li>
+          <strong>Transport layer — UDP.</strong> The client selected a randomized high-numbered
+          <strong>ephemeral source port</strong> and addressed the packet to
+          <strong>destination port 53</strong>, the well-known UDP port reserved for DNS. The
+          ephemeral source port is randomly reassigned for every query as a defensive measure —
+          it prevents an off-path attacker from predicting the response port and spoofing a
+          reply.
+        </li>
+        <li>
+          <strong>Query type — A record.</strong> The frame carrying
+          <code>www.google.com</code> was a standard query for <strong>type A</strong> — an
+          IPv4 address lookup. The name is sent in plaintext, because DNS by default is not
+          encrypted; anyone on the path can see which hosts the client is resolving.
+        </li>
+        <li>
+          <strong>Response — multiple A records.</strong> The server replied with four
+          distinct IPv4 addresses in a single response packet
+          (<code>142.251.150.119</code>, <code>.153.119</code>, <code>.155.119</code>,
+          <code>.154.119</code>). Multiple answers in one DNS response are the resolver's way
+          of returning <strong>anycast</strong> endpoints and load-balanced backends, and
+          clients typically rotate between them for resilience and performance.
+        </li>
+        <li>
+          <strong>Parallel AAAA query.</strong> Immediately following the A query, a second
+          DNS request went out for <strong>type AAAA</strong> records on the same
+          hostname — the IPv6 equivalent. Modern operating systems issue A and AAAA queries
+          in parallel so the stack can pick the fastest transport (often IPv6, when both are
+          available) without waiting for the first to resolve.
+        </li>
+      </ul>
+
+      <p>
+        Reading these fields correctly is what enables the practical DNS diagnostics that
+        packet capture exists to serve: detecting a slow resolver by comparing query/response
+        timestamps, identifying a client bypassing internal DNS by looking at where port 53
+        traffic is actually going, and detecting DNS tunneling by spotting abnormally large
+        query payloads or unusual query types.
+      </p>
+    </section>
+
+    <!-- ---------- PHASE 3 ---------- -->
+    <section class="cs-section" id="phase-3">
+      <span class="phase-tag">PHASE 03</span>
+      <h2>Layer-3 ICMP Traversal Mapping</h2>
+
+      <p>
+        The second protocol under audit was ICMP — the diagnostic and error-reporting protocol
+        that underlies every <code>ping</code> and <code>traceroute</code> utility. After the
+        DNS resolution completed, an ICMP echo sequence began toward one of the returned A
+        records, giving the capture a natural narrative arc: name resolved, then reachability
+        validated.
+      </p>
+
+      <p>
+        Each ICMP frame was dissected down to its IPv4 header, revealing three structural
+        attributes worth examining:
+      </p>
+
+      <ul>
+        <li>
+          <strong>Control bits — Type 8 / Type 0.</strong> ICMP is a type-coded protocol. An
+          echo request carries <strong>Type 8</strong>, and the corresponding reply carries
+          <strong>Type 0</strong>. The pairing of a Type 8 frame with a Type 0 frame from the
+          same <code>id</code> field is the physical proof that a host is reachable — the most
+          primitive form of network health check, and the raw evidence underneath every
+          monitoring dashboard.
+        </li>
+        <li>
+          <strong>Time to Live — 128 outbound, 114 inbound.</strong> The request left the
+          workstation with a TTL of 128 (the Windows default), and the reply arrived with a TTL
+          of 114 — a difference of <strong>14 hops</strong> traversed in the return direction.
+          TTL is a hop counter, not a time value, and the delta between the outbound and
+          inbound TTL is one of the most reliable forensic signals in network analysis: it
+          allows an analyst to estimate physical network distance, and to detect route
+          changes over time when the delta shifts.
+        </li>
+        <li>
+          <strong>Payload identification.</strong> The <code>id</code> field
+          (<code>0x0001</code>) is generated by the <code>ping</code> utility itself and used
+          to match each reply to its corresponding request. The <code>seq</code> field
+          (<code>9/2304</code> in the captured frame) increments per echo pair, and matching a
+          request's seq to a reply's seq is how the utility determines which replies belong to
+          which requests when multiple ping processes run concurrently.
+        </li>
+      </ul>
+
+      <p>
+        Beneath the protocol fields, the raw hex dump at the bottom of the capture pane shows
+        the frame exactly as it traversed the wire: the Ethernet II header with source and
+        destination MAC addresses, the IPv4 header with version/header-length flags, the TTL
+        and protocol fields, and the ICMP payload. Seeing the bytes laid out this way is the
+        final layer of the audit — it converts every header the tree view describes into
+        concrete, physical, bit-level structure.
+      </p>
+    </section>
+
+    <!-- ---------- OUTCOMES ---------- -->
+    <section class="cs-section" id="outcomes">
+      <span class="phase-tag">OUTCOMES</span>
+      <h2>Diagnostic Outcomes</h2>
+
+      <p>
+        The capture yielded two categories of result — a structural validation of the
+        TCP/IP model as it exists in practice, and a set of practical diagnostic capabilities
+        that transfer directly to production operations.
+      </p>
+
+      <ul>
+        <li>
+          <strong>TCP/IP structural model validated in practice.</strong> Every layer of the
+          theoretical stack was present and correctly formed in the captured frames — Ethernet
+          II at Layer 2, IPv4 at Layer 3, UDP and ICMP payloads at Layer 4. The encapsulation
+          model isn't abstraction; it's a physical byte layout observable in the capture.
+        </li>
+        <li>
+          <strong>DNS resolution behaviour mapped end-to-end.</strong> The capture recorded
+          the full resolver sequence — parallel A and AAAA queries from a randomised
+          ephemeral port, multi-record responses from a public resolver, and the client's
+          subsequent use of one of the returned addresses. This is the exact sequence any
+          analyst would trace when diagnosing a slow-resolution complaint.
+        </li>
+        <li>
+          <strong>Network path distance inferred from TTL delta.</strong> The 14-hop gap
+          between the outbound (128) and inbound (114) TTL values is a network-distance
+          signature. Repeated captures over time would detect route changes — an unexpected
+          drop to 5 hops or a rise to 25 hops would signal an infrastructure event worth
+          investigating, all without needing access to any intermediate device.
+        </li>
+        <li>
+          <strong>Practical diagnostic foundation established.</strong> Packet-level analysis
+          at this depth is what enables the investigation of otherwise invisible problems:
+          identifying slow DNS server delays, tracing the origin of connectivity drops that
+          monitoring tools report as "intermittent," and detecting data-leakage patterns in
+          plaintext protocols where credentials or identifiers are transmitted without
+          encryption.
+        </li>
+      </ul>
+
+      <div class="callout remediation">
+        <div class="callout-label">✓ VISIBILITY_VALIDATED</div>
+        <p>
+          <strong>Packet-level diagnostic capability confirmed.</strong> The audit
+          demonstrated the ability to capture live traffic, filter it to the protocols of
+          interest, and dissect every structural field required for real operational
+          diagnostics — transport selection, header flags, control bits, TTL deltas, and
+          payload identification. This is the layer where network problems that no log file
+          ever records actually become visible.
+        </p>
+      </div>
+
+      <!-- ---------- SCREENSHOT ---------- -->
+      <figure class="cs-figure">
+        <div class="fig-bar">
+          <span class="dot" aria-hidden="true"></span>
+          <span>wireshark_protocol_audit.png</span>
+        </div>
+        <img src="../assets/img/wireshark_protocol_audit.png"
+             alt="Wireshark capture interface showing a dns || icmp display filter applied, a packet list of DNS queries to 8.8.8.8 and ICMP echo request/reply pairs, the IPv4 frame detail tree for a captured ICMP packet, and the raw hex dump of the Ethernet II and IPv4 headers"
+             loading="lazy"
+             onerror="this.closest('figure').classList.add('img-missing')">
+        <div class="img-placeholder" aria-hidden="true">
+          [ TELEMETRY_CAPTURE_PENDING ]<br>
+          assets/img/wireshark_protocol_audit.png
+        </div>
+        <figcaption>
+          <b>Figure 15.1</b> — Wireshark protocol audit. The display filter
+          <code>dns || icmp</code> is active in the filter bar, reducing the live capture to
+          14 of 100 observed frames. The packet list shows DNS queries to the resolver at
+          <code>8.8.8.8</code> followed by ICMP Echo request/reply pairs (Type 8 / Type 0)
+          between the local host and the remote anycast edge. The lower pane renders the
+          structural dissection of a captured ICMP frame — Ethernet II at Layer 2, IPv4 at
+          Layer 3 with the TTL and protocol fields visible, ICMP payload at Layer 4 — alongside
+          the raw byte dump of the same frame.
+        </figcaption>
+      </figure>
+    </section>
+
+    <!-- ---------- PRIVACY ---------- -->
+    <section class="cs-section" id="privacy">
+      <span class="phase-tag">DISCLOSURE</span>
+      <h2>Security &amp; Data Privacy Note</h2>
+
+      <div class="callout note">
+        <div class="callout-label">◆ DATA_MASKING_PROTOCOL</div>
+        <p>
+          Public infrastructure IP signatures and private hardware physical addresses (MAC
+          layers) visible within the raw capture file streams have been purposefully filtered
+          or redacted within the primary telemetry visuals to guarantee local network
+          anonymity. Public resolver addresses shown in the packet list (such as
+          <code>8.8.8.8</code>) are well-known service endpoints and do not expose private
+          infrastructure.
+        </p>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<!-- ============================================================
+     FOOTER
+     ============================================================ -->
+<footer class="footer">
+  <div class="wrap wrap-wide footer-inner">
+    <div>
+      <p>&copy; 2026 Mohammed Oudai Helaleh. All rights cryptographically reserved.</p>
+      <p class="meta">Informatics &amp; Communications Engineering Architecture Deployment</p>
+    </div>
+  </div>
+</footer>
+
+<script src="../case-study.js" defer></script>
+</body>
+</html>

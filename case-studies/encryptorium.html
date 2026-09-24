@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Encryptorium — Zero-Dependency Block Cipher Engine | Mohammed Oudai Helaleh</title>
+<meta name="description" content="A cross-platform Flutter application implementing DES, Triple DES, and AES from raw FIPS specifications — hand-coded Feistel networks, S-box precomputation, PKCS#7 padding, and isolate-threaded file encryption with zero external cryptographic dependencies.">
+
+<link rel="stylesheet" href="../case-study.css">
+</head>
+
+<body class="theme-crypto">
+
+<div class="bg-grid"></div>
+<div class="progress" id="progress"></div>
+
+<!-- ============================================================
+     NAV
+     ============================================================ -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="../index.html" class="brand">MOHAMMED <span>OUDAI</span></a>
+    <a href="../index.html#projects" class="back-link">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M19 12H5M12 19l-7-7 7-7"/>
+      </svg>
+      <span>BACK_TO_VAULT</span>
+    </a>
+  </div>
+</nav>
+
+<!-- ============================================================
+     HERO
+     ============================================================ -->
+<header class="cs-hero">
+  <div class="wrap">
+
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <a href="../index.html">PORTFOLIO</a>
+      <span class="sep">/</span>
+      <a href="../index.html#projects">VAULT</a>
+      <span class="sep">/</span>
+      <a href="../index.html#projects">SOFTWARE_&amp;_CRYPTO</a>
+    </nav>
+
+    <div class="pill-row">
+      <span class="pill"><span class="dot"></span>CRYPTOGRAPHIC_ENGINEERING</span>
+      <span class="pill neutral">CASE_STUDY</span>
+      <span class="pill neutral">READ_TIME 9 MIN</span>
+    </div>
+
+    <h1>Encryptorium — Zero-Dependency Block Cipher Engine &amp; Cross-Platform Cryptographic Application</h1>
+
+    <p class="standfirst">
+      A Flutter application implementing <strong>DES, Triple DES, and AES from raw FIPS
+      mathematical specifications</strong> — hand-coded Feistel networks, S-box lookup tables,
+      and Rijndael transformations engineered entirely without external cryptographic libraries,
+      delivered natively across Windows, Android, and Web HTML5.
+    </p>
+
+    <div class="cs-actions">
+      <a class="cs-repo-link"
+         href="https://github.com/Mohammed-Oudai-Helaleh/Encryptorium-"
+         target="_blank" rel="noopener noreferrer"
+         aria-label="View the Encryptorium source code on GitHub">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M12 .5C5.73.5.5 5.73.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.56v-2c-3.2.7-3.88-1.54-3.88-1.54-.53-1.34-1.29-1.7-1.29-1.7-1.05-.72.08-.71.08-.71 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.23-1.28-5.23-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.04 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.79 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.58.23 2.75.11 3.04.74.81 1.19 1.84 1.19 3.1 0 4.42-2.69 5.39-5.25 5.68.41.35.78 1.05.78 2.12v3.14c0 .31.21.68.8.56A11.5 11.5 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5z"/>
+        </svg>
+        <span>VIEW_REPOSITORY</span>
+        <span class="arrow" aria-hidden="true">→</span>
+      </a>
+    </div>
+
+    <dl class="meta-grid">
+      <div class="meta-cell">
+        <dt>Platforms</dt>
+        <dd>Flutter SDK — Windows, Android, Web HTML5</dd>
+      </div>
+      <div class="meta-cell">
+        <dt>Algorithms</dt>
+        <dd>DES · Triple DES (EDE) · AES 128/192/256</dd>
+      </div>
+      <div class="meta-cell">
+        <dt>Dependencies</dt>
+        <dd>Zero external cryptographic libraries</dd>
+      </div>
+      <div class="meta-cell">
+        <dt>Verification</dt>
+        <dd>Output matched against official NIST test vectors</dd>
+      </div>
+    </dl>
+
+  </div>
+</header>
+
+<!-- ============================================================
+     BODY
+     ============================================================ -->
+<main class="cs-body">
+  <div class="wrap">
+
+    <!-- ---------- OBJECTIVE ---------- -->
+    <section class="cs-section">
+      <p>
+        Modern software development treats cryptography as a solved problem. You import a
+        library, call an API, and encryption happens. This is the right engineering decision in
+        almost every case — cryptographic primitives are extremely difficult to implement
+        correctly, and a subtle bug in a hand-written cipher can be worse than no encryption
+        at all, because it gives the illusion of security without the substance.
+      </p>
+
+      <p>
+        Encryptorium exists for a different reason. The project set out to implement three
+        standard symmetric block ciphers — <strong>DES, Triple DES, and AES</strong> — from raw
+        FIPS mathematical specifications, without relying on any external cryptographic library.
+        The goal was not to replace the well-audited libraries that production systems depend
+        on, but to understand at the implementation level what those libraries are actually
+        doing: how bitwise operations compose into a Feistel network, how S-box lookup tables
+        are engineered, how padding aligns arbitrary-length input to fixed-size cipher blocks,
+        and what it takes to make an encryption pipeline that runs identically across three
+        operating systems from a single Dart codebase.
+      </p>
+
+      <div class="callout note">
+        <div class="callout-label">◆ SCOPE_NOTE</div>
+        <p>
+          Encryptorium is an <em>educational and engineering</em> project — an exercise in
+          implementing well-specified cryptographic algorithms from first principles, not a
+          claim that hand-written ciphers should be used in production. The implementations are
+          verified against official NIST test vectors, which proves correctness under the
+          specified test conditions; it does not certify the code against side-channel attacks,
+          timing analysis, or the other classes of attack that production cryptography must
+          resist. For real data protection, use well-audited libraries — the same position any
+          cryptographer would take.
+        </p>
+      </div>
+    </section>
+
+    <!-- ---------- PHASE 1 ---------- -->
+    <section class="cs-section" id="phase-1">
+      <span class="phase-tag">PHASE 01</span>
+      <h2>Cryptographic Core Engineering</h2>
+
+      <p>
+        Three separate cipher engines were implemented. Each one required reconstructing a
+        well-documented algorithm from its specification, choosing appropriate data structures
+        for the operations involved, and verifying the output matched the reference test
+        vectors before moving to the next.
+      </p>
+
+      <h3>DES — Feistel network from raw bit operations</h3>
+
+      <p>
+        The Data Encryption Standard is a symmetric block cipher that processes 64-bit blocks
+        through sixteen rounds of a Feistel function. The specification defines the algorithm
+        in terms of permutations, substitution boxes, and XOR operations on bit sequences —
+        precise but entirely abstract. Making this work in code required translating each
+        abstract operation into concrete integer arithmetic.
+      </p>
+
+      <p>
+        The critical design decision was to use <strong>low-level bitwise integer operations
+        throughout</strong> — <code>&amp;</code>, <code>|</code>, <code>^</code>,
+        <code>&lt;&lt;</code>, <code>&gt;&gt;</code> — rather than representing bits as strings
+        or arrays. A naive implementation might treat a 64-bit input as a string of characters
+        and manipulate them position by position; this is straightforward to write but
+        catastrophically slow, because every bit operation becomes a string indexing operation
+        and every permutation becomes a character rearrangement. Working directly on integers
+        turns those same operations into single CPU instructions, and the throughput difference
+        is roughly an order of magnitude — the project measured approximately
+        <strong>10× acceleration</strong> compared to an equivalent string-based implementation.
+      </p>
+
+      <p>
+        The DES implementation includes:
+      </p>
+
+      <ul>
+        <li>
+          <strong>The initial permutation (IP)</strong> — the fixed bit rearrangement applied
+          to the plaintext block before the main rounds begin.
+        </li>
+        <li>
+          <strong>Sixteen Feistel rounds</strong> — each round expands the right half from
+          32 to 48 bits, XORs it with a round key derived from the master key, passes the result
+          through S-box substitution, and permutes the substituted output before combining it
+          back with the left half.
+        </li>
+        <li>
+          <strong>Precomputed S-box lookup tables</strong> — the eight substitution boxes
+          defined in the FIPS specification, encoded as integer arrays so the substitution step
+          becomes a pair of array lookups rather than runtime computation.
+        </li>
+        <li>
+          <strong>The final inverse permutation (IP⁻¹)</strong> — the bit rearrangement that
+          reverses the initial permutation after the sixteen rounds complete, producing the
+          final 64-bit ciphertext block.
+        </li>
+      </ul>
+
+      <p>
+        Every one of these components had to match the specification exactly. A single bit out
+        of place in the initial permutation would produce output that looked random but didn't
+        decrypt, and the error would only surface when the test vector comparison failed.
+      </p>
+
+      <h3>Triple DES — Encrypt-Decrypt-Encrypt composition</h3>
+
+      <p>
+        Triple DES extends DES's security by cascading three DES operations on the same data
+        with three separate keys. The composition pattern matters — it's not encrypt-encrypt-encrypt,
+        it's <strong>Encrypt-Decrypt-Encrypt (EDE)</strong>, which is a deliberate design choice
+        from the original 3DES specification.
+      </p>
+
+      <p>
+        The EDE structure exists for backward compatibility. If you set all three keys to the
+        same value, the middle Decrypt step inverts the first Encrypt step, and the final
+        Encrypt step reproduces single-DES output. This means a system that supports 3DES can
+        transparently handle single-DES ciphertext by using the same key three times — a
+        property that mattered enormously during the 1990s transition period when organizations
+        needed to upgrade without breaking existing encrypted data.
+      </p>
+
+      <p>
+        The implementation enforced a validation rule that the three keys must be entirely
+        distinct — the application rejects configurations where any two keys match. This isn't
+        a cryptographic requirement (the cipher still works with duplicate keys, it just
+        provides less security), but it prevents the user from accidentally deploying 3DES
+        with the security of single DES while believing they've configured it correctly. The
+        validation is a safety control against a subtle misconfiguration.
+      </p>
+
+      <h3>AES — Rijndael transformations across three key sizes</h3>
+
+      <p>
+        AES is a fundamentally different design from DES. Where DES uses a Feistel network
+        that operates on half the block each round, AES uses the
+        <strong>Rijndael cipher structure</strong>, which transforms the entire state block
+        through four distinct operations per round. The implementation supports all three
+        standard key sizes — 128-bit, 192-bit, and 256-bit — which correspond to 10, 12, and
+        14 rounds respectively.
+      </p>
+
+      <p>
+        Each Rijndael transformation had to be hand-mapped from the specification:
+      </p>
+
+      <ul>
+        <li>
+          <strong>SubBytes</strong> — a non-linear byte substitution using the S-box, whose
+          values are mathematically derived from computing multiplicative inverses in the
+          Galois Field GF(2⁸) followed by an affine transformation. The implementation
+          precomputes the S-box as a 256-byte lookup table.
+        </li>
+        <li>
+          <strong>ShiftRows</strong> — a byte-wise rotation within the 4×4 state matrix, where
+          each row is shifted by a different offset. This provides diffusion across columns.
+        </li>
+        <li>
+          <strong>MixColumns</strong> — a matrix multiplication of each column against a fixed
+          polynomial, implemented with GF(2⁸) arithmetic that reduces to XOR and shifted
+          lookups rather than actual multiplication.
+        </li>
+        <li>
+          <strong>AddRoundKey</strong> — the XOR combination of the state with a round key
+          derived from the master key through the AES key schedule.
+        </li>
+      </ul>
+
+      <p>
+        The key schedule itself — the algorithm that expands the user-supplied key into one
+        round key per round — had to be implemented separately for each key size, because the
+        number of words in the expanded key differs depending on whether the source key is 4,
+        6, or 8 words long.
+      </p>
+    </section>
+
+    <!-- ---------- PHASE 2 ---------- -->
+    <section class="cs-section" id="phase-2">
+      <span class="phase-tag">PHASE 02</span>
+      <h2>Padding, Encoding &amp; Asynchronous Execution</h2>
+
+      <p>
+        With the cipher engines working correctly in isolation, the next engineering layer
+        addressed the practical problems that arise when you try to encrypt real data — which
+        almost never happens to arrive in neat 64-bit or 128-bit chunks.
+      </p>
+
+      <h3>PKCS#7 padding alignment</h3>
+
+      <p>
+        Block ciphers require their input to be an exact multiple of the block size — 64 bits
+        for DES and 3DES, 128 bits for AES. Real data is arbitrary length. The standard
+        solution is padding: appending bytes to the end of the input until it aligns with the
+        block boundary, then removing those bytes after decryption.
+      </p>
+
+      <p>
+        The PKCS#7 padding scheme was implemented from specification. It's elegantly simple:
+        if <em>n</em> bytes of padding are needed, append <em>n</em> bytes, each with the value
+        <em>n</em>. So one byte of padding is a single byte <code>0x01</code>, three bytes of
+        padding are three bytes <code>0x03 0x03 0x03</code>, and so on. When the input already
+        fits the block boundary exactly, an entire additional block of padding is appended
+        (each byte set to the block size), because the decryptor needs to know unambiguously
+        how many bytes to strip — there's no way to distinguish "no padding" from "padding that
+        happens to look like data" without an always-present padding convention.
+      </p>
+
+      <p>
+        The implementation handles padding automatically. The user never sees it and never
+        needs to think about block alignment — they enter a string, the pipeline pads it,
+        encrypts it, and on decryption the pipeline strips the padding before returning the
+        plaintext. This is the kind of invisible plumbing that separates a working demo from a
+        usable tool.
+      </p>
+
+      <h3>Base64 transport encoding</h3>
+
+      <p>
+        Ciphertext is binary — it's a sequence of bytes that can include values outside the
+        printable ASCII range. This creates a practical problem: if you want to copy ciphertext
+        to the clipboard, paste it into an email, store it in a database text column, or
+        include it in a JSON payload, the binary format will corrupt or truncate in transit.
+      </p>
+
+      <p>
+        The solution is <strong>Base64 encoding</strong> — a scheme that maps every three bytes
+        of binary data to four characters from a 64-character alphabet (A–Z, a–z, 0–9, plus,
+        slash). The output is pure text, safe for any transport mechanism that handles
+        character data. The size overhead is exactly 33% — every three bytes become four
+        characters — which is a small price for universal compatibility.
+      </p>
+
+      <p>
+        The pipeline applies Base64 automatically at the output stage and reverses it at the
+        input stage. Every ciphertext the application produces is Base64-encoded, so any user
+        interaction with the output is safe by default. This eliminated an entire class of
+        user-facing bugs: no more corrupted ciphertext from a bad paste, no more database
+        truncation, no more encoding mismatch failures.
+      </p>
+
+      <h3>Isolate-based asynchronous threading</h3>
+
+      <p>
+        The final technical challenge was performance on large files. Cryptographic processing
+        is CPU-bound — every byte has to pass through the full cipher pipeline, and a
+        multi-megabyte file requires millions of operations. On a single-threaded UI
+        application, this blocks the main thread for the entire duration, and the user sees a
+        frozen interface that looks like a crash.
+      </p>
+
+      <p>
+        The solution was to offload cryptographic work to <strong>Dart background isolates</strong>
+        — the language's equivalent of worker threads. Isolates run in separate memory spaces
+        with their own event loops, communicating with the main thread through message passing
+        rather than shared state. This is a deliberate constraint of the Dart concurrency
+        model: no shared-memory data races are possible, at the cost of requiring explicit
+        message serialization between threads.
+      </p>
+
+      <p>
+        The application uses the <code>compute()</code> helper to dispatch heavy cryptographic
+        operations to an isolate and await the result. The main thread is free to continue
+        rendering during the operation, which means the loading animation continues at a
+        smooth <strong>60 FPS</strong> even while the isolate is churning through multi-megabyte
+        binary data. When the isolate completes its work, the result is returned to the main
+        thread and applied to the UI.
+      </p>
+
+      <p>
+        This design matters most for the file encryption feature, where inputs can be arbitrarily
+        large. Without isolate offloading, a 50 MB file encryption would freeze the interface
+        for several seconds and any user interaction during that window would be queued rather
+        than processed. With isolate offloading, the file encrypts in the background while the
+        user can still navigate the application.
+      </p>
+    </section>
+
+    <!-- ---------- PHASE 3 ---------- -->
+    <section class="cs-section" id="phase-3">
+      <span class="phase-tag">PHASE 03</span>
+      <h2>Cross-Platform Storage &amp; File Handling</h2>
+
+      <p>
+        The final architectural layer addressed the problem that all cross-platform applications
+        eventually face: the platforms are not actually the same. Windows, Android, and Web
+        HTML5 have fundamentally different file system models, and abstracting over them
+        requires recognising where the abstraction leaks.
+      </p>
+
+      <h3>Native file system pipelines</h3>
+
+      <p>
+        On Windows and Android, the application has direct access to the host file system
+        through platform-native APIs. The design decision here was to use a
+        <strong>consistent, predictable output location</strong> rather than asking the user
+        where to save every file. Decrypted binary objects are written directly to
+        <code>~/Documents/Encryptorium/</code> — a dedicated directory the application creates
+        on first run. This means every decrypted file the user produces has a known location
+        they can navigate to, rather than being scattered across whatever path the file picker
+        last returned.
+      </p>
+
+      <h3>Web HTML5 download streams</h3>
+
+      <p>
+        Web HTML5 is fundamentally different — the browser sandbox does not permit arbitrary
+        file system writes. A web application cannot silently write a file to the user's disk
+        the way a native application can. The only mechanism the platform provides for
+        delivering a file to the user is the <strong>download stream</strong> — the same
+        mechanism that fires when a user clicks a download link on a website.
+      </p>
+
+      <p>
+        The web build of Encryptorium uses this mechanism directly. When a user decrypts a
+        file in the browser, the application constructs a Blob object from the decrypted
+        bytes, generates a temporary object URL pointing at that blob, and programmatically
+        triggers a download. The browser then handles the file delivery through its native
+        download manager — the user sees the same download prompt they'd see from any website,
+        and the file lands in their Downloads folder through the browser's standard flow.
+      </p>
+
+      <p>
+        This is the correct pattern for cross-platform file output. Rather than trying to
+        force the native model onto the web (which is not possible), the application
+        recognises the platform difference and uses the mechanism each platform actually
+        provides. The user experience is different — the native versions write silently to a
+        known folder, the web version triggers a visible download — but both achieve the same
+        goal through the correct channel for their platform.
+      </p>
+    </section>
+
+    <!-- ---------- OUTCOMES ---------- -->
+    <section class="cs-section" id="outcomes">
+      <span class="phase-tag">OUTCOMES</span>
+      <h2>Cryptographic Infrastructure Outcomes</h2>
+
+      <p>
+        Three verification captures document the finished application across its three cipher
+        engines. Each shows the interface for one of the implemented algorithms, along with
+        the configuration controls the user has over that algorithm's key parameters.
+      </p>
+
+      <h3>Main selection gateway</h3>
+
+      <p>
+        The application's entry point presents the user with a choice of cipher algorithm —
+        DES, Triple DES, or AES. Each option leads to a dedicated interface for that
+        algorithm's specific configuration needs.
+      </p>
+
+      <!-- ---------- SCREENSHOT 1 ---------- -->
+      <figure class="cs-figure">
+        <div class="fig-bar">
+          <span class="dot" aria-hidden="true"></span>
+          <span>encryptorium_menu.png</span>
+        </div>
+        <img src="../assets/img/encryptorium_menu.png"
+             alt="Encryptorium main selection gateway showing the three supported symmetric block cipher algorithms — DES, Triple DES and AES — as selectable entry points into the application"
+             loading="lazy"
+             onerror="this.closest('figure').classList.add('img-missing')">
+        <div class="img-placeholder" aria-hidden="true">
+          [ TELEMETRY_CAPTURE_PENDING ]<br>
+          assets/img/encryptorium_menu.png
+        </div>
+        <figcaption>
+          <b>Figure 1.1</b> — Encryptorium main selection gateway. The application's landing
+          screen presents the three implemented symmetric block ciphers — DES, Triple DES, and
+          AES — as distinct entry points, each leading to an interface tailored to that
+          algorithm's specific key configuration requirements.
+        </figcaption>
+      </figure>
+
+      <h3>Triple DES dashboard</h3>
+
+      <p>
+        The Triple DES interface exposes the three-key configuration that the EDE cipher
+        structure requires. Three separate key input fields are presented, each corresponding
+        to one of the three DES operations in the cascade — the outer Encrypt, the middle
+        Decrypt, and the final Encrypt — and the application validates that the three keys are
+        distinct before allowing encryption to proceed.
+      </p>
+
+      <!-- ---------- SCREENSHOT 2 ---------- -->
+      <figure class="cs-figure">
+        <div class="fig-bar">
+          <span class="dot" aria-hidden="true"></span>
+          <span>encryptorium_3des.png</span>
+        </div>
+        <img src="../assets/img/encryptorium_3des.png"
+             alt="Encryptorium Triple DES dashboard showing three separate key input fields corresponding to the Encrypt-Decrypt-Encrypt composition, with key isolation validation for the asymmetric key structure"
+             loading="lazy"
+             onerror="this.closest('figure').classList.add('img-missing')">
+        <div class="img-placeholder" aria-hidden="true">
+          [ TELEMETRY_CAPTURE_PENDING ]<br>
+          assets/img/encryptorium_3des.png
+        </div>
+        <figcaption>
+          <b>Figure 1.2</b> — Triple DES dashboard. Three discrete key input fields correspond
+          to the three sequential DES operations of the Encrypt-Decrypt-Encrypt composition.
+          The interface enforces that all three keys must be distinct, preventing the user from
+          accidentally deploying 3DES with the security properties of single DES.
+        </figcaption>
+      </figure>
+
+      <h3>AES console with variable key size selection</h3>
+
+      <p>
+        The AES interface exposes the three standard key sizes — 128-bit, 192-bit, and
+        256-bit — with each corresponding to a different number of encryption rounds and a
+        differently-structured key schedule. This is the correct AES implementation pattern:
+        the algorithm itself is identical across key sizes, but the round count and key
+        expansion differ, and the user's selection drives which variant the cipher engine runs.
+      </p>
+
+      <!-- ---------- SCREENSHOT 3 ---------- -->
+      <figure class="cs-figure">
+        <div class="fig-bar">
+          <span class="dot" aria-hidden="true"></span>
+          <span>encryptorium_aes.png</span>
+        </div>
+        <img src="../assets/img/encryptorium_aes.png"
+             alt="Encryptorium Advanced Encryption Standard console showing variable key size selection for 128-bit, 192-bit and 256-bit AES modes"
+             loading="lazy"
+             onerror="this.closest('figure').classList.add('img-missing')">
+        <div class="img-placeholder" aria-hidden="true">
+          [ TELEMETRY_CAPTURE_PENDING ]<br>
+          assets/img/encryptorium_aes.png
+        </div>
+        <figcaption>
+          <b>Figure 1.3</b> — Advanced Encryption Standard console. The AES interface exposes
+          all three standard key sizes — 128-bit, 192-bit, and 256-bit — each driving a
+          different round count (10, 12, or 14) and a differently-structured key schedule. The
+          user's selection determines which Rijndael variant the cipher engine executes.
+        </figcaption>
+      </figure>
+
+      <h3>Verification results</h3>
+
+      <ul>
+        <li>
+          <strong>Zero dependency integrity confirmed.</strong> Full multi-platform text and
+          file encryption capabilities were verified with <strong>0% reliance on external
+          security libraries</strong> — every cryptographic operation in the application is
+          performed by code implemented from specification within the project, creating a
+          completely closed-loop environment.
+        </li>
+        <li>
+          <strong>Performance efficacy verified.</strong> DES data pathways were optimized to
+          process file transforms via precomputed bit shifts and integer arithmetic, achieving
+          approximately 10× acceleration over the string-based approach. Thread starvation and
+          memory leaks were eliminated across multi-round executions — even on large files,
+          the isolate-based threading keeps the UI responsive and the memory profile stable.
+        </li>
+        <li>
+          <strong>Algorithmic compliance proven.</strong> Output ciphertexts were verified to
+          match official NIST test vectors, providing <strong>100% mathematical precision</strong>
+          across all three hand-written implementation matrices. This is the strongest
+          verification possible for a cryptographic implementation — it proves that the code
+          produces exactly the byte sequences that the FIPS specifications require.
+        </li>
+      </ul>
+
+      <div class="callout remediation">
+        <div class="callout-label">✓ CIPHER_ENGINES_VALIDATED</div>
+        <p>
+          <strong>All three cipher engines verified against NIST reference vectors.</strong>
+          DES, Triple DES, and AES were each implemented from raw FIPS specifications, compiled
+          to a single Flutter codebase, and deployed across Windows, Android, and Web HTML5.
+          The application performs the complete cryptographic workflow — key handling, padding,
+          block encryption, Base64 encoding, and cross-platform file output — without any
+          external cryptographic dependency. Every output byte matches the specification.
+        </p>
+      </div>
+    </section>
+
+    <!-- ---------- PRIVACY ---------- -->
+    <section class="cs-section" id="privacy">
+      <span class="phase-tag">DISCLOSURE</span>
+      <h2>Security &amp; Data Privacy Note</h2>
+
+      <div class="callout note">
+        <div class="callout-label">◆ LOCAL_PROCESSING_PROTOCOL</div>
+        <p>
+          All cryptographic key generations, Feistel function executions, and file conversions
+          occur entirely within local memory spaces on the host device. The application
+          initiates <strong>no network connections</strong> at any point — no telemetry, no
+          analytics, no remote key management, no ciphertext transmission. Data entered by the
+          user never leaves the device it was entered on. This is the strongest possible
+          data-privacy posture for an encryption application: the tool is provably incapable
+          of leaking anything because it has no mechanism through which to transmit.
+        </p>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<!-- ============================================================
+     FOOTER
+     ============================================================ -->
+<footer class="footer">
+  <div class="wrap wrap-wide footer-inner">
+    <div>
+      <p>&copy; 2026 Mohammed Oudai Helaleh. All rights cryptographically reserved.</p>
+      <p class="meta">Informatics &amp; Communications Engineering Architecture Deployment</p>
+    </div>
+  </div>
+</footer>
+
+<script src="../case-study.js" defer></script>
+</body>
+</html>

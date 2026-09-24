@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Linux HIDS Hardening &amp; File Integrity Monitoring | Mohammed Oudai Helaleh</title>
+<meta name="description" content="Deploying and auditing AIDE as a Host-Based Intrusion Detection System — cryptographic SHA-256/SHA-512 baselining across 111,249 files and live detection of a simulated insider tampering event.">
+
+<link rel="stylesheet" href="../case-study.css">
+</head>
+
+<body class="theme-defense">
+
+<div class="bg-grid"></div>
+<div class="progress" id="progress"></div>
+
+<!-- ============================================================
+     NAV
+     ============================================================ -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="../index.html" class="brand">MOHAMMED <span>OUDAI</span></a>
+    <a href="../index.html#projects" class="back-link">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M19 12H5M12 19l-7-7 7-7"/>
+      </svg>
+      <span>BACK_TO_VAULT</span>
+    </a>
+  </div>
+</nav>
+
+<!-- ============================================================
+     HERO
+     ============================================================ -->
+<header class="cs-hero">
+  <div class="wrap">
+
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <a href="../index.html">PORTFOLIO</a>
+      <span class="sep">/</span>
+      <a href="../index.html#projects">VAULT</a>
+      <span class="sep">/</span>
+      <a href="../index.html#projects">DEFENSIVE_INFRASTRUCTURE</a>
+    </nav>
+
+    <div class="pill-row">
+      <span class="pill"><span class="dot"></span>HOST_DEFENSE_HIDS</span>
+      <span class="pill neutral">CASE_STUDY</span>
+      <span class="pill neutral">READ_TIME 7 MIN</span>
+    </div>
+
+    <h1>Enterprise Linux HIDS Hardening &amp; File Integrity Monitoring</h1>
+
+    <p class="standfirst">
+      Deploying the Advanced Intrusion Detection Environment (AIDE) as a host-based intrusion
+      detection system — building a <strong>cryptographic SHA-256/SHA-512 baseline across 111,249
+      files</strong>, then proving detection fidelity by simulating an insider tampering event and
+      catching it with <strong>byte-level forensic precision</strong>.
+    </p>
+
+    <dl class="meta-grid">
+      <div class="meta-cell">
+        <dt>Environment</dt>
+        <dd>Headless Ubuntu Server 24.04 LTS (CLI-only)</dd>
+      </div>
+      <div class="meta-cell">
+        <dt>Hypervisor</dt>
+        <dd>Type-2 VMware virtual machine</dd>
+      </div>
+      <div class="meta-cell">
+        <dt>Engine</dt>
+        <dd>AIDE (Advanced Intrusion Detection Environment)</dd>
+      </div>
+      <div class="meta-cell">
+        <dt>Hash Suite</dt>
+        <dd>SHA-256 · SHA-512 · file metadata</dd>
+      </div>
+    </dl>
+
+  </div>
+</header>
+
+<!-- ============================================================
+     BODY
+     ============================================================ -->
+<main class="cs-body">
+  <div class="wrap">
+
+    <!-- ---------- OBJECTIVE ---------- -->
+    <section class="cs-section">
+      <p>
+        Advanced persistent threats often install silent backdoors inside core system configuration
+        folders — appending malicious access lines to authentication files, for example, or replacing
+        a single line inside a service configuration. Because the file profile can appear completely
+        unaltered to standard system utilities, signature-based antivirus fails to catch the breach.
+        The only reliable defence is <strong>cryptographic comparison against a known-good state</strong>
+        — and that is exactly what a host-based intrusion detection system provides.
+      </p>
+
+      <div class="callout note">
+        <div class="callout-label">◆ SCOPE_CONSTRAINT</div>
+        <p>
+          This engagement is conducted entirely inside a lab VM. The "breach" simulated in Phase 2 is
+          a deliberate self-inflicted modification performed by the analyst — not a live compromise.
+          The purpose is to <strong>validate detection metrics</strong>, not to investigate an
+          incident.
+        </p>
+      </div>
+    </section>
+
+    <!-- ---------- PHASE 1 ---------- -->
+    <section class="cs-section" id="phase-1">
+      <span class="phase-tag">PHASE 01</span>
+      <h2>HIDS Infrastructure Calibration &amp; Baselining</h2>
+
+      <p>
+        The AIDE engine was installed directly from the Ubuntu repositories. Its job is to
+        fingerprint every protected file on the system — computing cryptographic hashes, recording
+        ownership and permission metadata, and storing the whole inventory in a tamper-evident
+        database that becomes the server's <em>known-good identity</em>:
+      </p>
+
+      <div class="code-block">
+        <div class="code-head">
+          <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="code-lang">bash</span>
+          <button class="copy-btn" data-copy type="button">COPY</button>
+        </div>
+        <pre><code>sudo apt install aide -y</code></pre>
+      </div>
+
+      <p>
+        With the engine in place, an absolute system baseline was generated. The automated scanning
+        module crawled the entire server framework, calculating high-precision SHA-256 and SHA-512
+        hashes for every protected configuration asset and cataloguing the server's healthy baseline
+        identity:
+      </p>
+
+      <div class="code-block">
+        <div class="code-head">
+          <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="code-lang">bash</span>
+          <button class="copy-btn" data-copy type="button">COPY</button>
+        </div>
+        <pre><code>sudo aideinit</code></pre>
+      </div>
+
+      <p>
+        The final step in Phase 1 is to <em>arm the guard</em> — promoting the freshly generated
+        database from its initial <code>.new</code> state into the location AIDE reads during
+        verification. Until that promotion happens, the engine has a baseline but no active
+        reference to compare against:
+      </p>
+
+      <div class="code-block">
+        <div class="code-head">
+          <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="code-lang">bash</span>
+          <button class="copy-btn" data-copy type="button">COPY</button>
+        </div>
+        <pre><code>sudo cp /var/lib/aide/aide.db.new /var/lib/aide/aide.db</code></pre>
+      </div>
+
+      <div class="callout remediation">
+        <div class="callout-label">✓ BASELINE_ARMED</div>
+        <p>
+          The system is now in a clean operational checkpoint state. Every file AIDE protects has
+          been reduced to a cryptographic fingerprint, and any future modification — even a single
+          bit — will produce a hash mismatch that the engine can surface on demand.
+        </p>
+      </div>
+    </section>
+
+    <!-- ---------- PHASE 2 ---------- -->
+    <section class="cs-section" id="phase-2">
+      <span class="phase-tag">PHASE 02</span>
+      <h2>Mock Breach Simulation &amp; Anomaly Auditing</h2>
+
+      <p>
+        To evaluate the detection metrics of the armed HIDS engine, a local system breach was
+        simulated. Acting as a malicious insider, an unauthorised string injection payload was forced
+        into the server's primary network hostname translation dictionary — the classic "append a
+        backdoor to <code>/etc/hosts</code>" move that would redirect a legitimate domain to an
+        attacker-controlled IP in a real intrusion:
+      </p>
+
+      <div class="code-block">
+        <div class="code-head">
+          <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="code-lang">bash</span>
+          <button class="copy-btn" data-copy type="button">COPY</button>
+        </div>
+        <pre><code>echo "malicious_backdoor_payload_active=true" | sudo tee -a /etc/hosts</code></pre>
+      </div>
+
+      <p>
+        From the operating system's perspective, nothing has changed. The file still exists, still
+        has valid permissions, still serves DNS resolution correctly. There is no signature, no
+        running process, no anomalous network traffic. This is precisely the class of intrusion that
+        conventional defences miss.
+      </p>
+
+      <p>
+        With the tampering in place, an administrative threat-hunting verification scan was manually
+        triggered to compare the active runtime state of the operating system against the trusted
+        cryptographic baseline:
+      </p>
+
+      <div class="code-block">
+        <div class="code-head">
+          <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="code-lang">bash</span>
+          <button class="copy-btn" data-copy type="button">COPY</button>
+        </div>
+        <pre><code>sudo aide --check --config /etc/aide/aide.conf</code></pre>
+      </div>
+    </section>
+
+    <!-- ---------- OUTCOMES ---------- -->
+    <section class="cs-section" id="outcomes">
+      <span class="phase-tag">OUTCOMES</span>
+      <h2>Forensic Verification Results</h2>
+
+      <p>
+        The HIDS engine bypassed configuration environment path conflicts and audited
+        <strong>111,249 file system entries</strong>, generating a comprehensive Host Integrity Report
+        that detailed every post-baseline variation across the entire server layout.
+      </p>
+
+      <h3>The executive alert</h3>
+
+      <p>
+        The kernel tracking engine flagged anomalous activity across the system layout and raised the
+        alert that matters:
+      </p>
+
+      <div class="finding-card">
+        <div class="fc-head">
+          <span class="sev">INTEGRITY_DRIFT</span>
+          <span class="fc-id">aide --check · 21 changes</span>
+        </div>
+        <h3>21 changed entries detected across 111,249 audited files</h3>
+        <p>
+          From over a hundred thousand protected file paths, the engine isolated exactly 21 entries
+          whose cryptographic fingerprints no longer matched the baseline. This is the detection
+          signature of a successful FIM deployment — not a flood of noise, not a miss, but a
+          <strong>precise, bounded alert</strong> an analyst can act on immediately.
+        </p>
+      </div>
+
+      <h3>The forensic fingerprint</h3>
+
+      <p>
+        The detailed log module isolated the exact compromised target directory and exposed the
+        attacker's full footprint:
+      </p>
+
+      <ul>
+        <li>
+          <strong>Target file.</strong> <code>/etc/hosts</code> — flagged as the modified asset,
+          confirmed by direct comparison against the baseline entry.
+        </li>
+        <li>
+          <strong>File size delta.</strong> Growth from <code>224 bytes</code> to
+          <code>263 bytes</code> — an increase of exactly 39 bytes, which matches the character count
+          of the injected payload string plus the trailing newline appended by <code>tee</code>. The
+          file size delta alone tells you the payload length.
+        </li>
+        <li>
+          <strong>Timestamp drift.</strong> A modified mtime recorded on the file, cross-referenced
+          against the baseline creation timestamp to establish the exact window during which the
+          modification occurred.
+        </li>
+        <li>
+          <strong>Cryptographic mismatch.</strong> Completely altered SHA-256 and SHA-512 hash
+          profiles — the definitive evidence that the file content changed, independent of any
+          metadata observation.
+        </li>
+      </ul>
+
+      <div class="callout remediation">
+        <div class="callout-label">✓ DETECTION_VALIDATED</div>
+        <p>
+          <strong>100% detection visibility confirmed.</strong> If an unauthorised process alters even
+          a single bit of structured code on the endpoint, the baseline drift is exposed instantly.
+          The 21-entry alert was not a coincidence — the engine knew exactly which files diverged
+          from the trusted state, down to the byte.
+        </p>
+      </div>
+
+      <!-- ---------- SCREENSHOT 1 ---------- -->
+      <figure class="cs-figure">
+        <div class="fig-bar">
+          <span class="dot" aria-hidden="true"></span>
+          <span>hids_alert_summary.png</span>
+        </div>                  
+        <img src="../assets/img/hids_alert_summary.png"
+             alt="Active terminal scan displaying the AIDE integrity check initialization, showing 111,249 entries audited and 21 system changes detected"
+             loading="lazy"
+             onerror="this.closest('figure').classList.add('img-missing')">
+        <div class="img-placeholder" aria-hidden="true">
+          [ TELEMETRY_CAPTURE_PENDING ]<br>
+          assets/img/hids_alert_summary.png
+        </div>
+        <figcaption>
+          <b>Figure 5.1</b> — Active terminal scan displaying the AIDE integrity check initialization,
+          showing 111,249 entries audited and 21 system changes detected.
+        </figcaption>
+      </figure>
+
+      <!-- ---------- SCREENSHOT 2 ---------- -->
+      <figure class="cs-figure">
+        <div class="fig-bar">
+          <span class="dot" aria-hidden="true"></span>
+          <span>hids_forensic_breakdown.png</span>
+        </div>                  hids_forensic_breakdown.png
+        <img src="../assets/img/hids_forensic_breakdown.png"
+             alt="Granular cryptographic audit log catching structural file size growth from 224 to 263 bytes and SHA-256 fingerprint variations on the /etc/hosts directory"
+             loading="lazy"
+             onerror="this.closest('figure').classList.add('img-missing')">
+        <div class="img-placeholder" aria-hidden="true">
+          [ TELEMETRY_CAPTURE_PENDING ]<br>
+          assets/img/hids_forensic_breakdown.png
+        </div>
+        <figcaption>
+          <b>Figure 5.2</b> — Granular cryptographic audit log catching structural file size growth
+          from 224 to 263 bytes and SHA-256 fingerprint variations on the
+          <code>/etc/hosts</code> directory.
+        </figcaption>
+      </figure>
+    </section>
+
+    <!-- ---------- PRIVACY ---------- -->
+    <section class="cs-section" id="privacy">
+      <span class="phase-tag">DISCLOSURE</span>
+      <h2>Security &amp; Data Privacy Note</h2>
+
+      <div class="callout note">
+        <div class="callout-label">◆ DATA_MASKING_PROTOCOL</div>
+        <p>
+          Public infrastructure IP signatures and private hardware physical addresses (MAC layer
+          strings) visible within the raw terminal output captures have been purposefully filtered or
+          redacted within the primary telemetry visuals to guarantee local network anonymity.
+        </p>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<!-- ============================================================
+     FOOTER
+     ============================================================ -->
+<footer class="footer">
+  <div class="wrap wrap-wide footer-inner">
+    <div>
+      <p>&copy; 2026 Mohammed Oudai Helaleh. All rights cryptographically reserved.</p>
+      <p class="meta">Informatics &amp; Communications Engineering Architecture Deployment</p>
+    </div>
+  </div>
+</footer>
+
+<script src="../case-study.js" defer></script>
+</body>
+</html>

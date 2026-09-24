@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Intelligent Retirement Home Monitor — Dual-Model Computer Vision | Mohammed Oudai Helaleh</title>
+<meta name="description" content="A cross-platform resident care platform combining dual TensorFlow computer vision models — fall detection and inactivity monitoring — with medication scheduling, appointment reminders, and multi-modal caregiver chat built in Flutter over Firebase.">
+
+<link rel="stylesheet" href="../case-study.css">
+</head>
+
+<body class="theme-ai">
+
+<div class="bg-grid"></div>
+<div class="progress" id="progress"></div>
+
+<!-- ============================================================
+     NAV
+     ============================================================ -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="../index.html" class="brand">MOHAMMED <span>OUDAI</span></a>
+    <a href="../index.html#projects" class="back-link">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M19 12H5M12 19l-7-7 7-7"/>
+      </svg>
+      <span>BACK_TO_VAULT</span>
+    </a>
+  </div>
+</nav>
+
+<!-- ============================================================
+     HERO
+     ============================================================ -->
+<header class="cs-hero">
+  <div class="wrap">
+
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <a href="../index.html">PORTFOLIO</a>
+      <span class="sep">/</span>
+      <a href="../index.html#projects">VAULT</a>
+      <span class="sep">/</span>
+      <a href="../index.html#projects">AI_&amp;_DATA_ENGINEERING</a>
+    </nav>
+
+    <div class="pill-row">
+      <span class="pill"><span class="dot"></span>COMPUTER_VISION</span>
+      <span class="pill neutral">CASE_STUDY</span>
+      <span class="pill neutral">READ_TIME 8 MIN</span>
+      <span class="pill neutral">TEAM PROJECT</span>
+    </div>
+
+    <h1>Intelligent Retirement Home Monitor — Dual-Model Computer Vision &amp; Resident Care Platform</h1>
+
+    <p class="standfirst">
+      A cross-platform resident care platform pairing <strong>two complementary TensorFlow
+      computer vision models</strong> — one detecting falls as events, one detecting the absence
+      of expected motion over time — alongside medication scheduling, appointment reminders, and
+      multi-modal caregiver chat, deployed in Flutter over a Firebase backend.
+    </p>
+
+    <dl class="meta-grid">
+      <div class="meta-cell">
+        <dt>Role</dt>
+        <dd>Full-stack contributor — team project</dd>
+      </div>
+      <div class="meta-cell">
+        <dt>Platforms</dt>
+        <dd>Android primary · Web build · Windows partial</dd>
+      </div>
+      <div class="meta-cell">
+        <dt>CV Stack</dt>
+        <dd>Python · OpenCV · TensorFlow — dual models</dd>
+      </div>
+      <div class="meta-cell">
+        <dt>Backend</dt>
+        <dd>Firebase — Auth · Firestore · Cloud Messaging</dd>
+      </div>
+    </dl>
+
+  </div>
+</header>
+
+<!-- ============================================================
+     BODY
+     ============================================================ -->
+<main class="cs-body">
+  <div class="wrap">
+
+    <!-- ---------- OBJECTIVE ---------- -->
+    <section class="cs-section">
+      <p>
+        Elderly residents in care facilities face a specific class of risk: the events that
+        matter most are the ones where nothing obviously happens. A fall is visible and loud,
+        but a resident who stops moving quietly — who becomes unresponsive in their chair,
+        or who hasn't left their bed in eight hours — is the more dangerous case, because the
+        absence of activity is precisely what makes it easy to overlook.
+      </p>
+
+      <p>
+        This project set out to build a resident care platform that monitored both failure
+        modes simultaneously, alongside the routine administrative tools a facility actually
+        operates on: medication schedules, doctor appointments, and a communication channel
+        between residents, caregivers, and family. It was a group project — our team of
+        developers built the system collaboratively across a single semester — and the
+        deliverable was a functional cross-platform application with Android as the primary
+        release target.
+      </p>
+
+      <div class="callout note">
+        <div class="callout-label">◆ PROJECT_DISCLOSURE</div>
+        <p>
+          This case study documents a collaborative academic project. The system's source code,
+          trained model weights, and telemetry captures are no longer available — the repository
+          was lost during a group handover, and the environment used to train the computer
+          vision models is no longer accessible. The case study therefore presents the
+          architecture, design decisions, and technical challenges from the engagement as
+          documented at the time, without figures. Where I describe specific technical choices,
+          the work was shared across the team; the project was not solo-authored.
+        </p>
+      </div>
+    </section>
+
+    <!-- ---------- PHASE 1 ---------- -->
+    <section class="cs-section" id="phase-1">
+      <span class="phase-tag">PHASE 01</span>
+      <h2>System Architecture &amp; Technical Stack</h2>
+
+      <p>
+        The platform was built as three cooperating layers: a Python-side machine learning
+        service running the computer vision models, a Flutter client providing the user
+        interface across Android, web, and Windows, and a Firebase backend connecting the two
+        and handling authentication, data persistence, and push notifications.
+      </p>
+
+      <h3>The three-layer architecture</h3>
+
+      <ul>
+        <li>
+          <strong>Computer vision layer — Python, OpenCV, TensorFlow.</strong> Two independently
+          trained TensorFlow models process video frames captured through OpenCV and classify
+          the resident's current state. This layer is where the actual intelligence of the
+          system lives — everything else exists to deliver its outputs to the right person.
+        </li>
+        <li>
+          <strong>Application layer — Flutter.</strong> A single Dart codebase compiled for
+          Android, web, and Windows. The Flutter client handles all user-facing functionality:
+          resident profiles, medication scheduling, appointment tracking, chat, and the alert
+          notifications triggered by the CV models.
+        </li>
+        <li>
+          <strong>Backend layer — Firebase.</strong> Firebase Authentication for user identity
+          and role management, Cloud Firestore for resident records and event logs, and Firebase
+          Cloud Messaging for push notifications to caregiver devices. This layer is what makes
+          the CV detections useful — a model that identifies a fall is only valuable if the
+          alert actually reaches the attending nurse in seconds.
+        </li>
+      </ul>
+
+      <p>
+        The three-layer split was deliberate and had real consequences for the project's
+        development velocity. Because the CV layer communicated with the app layer through
+        Firebase rather than through direct API calls, each side of the team could develop
+        against a well-defined interface without waiting for the other to be finished. The
+        modelling work could proceed against a mock data pipeline while the Flutter UI was
+        still being designed, and vice versa.
+      </p>
+    </section>
+
+    <!-- ---------- PHASE 2 ---------- -->
+    <section class="cs-section" id="phase-2">
+      <span class="phase-tag">PHASE 02</span>
+      <h2>Dual Computer Vision Models</h2>
+
+      <p>
+        The technical core of the platform was a pair of TensorFlow models, each trained to
+        detect a different kind of danger. The design insight that shaped the whole project was
+        recognising that these two failure modes are <strong>structurally different problems</strong>
+        — one is about detecting an event that happens, the other about detecting the absence
+        of events that should be happening — and that trying to solve both with a single model
+        would have been a mistake.
+      </p>
+
+      <h3>Model 1 — Fall detection</h3>
+
+      <p>
+        The first model addresses the acute case: a resident trips, loses balance, or collapses.
+        This is an <strong>event-detection problem</strong>. The model observes a video stream,
+        recognises the visual signature of a fall — a rapid vertical drop in body position
+        combined with a change in body orientation from vertical to horizontal — and fires an
+        alert to the caregiver network the moment the pattern is confirmed.
+      </p>
+
+      <p>
+        The technical challenge here is not detecting <em>a</em> fall in a controlled scenario;
+        it's detecting falls reliably in a real environment. A person sitting down quickly looks
+        a lot like a person falling until the final frame, and a resident bending over to pick
+        something up produces a similar vertical shift without any actual fall occurring.
+        Preventing false positives was the dominant constraint on the model's design — an alert
+        system that cries wolf gets ignored by caregivers within a week, at which point it
+        stops being a safety feature and starts being a liability.
+      </p>
+
+      <p>
+        The alert delivery path was straightforward once detection succeeded: the confirmed
+        fall event was written to Firestore, which triggered a Cloud Messaging notification to
+        every caregiver device registered to that resident. The attending nurse, the on-duty
+        doctor, and any family members with the app received the alert simultaneously, along
+        with the timestamp and resident identifier — a push-based notification model that
+        delivers in seconds rather than requiring anyone to be actively watching a dashboard.
+      </p>
+
+      <h3>Model 2 — Inactivity detection</h3>
+
+      <p>
+        The second model addresses the quieter and more insidious case: a resident who simply
+        stops moving. This is an <strong>absence-detection problem</strong> — and it's
+        structurally harder than fall detection, because there's no moment of visible change
+        to key off. The model has to know what "normal inactivity" looks like for a given
+        resident, and then recognise when the observed inactivity has crossed from rest into
+        something medically concerning.
+      </p>
+
+      <p>
+        The design pattern we settled on was a <strong>temporal window analysis</strong>: the
+        model tracks the resident's motion over a rolling time window, and if the amount of
+        detected movement falls below a threshold for longer than that window allows, it fires
+        an alert. The threshold and window length had to be configurable per resident, because
+        a healthy elderly person and a resident recovering from surgery have very different
+        normal-motion profiles. Getting this calibration right was as important as the model
+        itself — a single fixed threshold would either miss real emergencies or trigger on
+        perfectly normal sleep.
+      </p>
+
+      <p>
+        The alert path for inactivity used the same Firebase pipeline as the fall model, but
+        with different urgency framing. Fall alerts fire immediately and demand an urgent
+        response. Inactivity alerts fire after a defined delay and prompt a wellness check
+        rather than an emergency response — the caregiver is asked to confirm the resident is
+        responsive before escalating. This distinction matters operationally; treating a long
+        nap the same as a fall would make the platform unusable in practice.
+      </p>
+
+      <h3>Why two models rather than one</h3>
+
+      <p>
+        Combining both detections into a single model was considered and rejected early. The
+        two problems have different input structures (one looks at a short time slice around
+        an event, the other at a long time window), different output types (event classification
+        versus threshold-based anomaly detection), and different false-positive costs. Trying
+        to unify them would have produced a model that was mediocre at both tasks instead of
+        good at each. Keeping them separate meant each could be trained, tuned, and evaluated
+        against its own success criteria without compromising the other.
+      </p>
+    </section>
+
+    <!-- ---------- PHASE 3 ---------- -->
+    <section class="cs-section" id="phase-3">
+      <span class="phase-tag">PHASE 03</span>
+      <h2>Companion Care Features</h2>
+
+      <p>
+        Beyond the computer vision layer, the platform provided the routine administrative and
+        communication tools that a care facility actually runs on day to day. These features
+        weren't AI-powered — they were the practical capabilities that made the app worth
+        opening even when nothing was going wrong.
+      </p>
+
+      <h3>Medication scheduling</h3>
+
+      <p>
+        Residents in care facilities typically take multiple medications on different schedules —
+        some daily, some twice daily, some as-needed — and missed doses are one of the most
+        common and consequential failure modes in elderly care. The platform provided a
+        medication scheduler where each resident's prescriptions were entered once with their
+        dosages and schedules, and the system generated both <strong>reminder notifications to
+        the resident</strong> and <strong>confirmation prompts to the assigned caregiver</strong>.
+        The caregiver confirmation step was deliberate — it turned the schedule from an
+        informative list into an auditable record of whether the medication was actually
+        administered.
+      </p>
+
+      <h3>Doctor appointment reminders</h3>
+
+      <p>
+        The same notification infrastructure was reused for appointment tracking. Upcoming
+        doctor visits were recorded with date, time, location, and provider, and the system
+        pushed reminders to both the resident and their caregiver in the days leading up to
+        the appointment. The dual-recipient model mirrored the medication feature — the resident
+        gets the reminder so they're aware, and the caregiver gets it so they can arrange
+        transport and accompaniment if needed.
+      </p>
+
+      <h3>Multi-modal caregiver chat</h3>
+
+      <p>
+        The final feature was direct communication between residents, caregivers, and family
+        members through the app itself. Three communication modes were supported:
+      </p>
+
+      <ul>
+        <li>
+          <strong>Text chat.</strong> Standard asynchronous messaging — the baseline channel for
+          quick coordination between caregivers, or between a resident and their family.
+        </li>
+        <li>
+          <strong>Audio messaging.</strong> Recorded voice messages that could be sent when
+          typing wasn't convenient, or when a resident preferred speaking to writing. This
+          mattered more than expected — many elderly users find voice interfaces significantly
+          more accessible than on-screen keyboards.
+        </li>
+        <li>
+          <strong>Audio + video calling.</strong> Live two-way communication for cases where
+          real-time interaction was needed — a family member checking in on their parent, or a
+          caregiver consulting with an on-call doctor.
+        </li>
+      </ul>
+
+      <p>
+        The chat infrastructure was built on Firebase's real-time capabilities, which handled
+        the message persistence and delivery layers without requiring us to build or host a
+        custom messaging backend. This was the right engineering trade-off for a project of
+        this scope: rebuilding real-time messaging from scratch would have consumed time that
+        was better spent on the computer vision work that made the platform distinctive.
+      </p>
+    </section>
+
+    <!-- ---------- PHASE 4 ---------- -->
+    <section class="cs-section" id="phase-4">
+      <span class="phase-tag">PHASE 04</span>
+      <h2>Cross-Platform Deployment &amp; Platform Prioritisation</h2>
+
+      <p>
+        Flutter's promise is a single codebase that compiles to every major platform. In practice,
+        the platform-specific reality of the underlying backend SDKs complicates that promise
+        considerably — and this project ran directly into that constraint.
+      </p>
+
+      <h3>The Firebase plugin gap on Windows</h3>
+
+      <p>
+        Firebase ships official SDKs for Android, iOS, and web. Its Windows support — while
+        present for some services — was incomplete at the time we were building, meaning that
+        several of the platform's core capabilities couldn't be relied on in the Windows build.
+        Firebase Cloud Messaging for push notifications, in particular, was not fully supported
+        on the Windows Flutter target, which meant the alert-delivery mechanism at the heart of
+        the CV layer couldn't work on that platform.
+      </p>
+
+      <p>
+        The team faced a decision that's common in cross-platform development but rarely
+        discussed honestly: <strong>which platforms do we actually support, given that the
+        underlying technology doesn't support them all uniformly?</strong>
+      </p>
+
+      <h3>The prioritisation decision</h3>
+
+      <p>
+        The resolution was a deliberate three-tier platform strategy:
+      </p>
+
+      <ul>
+        <li>
+          <strong>Tier 1 — Android (primary release target).</strong> Full feature parity across
+          every capability: CV alerts, medication and appointment notifications, chat with all
+          three communication modes. Android was chosen as the primary target because it's the
+          platform most caregivers actually carry — it's what a nurse has in their pocket during
+          a shift.
+        </li>
+        <li>
+          <strong>Tier 2 — Web (secondary, functional).</strong> The web build worked for the
+          administrative and communication features but couldn't reliably receive the push
+          notifications that the CV layer depended on. It was useful as a management interface —
+          viewing resident records, editing medication schedules, reviewing historical event
+          logs — but not as a real-time alert channel.
+        </li>
+        <li>
+          <strong>Tier 3 — Windows (partial, deprioritised).</strong> The Windows build compiled
+          and ran, but several Firebase-backed features were either unavailable or unreliable
+          due to incomplete plugin support. Rather than shipping a Windows version that silently
+          failed to deliver the alerts the platform was built to provide, we documented it as
+          a partial build and focused engineering effort where it would actually be used.
+        </li>
+      </ul>
+
+      <p>
+        This tier structure wasn't a compromise — it was the correct engineering answer to a
+        real constraint. Trying to force the Windows build to full parity would have meant
+        either rebuilding the notification pipeline on a non-Firebase backend for that platform
+        alone, or waiting for the Firebase plugin ecosystem to catch up. Neither was a good use
+        of the project's remaining time. Prioritising Android to production quality and shipping
+        a functional web admin interface was a decision that actually delivered value, rather
+        than a decision that pretended every platform was equally viable.
+      </p>
+
+      <div class="callout note">
+        <div class="callout-label">◆ LESSON_IN_PLATFORM_PRAGMATISM</div>
+        <p>
+          "Cross-platform" doesn't mean "identical everywhere." The honest engineering position
+          is that Flutter gives you one codebase, but the platform-native capabilities underneath
+          it — push notification delivery, background processing, permission models — still vary.
+          Recognizing where those gaps are and prioritising accordingly is what turns a
+          cross-platform claim into a cross-platform <em>delivery</em>. This lesson transferred
+          directly to later work: every platform claim in a project plan should be qualified by
+          what the underlying stack actually supports on that platform.
+        </p>
+      </div>
+    </section>
+
+    <!-- ---------- OUTCOMES ---------- -->
+    <section class="cs-section" id="outcomes">
+      <span class="phase-tag">OUTCOMES</span>
+      <h2>Project Outcomes</h2>
+
+      <p>
+        The delivered system combined a working computer vision layer with a fully-featured
+        Flutter application and a production-grade Firebase backend, deployed across Android
+        as the primary release target with web and Windows support documented by capability
+        tier.
+      </p>
+
+      <ul>
+        <li>
+          <strong>Dual-model computer vision pipeline.</strong> Two independently trained
+          TensorFlow models — one for event-based fall detection, one for absence-based
+          inactivity detection — each tuned to its own failure mode and calibrated against the
+          specific false-positive costs that would have made either model unusable in practice.
+        </li>
+        <li>
+          <strong>Complete resident care application.</strong> Medication scheduling with dual
+          notification to resident and caregiver, appointment tracking with reminders, and
+          multi-modal chat supporting text, audio, and audio-video — a full feature set, not a
+          proof-of-concept.
+        </li>
+        <li>
+          <strong>Cross-platform delivery with honest scoping.</strong> A single Flutter codebase
+          deployed to three platforms, with the primary Android release receiving full feature
+          parity and the web and Windows builds documented by what they actually supported. The
+          tier structure reflected the real constraint imposed by incomplete Firebase plugin
+          support on Windows, rather than an aspirational claim about cross-platform parity.
+        </li>
+        <li>
+          <strong>Firebase-backed alert delivery proven in principle.</strong> The pipeline from
+          CV detection to caregiver notification was architected end-to-end — model output
+          written to Firestore, Cloud Messaging triggered by the write, notification delivered
+          to every registered caregiver device within seconds — with the significant caveat
+          that this pipeline only functioned on platforms where the notification SDK was
+          available.
+        </li>
+      </ul>
+
+      <div class="callout remediation">
+        <div class="callout-label">✓ SYSTEM_ARCHITECTURE_VALIDATED</div>
+        <p>
+          <strong>Full-stack resident care platform delivered as a team project.</strong> The
+          engagement demonstrated the ability to coordinate a multi-layer system — a Python
+          machine learning service, a Flutter cross-platform client, and a Firebase backend —
+          across a collaborative team, with each layer developed against a well-defined
+          interface and the whole system delivered to a functional release state. The two
+          technical lessons that carried forward most strongly were the structural distinction
+          between event-detection and absence-detection computer vision problems, and the
+          importance of scoping cross-platform claims against what the underlying stack
+          actually supports on each platform.
+        </p>
+      </div>
+    </section>
+
+    <!-- ---------- PRIVACY ---------- -->
+    <section class="cs-section" id="privacy">
+      <span class="phase-tag">DISCLOSURE</span>
+      <h2>Security &amp; Data Privacy Note</h2>
+
+      <div class="callout note">
+        <div class="callout-label">◆ PROJECT_STATUS_AND_DATA_DISCLOSURE</div>
+        <p>
+          This case study documents a collaborative academic project that has since been
+          concluded. The system was developed and evaluated exclusively with simulated data —
+          no real residents, patients, or healthcare providers were involved at any stage, and
+          no actual personal health information was ever processed by the platform. The source
+          repository, trained model weights, and runtime telemetry have been lost since the
+          project's conclusion and are not presented here. All technical claims in this case
+          study reflect the system's designed capabilities as documented during development;
+          they are not accompanied by live figures because the environment that would produce
+          such figures no longer exists. The platform was a proof-of-concept and was never
+          deployed in a live care facility.
+        </p>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<!-- ============================================================
+     FOOTER
+     ============================================================ -->
+<footer class="footer">
+  <div class="wrap wrap-wide footer-inner">
+    <div>
+      <p>&copy; 2026 Mohammed Oudai Helaleh. All rights cryptographically reserved.</p>
+      <p class="meta">Informatics &amp; Communications Engineering Architecture Deployment</p>
+    </div>
+  </div>
+</footer>
+
+<script src="../case-study.js" defer></script>
+</body>
+</html>

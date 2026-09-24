@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Enterprise Log Aggregation &amp; Threat Hunting | Mohammed Oudai Helaleh</title>
+<meta name="description" content="Auditing Linux authentication records to simulate tactical threat hunting — forensic dissection of /var/log/auth.log to isolate insider credential misuse and privilege escalation attempts.">
+
+<link rel="stylesheet" href="../case-study.css">
+</head>
+
+<body class="theme-defense">
+
+<div class="bg-grid"></div>
+<div class="progress" id="progress"></div>
+
+<!-- ============================================================
+     NAV
+     ============================================================ -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="../index.html" class="brand">MOHAMMED <span>OUDAI</span></a>
+    <a href="../index.html#projects" class="back-link">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M19 12H5M12 19l-7-7 7-7"/>
+      </svg>
+      <span>BACK_TO_VAULT</span>
+    </a>
+  </div>
+</nav>
+
+<!-- ============================================================
+     HERO
+     ============================================================ -->
+<header class="cs-hero">
+  <div class="wrap">
+
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <a href="../index.html">PORTFOLIO</a>
+      <span class="sep">/</span>
+      <a href="../index.html#projects">VAULT</a>
+      <span class="sep">/</span>
+      <a href="../index.html#projects">DEFENSIVE_INFRASTRUCTURE</a>
+    </nav>
+
+    <div class="pill-row">
+      <span class="pill"><span class="dot"></span>THREAT_HUNTING</span>
+      <span class="pill neutral">CASE_STUDY</span>
+      <span class="pill neutral">READ_TIME 6 MIN</span>
+    </div>
+
+    <h1>Enterprise Log Aggregation, System Auditing &amp; Threat Hunting</h1>
+
+    <p class="standfirst">
+      Auditing the Linux authentication ledger to simulate tactical threat hunting — triggering a
+      deliberate privilege escalation attempt, then <strong>dissecting <code>/var/log/auth.log</code></strong>
+      to reconstruct the full forensic fingerprint of the intrusion from a single structured
+      event record.
+    </p>
+
+    <dl class="meta-grid">
+      <div class="meta-cell">
+        <dt>Environment</dt>
+        <dd>Headless Ubuntu Server 24.04 LTS (CLI-only)</dd>
+      </div>
+      <div class="meta-cell">
+        <dt>Hypervisor</dt>
+        <dd>Type-2 VMware virtual machine</dd>
+      </div>
+      <div class="meta-cell">
+        <dt>Primary Evidence</dt>
+        <dd>/var/log/auth.log — PAM authentication ledger</dd>
+      </div>
+      <div class="meta-cell">
+        <dt>Detection Layer</dt>
+        <dd>Kernel audit + PAM event logging</dd>
+      </div>
+    </dl>
+
+  </div>
+</header>
+
+<!-- ============================================================
+     BODY
+     ============================================================ -->
+<main class="cs-body">
+  <div class="wrap">
+
+    <!-- ---------- OBJECTIVE ---------- -->
+    <section class="cs-section">
+      <p>
+        In an enterprise network, defensive perimeters are insufficient on their own. Firewalls
+        stop what's outside; they say nothing about what's already authenticated inside. Sophisticated
+        adversaries know this — they blend into background noise by running low-and-slow vertical
+        privilege cracking sweeps against administrative service wrappers, hoping the perimeter
+        won't notice traffic that originated from an internal IP with a valid session.
+      </p>
+
+      <p>
+        This engagement evaluates the opposite side of that equation: whether the operating system's
+        native logging stack is capable of <strong>preserving the forensic trail</strong> when an
+        internal actor attempts to escalate privileges. The test is deliberately simple — a
+        simulated insider attempt — but the analysis that follows is the real work.
+      </p>
+
+      <div class="callout note">
+        <div class="callout-label">◆ SCOPE_CONSTRAINT</div>
+        <p>
+          All activity was performed inside an isolated lab VM. The "breach" in Phase 1 is a
+          self-inflicted simulation by the analyst acting as an insider threat — the goal is to
+          validate detection and forensic reconstruction, not to investigate a real incident.
+        </p>
+      </div>
+    </section>
+
+    <!-- ---------- PHASE 1 ---------- -->
+    <section class="cs-section" id="phase-1">
+      <span class="phase-tag">PHASE 01</span>
+      <h2>Security Anomaly Detonation &amp; Event Tracking</h2>
+
+      <p>
+        To test reporting visibility, a mock credential hijack was simulated. The analyst — acting
+        as an insider with a valid low-privilege account — attempted a direct administrative shell
+        escalation via the standard <code>su</code> wrapper:
+      </p>
+
+      <div class="code-block">
+        <div class="code-head">
+          <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="code-lang">bash</span>
+          <button class="copy-btn" data-copy type="button">COPY</button>
+        </div>
+        <pre><code>su root</code></pre>
+      </div>
+
+      <p>
+        The privilege escalation was deliberately failed — an invalid, high-entropy password string
+        was injected into the credential check loop. That failure is the entire point of the
+        exercise. A <em>successful</em> escalation would have granted access; a <em>failed</em> one
+        leaves a forensic trail without providing any actual foothold. The simulator gets the
+        telemetry of an attack without any of its consequences.
+      </p>
+
+      <p>
+        The kernel immediately intercepted the rogue execution. The privilege escalation was blocked,
+        the credential check was rejected, and — critically — the operating system dropped a hard
+        <code>su: Authentication failure</code> event code straight to disk storage. Nothing was
+        suppressed, nothing was lost to a buffer, and the raw metadata was preserved before the
+        process even exited.
+      </p>
+    </section>
+
+    <!-- ---------- PHASE 2 ---------- -->
+    <section class="cs-section" id="phase-2">
+      <span class="phase-tag">PHASE 02</span>
+      <h2>Forensic Log Dissection &amp; Threat Hunting</h2>
+
+      <p>
+        With the anomaly detonated, an administrative threat-hunting sweep was executed against the
+        server's primary secure authentication ledger. The
+        <code>tail -n 20</code> boundary filter was used to isolate the most recent chronological
+        event entries — the standard first pass any analyst runs when hunting for evidence of
+        recent activity:
+      </p>
+
+      <div class="code-block">
+        <div class="code-head">
+          <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="code-lang">bash</span>
+          <button class="copy-btn" data-copy type="button">COPY</button>
+        </div>
+        <pre><code>sudo tail -n 20 /var/log/auth.log</code></pre>
+      </div>
+
+      <p>
+        The log parser bypassed system noise and mapped the exact forensic fingerprint of the attack
+        vector across a single, structured raw data string. Every meaningful attribute of the
+        intrusion is encoded in one line:
+      </p>
+
+      <div class="code-block">
+        <div class="code-head">
+          <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="code-lang">auth.log</span>
+          <button class="copy-btn" data-copy type="button">COPY</button>
+        </div>
+        <pre><code>2026-09-06T18:46:32.525300+00:00 ubs2604vm su: pam_unix(su:auth): authentication failure; logname=oudaidev uid=1000 euid=0 tty=/dev/tty1 ruser=oudaidev rhost= user=root</code></pre>
+      </div>
+
+      <p>
+        That line is not merely an error message. It is the <strong>complete reconstruction</strong>
+        of the intrusion attempt — who triggered it, from where, as whom, targeting what, and at what
+        moment in time. Reading it correctly is the difference between a system administrator seeing
+        "a login failed" and a threat analyst seeing an active incident.
+      </p>
+    </section>
+
+    <!-- ---------- OUTCOMES ---------- -->
+    <section class="cs-section" id="outcomes">
+      <span class="phase-tag">OUTCOMES</span>
+      <h2>Forensic Verification Results</h2>
+
+      <p>
+        The security event data stream maps cleanly to the classic incident response life cycle,
+        providing 100% forensic alignment across every attribution dimension.
+      </p>
+
+      <h3>The alert signature identified</h3>
+
+      <p>
+        The auditing pass exposed an explicit <code>authentication failure</code> state flag —
+        proof that the operating system natively caught and logged the threat vector rather than
+        letting it slip through as background noise. The PAM stack recognised the event class
+        (<code>pam_unix(su:auth)</code>), the subsystem involved (<code>su</code>), and the failure
+        state, all without any external monitoring agent.
+      </p>
+
+      <h3>The attacker source discovered</h3>
+
+      <p>
+        The most valuable forensic data point in the entire log line is the
+        <code>ruser</code> field. It identifies the exact low-privilege host account that was
+        compromised to launch the internal attack — the credential whose theft or misuse is the
+        actual security failure, not the failed escalation itself.
+      </p>
+
+      <div class="finding-card">
+        <div class="fc-head">
+          <span class="sev">ATTRIBUTION</span>
+          <span class="fc-id">ruser=oudaidev · user=root</span>
+        </div>
+        <h3>Compromised credential and target asset mapped</h3>
+        <p>
+          The log telemetry identified <strong>ruser=oudaidev</strong> as the low-privilege account
+          used to launch the internal attack, and <strong>user=root</strong> as the target asset the
+          adversary was attempting to hijack for full system control. Together these two fields form
+          the attribution chain — the <em>who</em> and the <em>what</em> — from a single line of
+          native operating system output.
+        </p>
+      </div>
+
+      <ul>
+        <li>
+          <strong>Target asset isolated.</strong> The <code>user=root</code> field explicitly names
+          the account the adversary was attempting to hijack to achieve full system control — the
+          objective of the escalation attempt, mapped without any ambiguity.
+        </li>
+        <li>
+          <strong>Session context preserved.</strong> The <code>tty=/dev/tty1</code> field identifies
+          the specific virtual console from which the attempt originated — a local terminal rather
+          than a remote pseudo-terminal, which sharpens the insider-threat framing. In this case
+          <code>logname=oudaidev</code> and <code>ruser=oudaidev</code> match, confirming the
+          requesting user and the original login user are the same account and ruling out a spliced
+          or forwarded session.
+        </li>
+        <li>
+          <strong>Remote source field observed.</strong> The <code>rhost=</code> field is empty
+          because this was a local-console attempt. On a remote login the same field would carry
+          the source IP — the single most important attribute in external intrusion analysis, and
+          the reason auth.log is a first-stop artefact in incident response.
+        </li>
+        <li>
+          <strong>Privilege context confirmed.</strong> The <code>uid=1000 euid=0</code> pairing is
+          critical. The real user ID (1000, the low-privilege account) differs from the effective
+          user ID (0, root) — proving that the escalation attempt was made from an unprivileged
+          context, which is exactly what makes it suspicious. A legitimate root action would show
+          <code>uid=0 euid=0</code>.
+        </li>
+      </ul>
+
+      <div class="callout remediation">
+        <div class="callout-label">✓ EVENT_VISIBILITY_VALIDATED</div>
+        <p>
+          <strong>Proven event visibility.</strong> By tracking behavioural patterns inside central
+          log records, a security analyst can map compromised credentials, construct brute-force
+          timeline constraints, and neutralise malicious actors before data breaches occur. The
+          single log line carries all four attribution dimensions — source account, target account,
+          session identifier, and privilege transition — which is everything needed to open an
+          incident ticket and begin response.
+        </p>
+      </div>
+
+      <!-- ---------- SCREENSHOT ---------- -->
+      <figure class="cs-figure">
+        <div class="fig-bar">
+          <span class="dot" aria-hidden="true"></span>
+          <span>siem_log_audit.png</span>
+        </div>
+        <img src="../assets/img/siem_log_audit.png"
+             alt="Active terminal log diagnostics displaying a successful forensic sweep, catching the raw authentication failure signature mapping back to the target root administrator account"
+             loading="lazy"
+             onerror="this.closest('figure').classList.add('img-missing')">
+        <div class="img-placeholder" aria-hidden="true">
+          [ TELEMETRY_CAPTURE_PENDING ]<br>
+          assets/img/siem_log_audit.png
+        </div>
+        <figcaption>
+          <b>Figure 8.1</b> — Active terminal log diagnostics displaying a successful forensic sweep,
+          catching the raw authentication failure signature mapping back to the target root
+          administrator account.
+        </figcaption>
+      </figure>
+    </section>
+
+    <!-- ---------- PRIVACY ---------- -->
+    <section class="cs-section" id="privacy">
+      <span class="phase-tag">DISCLOSURE</span>
+      <h2>Security &amp; Data Privacy Note</h2>
+
+      <div class="callout note">
+        <div class="callout-label">◆ LOG_REDACTION_PROTOCOL</div>
+        <p>
+          Visual telemetry was monitored via local snapshot archive. The lab account handle,
+          hostname, and process identifiers shown in the presented logs are sandbox-only values and
+          are not associated with any production system. No production infrastructure credentials,
+          gateway masks, or private key material appear in the telemetry shown here.
+        </p>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<!-- ============================================================
+     FOOTER
+     ============================================================ -->
+<footer class="footer">
+  <div class="wrap wrap-wide footer-inner">
+    <div>
+      <p>&copy; 2026 Mohammed Oudai Helaleh. All rights cryptographically reserved.</p>
+      <p class="meta">Informatics &amp; Communications Engineering Architecture Deployment</p>
+    </div>
+  </div>
+</footer>
+
+<script src="../case-study.js" defer></script>
+</body>
+</html>
